@@ -1,0 +1,24 @@
+<!-- Khung HTML của trang "readers". Được pages/index.js tải và gắn vào #pages khi khởi động; pages/readers.js điền dữ liệu bằng render(). -->
+<div class="toolbar">
+  <form id="reader-search" class="search">
+    <input name="q" aria-label="Tìm độc giả" placeholder="Tìm tên, mã độc giả hoặc điện thoại…" /><button>
+      Tìm kiếm
+    </button>
+  </form>
+  <a class="button" href="/api/export/readers.csv" download>Xuất CSV</a
+  ><button class="primary" id="add-reader">+ Thêm độc giả</button>
+</div>
+<div class="panel table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Mã độc giả</th>
+        <th>Họ và tên</th>
+        <th>Điện thoại</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody id="reader-rows"></tbody>
+  </table>
+</div>
+<div class="pager" id="readers-pager" hidden></div>

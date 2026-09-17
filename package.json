@@ -1,0 +1,20 @@
+{
+  "name": "thuvienmini-frontend-tools",
+  "private": true,
+  "type": "module",
+  "description": "Công cụ phát triển frontend (format, lint, kiểm tra kiểu). Không cần để chạy ứng dụng.",
+  "scripts": {
+    "format": "prettier --write \"app/static/**/*.{js,css,html}\"",
+    "format:check": "prettier --check \"app/static/**/*.{js,css,html}\"",
+    "lint": "eslint app/static/js",
+    "typecheck": "tsc -p jsconfig.json",
+    "check": "npm run format:check && npm run lint && npm run typecheck"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -156,7 +156,7 @@ def test_I02_failed_borrow_no_write(client,book):
 def test_TC19_static_page(client):
     assert client.get('/').status_code==200
     assert 'lang="vi"' in client.get('/').text
-    assert client.get('/static/app.js').status_code==200
+    assert client.get('/static/js/main.js').status_code==200
 
 def test_TC20_statistics(client):
     s=client.get('/api/stats').json()
@@ -170,8 +170,10 @@ def test_TC22_inactive_book(client):
     assert client.post('/api/loans',json={'book_id':8,'reader_id':4}).status_code==404
 
 def test_TC23_loan_filter_options_valid_html(client):
-    html=client.get('/').text
-    assert html.count('<option value=')==4 and '</option value=' not in html
+    # Bộ lọc phiếu nằm trong khung HTML của trang loans (app/static/views/loans.html)
+    src=client.get('/static/views/loans.html').text
+    select=src[src.index('<select id="loan-status">'):src.index('</select>')]
+    assert select.count('<option value=')==4 and '</option value=' not in select
 
 def test_TC24_login_lockout(client):
     client.post('/api/logout')
@@ -257,8 +259,8 @@ def test_TC32_pagination(client):
 
 def test_TC33_frontend_not_cached(client):
     assert client.get('/').headers['cache-control']=='no-cache'
-    assert client.get('/static/app.js').headers['cache-control']=='no-cache'
-    assert 'app.js?v=' in client.get('/').text
+    assert client.get('/static/js/main.js').headers['cache-control']=='no-cache'
+    assert 'js/main.js?v=' in client.get('/').text
 
 def test_TC34_ui_paths_serve_spa(client):
     for path in ['/', '/books', '/readers', '/loans', '/loans/overdue', '/users']:

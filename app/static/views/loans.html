@@ -1,0 +1,33 @@
+<!-- Khung HTML của trang "loans". Được pages/index.js tải và gắn vào #pages khi khởi động; pages/loans.js điền dữ liệu bằng render(). -->
+<div class="toolbar">
+  <label class="filter"
+    >Trạng thái
+    <select id="loan-status">
+      <option value="all">Tất cả phiếu</option>
+      <option value="open">Đang mượn trong hạn</option>
+      <option value="overdue">Quá hạn</option>
+      <option value="returned">Đã trả</option>
+    </select></label
+  ><a class="button" href="/api/export/loans.csv" download>Xuất CSV</a
+  ><button class="primary" id="add-loan">+ Lập phiếu mượn</button>
+</div>
+<div class="panel table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Phiếu / Sách</th>
+        <th>Độc giả</th>
+        <th>Ngày mượn</th>
+        <th>Hạn trả</th>
+        <th>Trạng thái</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody id="loan-rows"></tbody>
+  </table>
+</div>
+<div class="pager" id="loans-pager" hidden></div>
+<p class="muted">
+  Mỗi phiếu tương ứng một bản sách. Ngày đến hạn vẫn được tính là trong hạn. Phiếu trong hạn được gia hạn một lần, tối
+  đa 30 ngày.
+</p>

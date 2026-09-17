@@ -1,0 +1,25 @@
+<!-- Khung HTML của trang "dashboard". Được pages/index.js tải và gắn vào #pages khi khởi động; pages/dashboard.js điền dữ liệu bằng render(). -->
+<div class="welcome">
+  <div>
+    <span class="eyebrow">THƯ VIỆN HÔM NAY</span>
+    <h2>Mọi hoạt động trong tầm mắt</h2>
+    <p>Theo dõi kho sách và những phiếu cần xử lý.</p>
+  </div>
+  <span class="toolbar-actions"
+    ><button id="backup" data-admin hidden>Sao lưu dữ liệu</button
+    ><button class="primary" id="quick-borrow">+ Lập phiếu mượn</button></span
+  >
+</div>
+<div id="stats" class="stats"></div>
+<div class="dashboard-grid">
+  <article class="panel">
+    <h2><a href="/loans/overdue" class="panel-link" data-link>Phiếu quá hạn →</a></h2>
+    <p class="muted">Ưu tiên nhắc độc giả hoàn trả sách</p>
+    <div id="overdue-list"></div>
+  </article>
+  <article class="panel">
+    <h2>Sách được mượn nhiều</h2>
+    <p class="muted">Tổng lượt mượn trong toàn bộ lịch sử</p>
+    <div id="top-books"></div>
+  </article>
+</div>

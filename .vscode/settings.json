@@ -3,8 +3,12 @@
   "python.terminal.activateEnvironment": true,
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestArgs": ["tests"],
-  "python.analysis.extraPaths": ["${workspaceFolder}"],
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}"
+  ],
   "files.exclude": {
     "**/__pycache__": true,
     "**/.pytest_cache": true
@@ -14,6 +18,21 @@
     "editor.formatOnSave": false,
     "editor.tabSize": 4
   },
-  "[javascript]": { "editor.wordWrap": "on" },
-  "[css]": { "editor.wordWrap": "on" }
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[html]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "eslint.validate": [
+    "javascript"
+  ],
+  "js/ts.implicitProjectConfig.checkJs": true
 }

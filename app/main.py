@@ -42,7 +42,7 @@ async def not_found(request: Request, exc: HTTPException):
     # Người dùng gõ URL lạ trên trình duyệt → trang 404 có giao diện; API và file tĩnh vẫn trả JSON để client xử lý
     if request.url.path.startswith(('/api/', '/static/')) or 'text/html' not in request.headers.get('accept', ''):
         return JSONResponse(status_code=404, content={'detail': getattr(exc, 'detail', 'Không tìm thấy')})
-    return FileResponse(STATIC / '404.html', status_code=404)
+    return FileResponse(STATIC / 'views/404.html', status_code=404)
 
 @app.exception_handler(sqlite3.IntegrityError)
 async def integrity_error(request, exc):

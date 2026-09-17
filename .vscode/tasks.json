@@ -5,23 +5,57 @@
       "label": "Cài môi trường (venv + pip)",
       "type": "shell",
       "command": "python3 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt",
-      "windows": { "command": "py -3 -m venv .venv; .\\.venv\\Scripts\\python.exe -m pip install -r requirements.txt" },
+      "windows": {
+        "command": "py -3 -m venv .venv; .\\.venv\\Scripts\\python.exe -m pip install -r requirements.txt"
+      },
       "problemMatcher": []
     },
     {
       "label": "Chạy test + xuất JUnit",
       "type": "shell",
       "command": ".venv/bin/python -m pytest -q --junitxml=docs/test-results.xml",
-      "windows": { "command": ".\\.venv\\Scripts\\python.exe -m pytest -q --junitxml=docs/test-results.xml" },
-      "group": { "kind": "test", "isDefault": true },
+      "windows": {
+        "command": ".\\.venv\\Scripts\\python.exe -m pytest -q --junitxml=docs/test-results.xml"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
       "problemMatcher": []
     },
     {
       "label": "Khởi động server (start.sh / start.bat)",
       "type": "shell",
       "command": "./start.sh",
-      "windows": { "command": ".\\start.bat" },
+      "windows": {
+        "command": ".\\start.bat"
+      },
       "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: cài công cụ (npm install)",
+      "type": "shell",
+      "command": "npm install",
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: format + lint + typecheck",
+      "type": "shell",
+      "command": "npm run check",
+      "problemMatcher": [
+        "$eslint-stylish",
+        "$tsc"
+      ]
+    },
+    {
+      "label": "Test giao diện (Playwright)",
+      "type": "shell",
+      "command": ".venv/bin/python -m pytest tests/test_ui.py -q",
+      "windows": {
+        "command": ".\\.venv\\Scripts\\python.exe -m pytest tests/test_ui.py -q"
+      },
+      "group": "test",
       "problemMatcher": []
     }
   ]

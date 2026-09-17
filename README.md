@@ -20,8 +20,9 @@ Web application chạy tại máy, không có dịch vụ trả phí. Python Fas
 | Kiểm tra dữ liệu | Pydantic v2 (`app/models.py`) |
 | Cơ sở dữ liệu | SQLite qua module chuẩn `sqlite3`, `PRAGMA foreign_keys=ON`, giao dịch tường minh (`app/db.py`, `schema.sql`) |
 | Xác thực | Thư viện chuẩn: `hashlib.pbkdf2_hmac` (SHA-256, 260 000 vòng) băm mật khẩu, `secrets` sinh token, session lưu trong CSDL, cookie `HttpOnly` + `SameSite=Strict`, khóa tạm sau 5 lần sai mật khẩu |
-| Frontend | HTML / CSS / JavaScript thuần, một trang, gọi API bằng `fetch`; không framework, không CDN |
-| Kiểm thử | pytest 9 + `fastapi.testclient` (httpx); test API, unit, boundary, concurrency, migration; xuất JUnit XML |
+| Frontend | HTML / CSS / JavaScript thuần (ES modules, `@ts-check` + JSDoc), một trang, gọi API bằng `fetch`; không framework, không CDN, không bước build |
+| Công cụ frontend (chỉ dev) | Prettier, ESLint, TypeScript (kiểm tra kiểu file .js) qua `npm run check`; Playwright cho test giao diện |
+| Kiểm thử | pytest 9 + `fastapi.testclient` (httpx); test API, unit, boundary, concurrency, migration; pytest-playwright cho 8 luồng giao diện trên Chromium; xuất JUnit XML |
 | Tài liệu | PlantUML (11 sơ đồ), báo cáo Markdown/DOCX/PDF |
 | Khởi động | `start.bat` (Windows), `start.sh` (macOS/Linux), `venv` + `pip` |
 
@@ -91,6 +92,26 @@ Thư mục `.vscode/` đã có sẵn cấu hình; mở thư mục `ThuVienMini` 
 6. `requests.http`: gọi thử từng API ngay trong editor bằng REST Client, cookie phiên được giữ sau khi đăng nhập.
 7. Mở `data/library.db` bằng SQLite Viewer để xem bảng; mở `docs/uml/*.puml` và bấm `Alt+D` để xem sơ đồ PlantUML.
 
+## Phát triển frontend
+
+Frontend là JavaScript thuần chia thành ES modules trong `app/static/js/`, trình duyệt nạp trực tiếp — không có bước build, bản nộp không cần Node. Node chỉ dùng cho công cụ kiểm tra mã ở máy dev:
+
+```bash
+npm install          # một lần
+npm run format       # Prettier định dạng js/css/html
+npm run lint         # ESLint
+npm run typecheck    # TypeScript kiểm tra kiểu trên file .js nhờ // @ts-check + JSDoc (types.js)
+npm run check        # cả ba, dùng trước khi commit
+```
+
+Quy ước:
+- Tạo HTML bằng tagged template `html\`...\`` trong `dom.js`: mọi giá trị chèn vào được thoát tự động, chỉ `raw()` cho hằng số tin cậy. Gán vào `innerHTML` qua `toHTML()`.
+- Mỗi màn hình gồm một file HTML trong `views/` (khung, không có logic) và một module trong `pages/` xuất `meta` (tiêu đề, nhãn menu, `adminOnly`) và `render()` (điền dữ liệu). `pages/index.js` tải các file `views/*.html` bằng `fetch` lúc khởi động, dựng menu và gắn vào `#pages`; `main.js` `await mount()` rồi mới gắn sự kiện. Thêm màn hình mới = viết `views/x.html` + `pages/x.js`, thêm vào `PAGES`, thêm icon ở `icons.js` và tên trang vào `UI_PAGES` trong `app/main.py`.
+- Phần tử chỉ dành cho quản trị đánh dấu `data-admin`; `main.js` ẩn/hiện chung sau khi đăng nhập.
+- Nút sinh động trong bảng dùng thuộc tính `data-*`; `main.js` bắt sự kiện chung một lần (event delegation).
+- Hộp thoại lưu xong phát sự kiện `data-changed` để trang tự vẽ lại.
+- Đổi file frontend thì tăng `?v=` ở thẻ `<script>`/`<link>` trong `index.html` nếu muốn ép trình duyệt tải lại; server đã gửi `Cache-Control: no-cache` nên thường không cần.
+
 ## Dữ liệu và quy tắc
 
 - CSDL `data/library.db` được cung cấp sẵn. `seed.py` chỉ tạo mẫu khi chưa có người dùng, không xóa dữ liệu đang có.
@@ -117,7 +138,7 @@ Thư mục `.vscode/` đã có sẵn cấu hình; mở thư mục `ThuVienMini` 
 | `/books`, `/readers` | Kho sách, Độc giả |
 | `/loans`, `/loans/open`, `/loans/overdue`, `/loans/returned` | Mượn & trả với bộ lọc tương ứng |
 | `/users` | Tài khoản (chỉ admin; người khác bị đưa về tổng quan) |
-| đường dẫn khác | Trang 404 có giao diện (`app/static/404.html`); với `/api/*` vẫn trả JSON 404 |
+| đường dẫn khác | Trang 404 có giao diện (`app/static/views/404.html`); với `/api/*` vẫn trả JSON 404 |
 
 **API** (`app/main.py`; mọi route trừ đăng nhập cần cookie phiên, thao tác ghi cần header `X-Library-Request: 1`):
 
@@ -142,7 +163,9 @@ Thư mục `.vscode/` đã có sẵn cấu hình; mở thư mục `ThuVienMini` 
 .\.venv\Scripts\python.exe -m pytest -q --junitxml=docs/test-results.xml
 ```
 
-62 ca tự động đã đạt trong lần kiểm thử cung cấp. `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
+Test giao diện (`tests/test_ui.py`) dùng Playwright điều khiển Chromium thật trên một server uvicorn chạy trong thread với CSDL tạm. Cần cài thêm một lần (có Internet): `pip install -r requirements-dev.txt` rồi `python -m playwright install chromium`. Máy chưa cài Playwright thì các test này tự bỏ qua, phần API vẫn chạy.
+
+70 ca tự động đã đạt trong lần kiểm thử cung cấp (62 API/unit + 8 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
 
 ## Cấu trúc
 
@@ -152,7 +175,11 @@ app/models.py        Pydantic DTO và ràng buộc đầu vào
 app/services.py      LoanService, tính quá hạn
 app/db.py            Kết nối và giao dịch SQLite
 app/security.py      Băm mật khẩu và token
-app/static/          HTML, CSS, JavaScript, logo.svg (favicon + thương hiệu, icon menu SVG inline)
+app/static/          index.html (khung: đăng nhập, sidebar, header, dialog), style.css, logo.svg
+app/static/views/    Khung HTML từng màn hình (dashboard, books, readers, loans, users) tải lúc khởi động, và 404.html (trang lỗi độc lập)
+app/static/js/       Frontend chia module: main.js (điểm vào), api.js, dom.js, state.js, router.js, icons.js, types.js
+app/static/js/pages/ Mỗi màn hình một module xuất meta + render(): dashboard, books, readers, loans, users; pager dùng chung
+package.json, eslint.config.js, jsconfig.json, .prettierrc  Công cụ frontend (không cần để chạy app)
 schema.sql           DDL, khóa ngoại và chỉ mục
 seed.py              Dữ liệu mẫu không ghi đè
 start.bat, start.sh  Script khởi động Windows / macOS-Linux

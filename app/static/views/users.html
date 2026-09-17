@@ -1,0 +1,21 @@
+<!-- Khung HTML của trang "users". Được pages/index.js tải và gắn vào #pages khi khởi động; pages/users.js điền dữ liệu bằng render(). -->
+<div class="toolbar">
+  <p class="muted">
+    Quản trị viên tạo tài khoản, đặt lại mật khẩu, đổi vai trò hoặc ngừng tài khoản. Không thể tự hạ quyền hay ngừng tài
+    khoản đang đăng nhập.
+  </p>
+  <button class="primary" id="add-user">+ Thêm tài khoản</button>
+</div>
+<div class="panel table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Tên đăng nhập</th>
+        <th>Vai trò</th>
+        <th>Trạng thái</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody id="user-rows"></tbody>
+  </table>
+</div>

@@ -35,9 +35,17 @@ def get_secret():
             path.write_text(secrets.token_hex(32))
         _secret = path.read_text().strip().encode()
     except OSError:
-        # Đĩa chỉ đọc (serverless) mà không đặt LIBRARY_SECRET: mỗi instance một khóa → phiên chỉ hợp lệ trên instance đó
-        print('CẢNH BÁO: không lưu được data/.secret; đặt biến môi trường LIBRARY_SECRET để phiên đăng nhập ổn định.')
-        _secret = secrets.token_bytes(32)
+        # Đĩa chỉ đọc (serverless) mà không đặt LIBRARY_SECRET. Nếu tự sinh ngẫu nhiên thì mỗi instance một khóa và
+        # phiên chỉ hợp lệ trên instance đã đăng nhập → người dùng bị văng ra. Dự phòng: suy khóa từ định danh
+        # deployment (giống nhau trên mọi instance của cùng bản deploy). Không bí mật bằng LIBRARY_SECRET nên chỉ
+        # phù hợp bản demo; README yêu cầu đặt LIBRARY_SECRET khi triển khai.
+        anchor = os.environ.get('VERCEL_DEPLOYMENT_ID') or os.environ.get('VERCEL_GIT_COMMIT_SHA') or os.environ.get('VERCEL_URL')
+        if anchor:
+            print('CẢNH BÁO: chưa đặt LIBRARY_SECRET; đang dùng khóa suy từ deployment. Đặt LIBRARY_SECRET trong Environment Variables rồi redeploy.')
+            _secret = hashlib.sha256(f'thuvienmini:{anchor}'.encode()).digest()
+        else:
+            print('CẢNH BÁO: không lưu được data/.secret; đặt biến môi trường LIBRARY_SECRET để phiên đăng nhập ổn định.')
+            _secret = secrets.token_bytes(32)
     return _secret
 
 

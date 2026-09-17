@@ -168,7 +168,7 @@ Quy ước:
 
 Test giao diện (`tests/test_ui.py`) dùng Playwright điều khiển Chromium thật trên một server uvicorn chạy trong thread với CSDL tạm. Cần cài thêm một lần (có Internet): `pip install -r requirements-dev.txt` rồi `python -m playwright install chromium`. Máy chưa cài Playwright thì các test này tự bỏ qua, phần API vẫn chạy.
 
-73 ca tự động đã đạt trong lần kiểm thử cung cấp (65 API/unit + 8 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
+74 ca tự động đã đạt trong lần kiểm thử cung cấp (66 API/unit + 8 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
 
 ## Cấu trúc
 
@@ -229,7 +229,7 @@ Dữ liệu hư cấu, sinh bằng hạt giống cố định nên tạo lại v
 
 1. Đẩy mã nguồn lên GitHub (repo này đã có remote `origin`).
 2. Vào https://vercel.com → **Add New → Project** → chọn repo → Framework Preset để **Other** → **Deploy**. Hoặc dùng CLI: `npx vercel` rồi `npx vercel --prod`.
-3. **Bắt buộc**: thêm Environment Variable `LIBRARY_SECRET` = một chuỗi ngẫu nhiên dài (tạo bằng `python -c "import secrets;print(secrets.token_hex(32))"`). Vercel chạy nhiều instance, không có biến này mỗi instance tự sinh khóa riêng → đăng nhập xong bị văng ra.
+3. Thêm Environment Variable `LIBRARY_SECRET` = một chuỗi ngẫu nhiên dài (tạo bằng `python -c "import secrets;print(secrets.token_hex(32))"`), chọn cả Production/Preview, rồi **Redeploy** (biến môi trường chỉ áp dụng cho deployment mới). Không có biến này app dự phòng bằng khóa suy từ định danh deployment để phiên vẫn dùng được trên mọi instance, nhưng khóa đó không bí mật nên chỉ chấp nhận cho demo.
 4. (Tuỳ chọn) Biến môi trường `LIBRARY_VERCEL_DEMO=1` để mỗi instance tự sinh lại CSDL demo với ngày mượn tính theo hôm nay, thay vì chép `data/library.db` (ngày cố định tại thời điểm tạo).
 
 **Giới hạn phải biết trước khi gửi link:**

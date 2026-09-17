@@ -332,3 +332,16 @@ def test_TC38_vercel_mode(tmp_path, monkeypatch):
         assert c.get('/').status_code==200
     assert not (tmp_path/'tmp'/'backups').exists()
     
+
+def test_TC39_secret_fallback_on_serverless(tmp_path, monkeypatch):
+    # Không có LIBRARY_SECRET và không ghi được file: khóa phải suy từ định danh deployment để mọi instance giống nhau
+    from app import security
+    monkeypatch.delenv('LIBRARY_SECRET', raising=False)
+    monkeypatch.setattr(security, '_secret', None)
+    monkeypatch.setattr(security.Path, 'write_text', lambda self, *a, **k: (_ for _ in ()).throw(OSError('read-only')))
+    monkeypatch.setattr(security.Path, 'exists', lambda self: False)
+    monkeypatch.setenv('VERCEL_DEPLOYMENT_ID', 'dpl_test')
+    a=security.get_secret(); monkeypatch.setattr(security, '_secret', None); b=security.get_secret()
+    assert a==b and len(a)==32
+    monkeypatch.setenv('LIBRARY_SECRET', 'khoa-ro-rang'); monkeypatch.setattr(security, '_secret', None)
+    assert security.get_secret()==b'khoa-ro-rang'

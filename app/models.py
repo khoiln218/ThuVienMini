@@ -23,3 +23,22 @@ class Borrow(Input):
     book_id: int = Field(gt=0, strict=True)
     reader_id: int = Field(gt=0, strict=True)
     days: int = Field(default=14, ge=1, le=30, strict=True)
+
+class Extend(Input):
+    days: int = Field(default=7, ge=1, le=30, strict=True)
+
+PASSWORD = Field(min_length=8, max_length=128)
+
+class UserCreate(Input):
+    username: str = Field(min_length=3, max_length=50, pattern=r'^[A-Za-z0-9._-]+$')
+    password: str = PASSWORD
+    role: str = Field(pattern=r'^(admin|librarian)$')
+
+class UserUpdate(Input):
+    role: str | None = Field(default=None, pattern=r'^(admin|librarian)$')
+    active: bool | None = None
+    password: str | None = Field(default=None, min_length=8, max_length=128)
+
+class PasswordChange(Input):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = PASSWORD

@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.debugpy",
+    "ms-python.vscode-pylance",
+    "qwtel.sqlite-viewer",
+    "jebbs.plantuml",
+    "humao.rest-client"
+  ]
+}

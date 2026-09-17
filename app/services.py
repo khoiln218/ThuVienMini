@@ -36,3 +36,19 @@ class LoanService:
             today = date.today().isoformat()
             db.execute('UPDATE loans SET returned_on=?,returned_by=? WHERE id=?', (today, user_id, loan_id))
             return {'message': 'Đã ghi nhận trả sách', 'overdue_days': overdue_days(loan['due_on'], today)}
+
+    @staticmethod
+    def extend(loan_id, days):
+        with transaction() as db:
+            loan = db.execute('SELECT * FROM loans WHERE id=?', (loan_id,)).fetchone()
+            if not loan:
+                raise HTTPException(404, 'Không tìm thấy phiếu mượn')
+            if loan['returned_on']:
+                raise HTTPException(409, 'Phiếu này đã trả sách')
+            if overdue_days(loan['due_on']):
+                raise HTTPException(409, 'Phiếu đã quá hạn, cần trả sách trước khi mượn lại')
+            if loan['extensions'] >= 1:
+                raise HTTPException(409, 'Mỗi phiếu chỉ được gia hạn một lần')
+            new_due = (date.fromisoformat(loan['due_on']) + timedelta(days=days)).isoformat()
+            db.execute('UPDATE loans SET due_on=?,extensions=extensions+1 WHERE id=?', (new_due, loan_id))
+            return {'message': 'Đã gia hạn', 'due_on': new_due}

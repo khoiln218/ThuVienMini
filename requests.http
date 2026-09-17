@@ -1,0 +1,43 @@
+# Gọi thử API ngay trong VS Code (extension REST Client: humao.rest-client).
+# Đặt con trỏ vào một request rồi bấm "Send Request". Cookie phiên được giữ tự động sau khi đăng nhập.
+@base = http://127.0.0.1:8000/api
+
+### Đăng nhập admin
+POST {{base}}/login
+Content-Type: application/json
+X-Library-Request: 1
+
+{"username": "admin", "password": "Admin@123"}
+
+### Người dùng hiện tại
+GET {{base}}/me
+
+### Sách, tìm kiếm + phân trang
+GET {{base}}/books?q=tin&page=1&size=5
+
+### Thêm sách
+POST {{base}}/books
+Content-Type: application/json
+X-Library-Request: 1
+
+{"code": "S100", "title": "Sách thử từ VS Code", "author": "Nhóm 1", "category": "Tin học", "total": 2}
+
+### Phiếu quá hạn
+GET {{base}}/loans?status=overdue&page=1
+
+### Lập phiếu mượn
+POST {{base}}/loans
+Content-Type: application/json
+X-Library-Request: 1
+
+{"book_id": 8, "reader_id": 4, "days": 14}
+
+### Thống kê
+GET {{base}}/stats
+
+### Xuất CSV phiếu
+GET {{base}}/export/loans.csv
+
+### Đăng xuất
+POST {{base}}/logout
+X-Library-Request: 1

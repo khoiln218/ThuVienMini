@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Chạy server (tự tải lại khi sửa code)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["app.main:app", "--host", "127.0.0.1", "--port", "8000", "--reload"],
+      "cwd": "${workspaceFolder}",
+      "jinja": false,
+      "justMyCode": true
+    },
+    {
+      "name": "Chạy server với CSDL demo riêng",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["app.main:app", "--host", "127.0.0.1", "--port", "8001", "--reload"],
+      "cwd": "${workspaceFolder}",
+      "env": { "LIBRARY_DB": "${workspaceFolder}/data/dev.db", "LIBRARY_BACKUP": "0" },
+      "justMyCode": true
+    },
+    {
+      "name": "Debug toàn bộ test",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["-q", "tests"],
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true
+    },
+    {
+      "name": "Tạo dữ liệu mẫu (seed.py)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/seed.py",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

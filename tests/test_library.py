@@ -3,6 +3,8 @@ from datetime import date, timedelta
 import pytest
 from fastapi import HTTPException
 from app.db import query, transaction
+from app.main import app, login_guard
+from fastapi.testclient import TestClient
 from app.models import Borrow
 from app.security import hash_password, verify_password
 from app.services import LoanService, overdue_days
@@ -166,3 +168,107 @@ def test_TC21_missing_update(client,book):
 def test_TC22_inactive_book(client):
     assert client.delete('/api/books/8').status_code==200
     assert client.post('/api/loans',json={'book_id':8,'reader_id':4}).status_code==404
+
+def test_TC23_loan_filter_options_valid_html(client):
+    html=client.get('/').text
+    assert html.count('<option value=')==4 and '</option value=' not in html
+
+def test_TC24_login_lockout(client):
+    client.post('/api/logout')
+    for _ in range(5): assert client.post('/api/login',json={'username':'admin','password':'wrong'}).status_code==401
+    assert client.post('/api/login',json={'username':'admin','password':'Admin@123'}).status_code==429
+    login_guard.reset()
+    assert client.post('/api/login',json={'username':'admin','password':'Admin@123'}).status_code==200
+
+def test_TC25_user_management(client):
+    assert client.get('/api/users').status_code==200
+    r=client.post('/api/users',json={'username':'nv01','password':'NhanVien@1','role':'librarian'}); assert r.status_code==201
+    uid=r.json()['id']
+    assert client.post('/api/users',json={'username':'nv01','password':'NhanVien@1','role':'librarian'}).status_code==409
+    assert client.post('/api/users',json={'username':'nv02','password':'short','role':'librarian'}).status_code==422
+    assert client.put(f'/api/users/{uid}',json={'role':'admin'}).status_code==200
+    assert client.put(f'/api/users/{uid}',json={'active':False}).status_code==200
+    assert client.post('/api/login',json={'username':'nv01','password':'NhanVien@1'}).status_code==401
+    assert client.put('/api/users/999',json={'role':'admin'}).status_code==404
+    assert client.put('/api/users/1',json={'role':'librarian'}).status_code==409
+
+def test_TC26_user_management_admin_only(client):
+    client.post('/api/login',json={'username':'thuthu','password':'ThuThu@123'})
+    assert client.get('/api/users').status_code==403
+    assert client.post('/api/users',json={'username':'nv03','password':'NhanVien@1','role':'admin'}).status_code==403
+    assert client.post('/api/backup').status_code==403
+
+def test_TC27_change_password_invalidates_other_sessions(client):
+    other=TestClient(app,headers={'X-Library-Request':'1'})
+    assert other.post('/api/login',json={'username':'admin','password':'Admin@123'}).status_code==200
+    assert client.post('/api/password',json={'current_password':'sai','new_password':'MoiHoanToan1'}).status_code==401
+    assert client.post('/api/password',json={'current_password':'Admin@123','new_password':'MoiHoanToan1'}).status_code==200
+    assert client.get('/api/me').status_code==200
+    assert other.get('/api/me').status_code==401
+    assert client.post('/api/login',json={'username':'admin','password':'MoiHoanToan1'}).status_code==200
+
+def test_TC28_extend_loan(client):
+    before=next(l for l in client.get('/api/loans').json() if l['id']==2)['due_on']
+    r=client.post('/api/loans/2/extend',json={'days':7}); assert r.status_code==200
+    assert r.json()['due_on']==(date.fromisoformat(before)+timedelta(days=7)).isoformat()
+    assert client.post('/api/loans/2/extend',json={'days':7}).status_code==409
+    assert client.post('/api/loans/1/extend',json={'days':7}).status_code==409
+    assert client.post('/api/loans/4/extend',json={'days':7}).status_code==409
+    assert client.post('/api/loans/999/extend',json={'days':7}).status_code==404
+    assert client.post('/api/loans/3/extend',json={'days':31}).status_code==422
+
+def test_TC29_export_csv(client):
+    r=client.get('/api/export/loans.csv'); assert r.status_code==200
+    assert r.headers['content-type'].startswith('text/csv') and 'attachment' in r.headers['content-disposition']
+    lines=r.text.lstrip('﻿').splitlines()
+    assert lines[0].startswith('Phiếu,Mã sách') and len(lines)==6
+    assert len(client.get('/api/export/books.csv').text.splitlines())==9
+    assert client.get('/api/export/nope.csv').status_code==404
+
+def test_TC30_backup(client,tmp_path):
+    r=client.post('/api/backup'); assert r.status_code==200
+    files=list((tmp_path/'backups').glob('test-*.db'))
+    assert r.json()['file'] in [f.name for f in files]
+    assert query("SELECT COUNT(*) AS n FROM sqlite_master")[0]['n']>0
+    import sqlite3
+    assert sqlite3.connect(tmp_path/'backups'/r.json()['file']).execute('SELECT COUNT(*) FROM books').fetchone()[0]==8
+
+def test_TC31_migration_adds_columns(tmp_path,monkeypatch):
+    import sqlite3
+    from app.db import initialize
+    old=tmp_path/'old.db'
+    sqlite3.connect(old).executescript("CREATE TABLE users(id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, role TEXT NOT NULL);CREATE TABLE loans(id INTEGER PRIMARY KEY, book_id INTEGER NOT NULL, reader_id INTEGER NOT NULL, created_by INTEGER NOT NULL, borrowed_on TEXT NOT NULL, due_on TEXT NOT NULL, returned_on TEXT, returned_by INTEGER);INSERT INTO users VALUES(1,'a','x$y','admin');")
+    monkeypatch.setenv('LIBRARY_DB',str(old)); initialize()
+    assert query('SELECT active FROM users')[0]['active']==1
+    assert 'extensions' in [c['name'] for c in query('PRAGMA table_info(loans)')]
+
+def test_TC32_pagination(client):
+    for i in range(25): assert client.post('/api/readers',json={'code':f'P{i:03}','name':f'Độc giả phân trang {i}','phone':''}).status_code==201
+    r=client.get('/api/readers?page=1&size=10').json()
+    assert (r['total'],r['pages'],r['page'],len(r['items']))==(29,3,1,10)
+    assert r['items'][0]['code']=='P024'
+    last=client.get('/api/readers?page=3&size=10').json(); assert len(last['items'])==9
+    assert client.get('/api/readers?page=99&size=10').json()['page']==3
+    assert client.get('/api/readers?page=0').status_code==422 and client.get('/api/readers?size=101').status_code==422
+    assert isinstance(client.get('/api/readers').json(),list) and len(client.get('/api/readers').json())==29
+    q=client.get('/api/readers?q=PHÂN TRANG 1&page=1&size=5').json(); assert q['total']==11 and len(q['items'])==5
+    l=client.get('/api/loans?status=open&page=1&size=1').json(); assert l['total']==2 and l['items'][0]['status']=='open'
+    assert client.get('/api/loans?status=bogus').status_code==422
+
+def test_TC33_frontend_not_cached(client):
+    assert client.get('/').headers['cache-control']=='no-cache'
+    assert client.get('/static/app.js').headers['cache-control']=='no-cache'
+    assert 'app.js?v=' in client.get('/').text
+
+def test_TC34_ui_paths_serve_spa(client):
+    for path in ['/', '/books', '/readers', '/loans', '/loans/overdue', '/users']:
+        r=client.get(path); assert r.status_code==200 and 'id="app-view"' in r.text, path
+    assert client.get('/nope').status_code==404 and client.get('/loans/nope').status_code==404
+    assert client.get('/openapi.json').status_code==200
+
+def test_TC35_not_found_page(client):
+    r=client.get('/khong-co',headers={'accept':'text/html'})
+    assert r.status_code==404 and 'Không tìm thấy trang' in r.text and 'text/html' in r.headers['content-type']
+    r=client.get('/api/khong-co',headers={'accept':'text/html'})
+    assert r.status_code==404 and r.headers['content-type'].startswith('application/json')
+    assert client.get('/khong-co').json()['detail']

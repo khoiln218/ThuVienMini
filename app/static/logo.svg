@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Thư viện mini">
+  <title>Thư viện mini</title>
+  <!-- Nền tròn xanh thư viện -->
+  <circle cx="32" cy="32" r="30" fill="#1c6451"/>
+  <!-- Sách mở: hai trang -->
+  <path d="M32 20c-4-3.5-10-4.5-16-3v27c6-1.5 12-.5 16 3z" fill="#f5f7f2"/>
+  <path d="M32 20c4-3.5 10-4.5 16-3v27c-6-1.5-12-.5-16 3z" fill="#e8dcbf"/>
+  <!-- Gáy sách -->
+  <path d="M32 20v27" stroke="#1c6451" stroke-width="2" stroke-linecap="round"/>
+  <!-- Dòng chữ gợi ý -->
+  <path d="M21 25c3-.8 6-.7 8 .2M21 31c3-.8 6-.7 8 .2M21 37c3-.8 6-.7 8 .2M35 25c2-.9 5-1 8-.2M35 31c2-.9 5-1 8-.2M35 37c2-.9 5-1 8-.2" stroke="#1c6451" stroke-opacity=".45" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+  <!-- Dấu trang vàng -->
+  <path d="M40 12h7v14l-3.5-2.6L40 26z" fill="#e8bd6b"/>
+</svg>

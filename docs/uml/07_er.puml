@@ -5,6 +5,7 @@ entity books {
  *id : INTEGER <<PK>>
  --
  code : TEXT <<UQ>>
+ barcode : TEXT <<UQ khi khác rỗng>>
  title : TEXT
  author : TEXT
  category : TEXT
@@ -29,6 +30,7 @@ entity loans {
  borrowed_on : TEXT
  due_on : TEXT
  returned_on : TEXT nullable
+ extensions : INTEGER 0..1
 }
 entity users {
  *id : INTEGER <<PK>>
@@ -36,16 +38,16 @@ entity users {
  username : TEXT <<UQ>>
  password_hash : TEXT
  role : TEXT
-}
-entity sessions {
- *token_hash : TEXT <<PK>>
- --
- user_id : INTEGER <<FK>>
- expires_at : INTEGER
+ active : INTEGER
 }
 books ||--o{ loans
 readers ||--o{ loans
 users ||--o{ loans : created_by
 users |o--o{ loans : returned_by
-users ||--o{ sessions
+note bottom of users
+ Phiên đăng nhập là token ký HMAC
+ trong cookie, không lưu bảng.
+ Bảng sessions cũ chỉ giữ để
+ tương thích CSDL trước.
+end note
 @enduml

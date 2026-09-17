@@ -1,21 +1,37 @@
 @startuml
 skinparam defaultFontName Arial
 skinparam shadowing false
+package "Backend (app/)" {
 class Main <<module>> {
  +current_user(request): dict
+ +admin(user): dict
+ +login / logout / change_password
+ +users / add_user / edit_user
+ +books / readers (q, page, size)
  +save_record(table, data, record_id): dict
- +borrow(data, user): dict
- +return_book(loan_id, user): dict
+ +deactivate(resource, record_id)
+ +loans (status, page, size)
+ +borrow / return_book / extend_loan
+ +export_csv(resource) / make_backup()
+ +stats(): dict
 }
 class LoanService {
  {static} +borrow(data: Borrow, user_id: int): dict
  {static} +return_book(loan_id: int, user_id: int): dict
+ {static} +extend(loan_id: int, days: int): dict
+}
+class Security <<module>> {
+ +hash_password / verify_password
+ +make_token / parse_token
+ +password_fingerprint
+ +LoginGuard (5 lần sai / 15 phút)
 }
 class DB <<module>> {
  +connect(): Connection
  +transaction(): contextmanager
- +initialize(): None
+ +initialize(): None  (schema + migration)
  +query(sql, params): list
+ +backup(keep=10): Path
 }
 class Input {
  str_strip_whitespace = true
@@ -23,6 +39,7 @@ class Input {
 }
 class Book {
  code: str[1..30]
+ barcode: str[0..20]
  title: str[1..200]
  author: str[1..100]
  category: str[1..60]
@@ -38,17 +55,34 @@ class Borrow {
  reader_id: int > 0
  days: int[1..30]
 }
-class Login {
- username: str
- password: str
+class Extend {
+ days: int[1..30]
 }
+class "Login / PasswordChange\nUserCreate / UserUpdate" as Auth
 Input <|-- Book
 Input <|-- Reader
 Input <|-- Borrow
-Input <|-- Login
+Input <|-- Extend
+Input <|-- Auth
 Main ..> LoanService
+Main ..> Security
 Main ..> Input
 Main ..> DB
 LoanService ..> DB
-LoanService ..> Borrow
+}
+package "Frontend (app/static/js, ES modules)" {
+class "main.js" as FM <<entry>>
+class "router.js" as FR
+class "pages/*.js + views/*.html" as FP
+class "api.js" as FA
+class "dom.js" as FD
+class "state.js" as FS
+FM ..> FR
+FM ..> FP
+FR ..> FP
+FP ..> FA
+FP ..> FD
+FP ..> FS
+}
+FA ..> Main : fetch /api/*
 @enduml

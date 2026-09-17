@@ -15,15 +15,15 @@ Báo cáo nhóm 1
 
 Học phần: Nhập môn Công nghệ Phần mềm — N04
 
-Sản phẩm: Web application Python FastAPI, SQLite và HTML/CSS/JavaScript thuần.
+Sản phẩm: Web application Python FastAPI, SQLite và HTML/CSS/JavaScript thuần (ES modules, không bước build). Có bản demo công khai trên Vercel.
 
-Báo cáo bao gồm mô tả yêu cầu, phân tích, thiết kế, cài đặt và kiểm thử. Các chức năng trọng tâm là quản lý sách, quản lý độc giả và mượn/trả sách.
+Báo cáo bao gồm mô tả yêu cầu, phân tích, thiết kế, cài đặt và kiểm thử. Các chức năng trọng tâm là quản lý sách, quản lý độc giả và mượn/trả sách; bản hoàn thiện bổ sung gia hạn, mã vạch, quản lý tài khoản, xuất CSV, sao lưu và phân trang.
 
 Tháng 9 năm 2026
 
 # Phạm vi và cấu trúc báo cáo
 
-Nhóm xây dựng một ứng dụng web cho thư viện quy mô nhỏ. Thủ thư theo dõi sách, độc giả và phiếu mượn trên một giao diện; quản trị viên có thêm quyền xóa mềm dữ liệu. Phần mềm lưu dữ liệu tại máy, có tài khoản và dữ liệu mẫu để chạy thử trên Windows.
+Nhóm xây dựng một ứng dụng web cho thư viện quy mô nhỏ. Thủ thư theo dõi sách, độc giả và phiếu mượn trên một giao diện; quản trị viên có thêm quyền xóa mềm dữ liệu, quản lý tài khoản và sao lưu. Phần mềm lưu dữ liệu tại máy, có tài khoản và dữ liệu mẫu để chạy thử trên Windows hoặc macOS/Linux.
 
 Đề gốc “25 Đề Tài BTL – Nhập Môn Công Nghệ Phần Mềm – N04” ghi Đề tài 1 là Quản lý thư viện mini, chức năng chính gồm quản lý sách, độc giả, mượn/trả sách. Báo cáo bám năm giai đoạn A–E của tài liệu. Các quy tắc định lượng bổ sung được nêu là giả định của bản triển khai.
 
@@ -37,9 +37,9 @@ Nhóm xây dựng một ứng dụng web cho thư viện quy mô nhỏ. Thủ th
 
 ## Các tệp đi kèm
 
-Source code và database nằm trong ThuVienMini. Thư mục docs/uml có 11 hình sơ đồ và 11 tệp PlantUML có thể chỉnh sửa. Bảng kết quả từng lần chạy nằm ở ket_qua_kiem_thu.csv; kết quả máy đọc được nằm ở test-results.xml. Slide và kịch bản bảo vệ đi cùng báo cáo.
+Source code và database nằm trong ThuVienMini. Thư mục docs/uml có 11 hình sơ đồ và 11 tệp PlantUML có thể chỉnh sửa; docs/images có ảnh chụp giao diện thật. Bảng kết quả từng lần chạy nằm ở ket_qua_kiem_thu.csv; kết quả máy đọc được nằm ở test-results.xml. Kịch bản bảo vệ đi cùng báo cáo. README.md mô tả cách chạy, quy tắc, route và cách triển khai.
 
-Quy ước: “xóa” trong phạm vi này là xóa mềm bằng active=0, nút Ngừng trên giao diện. Một phiếu mượn đại diện cho một bản sách. Nhóm chưa quản lý riêng từng bản bằng mã vạch.
+Quy ước: “xóa” trong phạm vi này là xóa mềm bằng active=0, nút Ngừng trên giao diện. Một phiếu mượn đại diện cho một bản sách. Mã vạch/ISBN được ghi theo đầu sách (không bắt buộc, duy nhất khi có); nhóm chưa quản lý riêng từng bản vật lý.
 
 # A1 Mô tả bài toán và người sử dụng
 
@@ -51,13 +51,13 @@ Thư viện nhỏ cần biết đang có những đầu sách nào, mỗi đầu
 
 | Đối tượng | Vai trò và nhu cầu |
 | --- | --- |
-| Thủ thư | Đăng nhập; thêm/sửa/tìm sách và độc giả; lập phiếu; nhận trả; xem quá hạn và thống kê. |
-| Quản trị viên | Có mọi quyền của thủ thư và được xóa mềm sách/độc giả đủ điều kiện. |
+| Thủ thư | Đăng nhập, đổi mật khẩu; thêm/sửa/tìm sách (kể cả theo mã vạch) và độc giả; lập phiếu; gia hạn; nhận trả; xem quá hạn, thống kê; xuất CSV. |
+| Quản trị viên | Có mọi quyền của thủ thư; được xóa mềm sách/độc giả đủ điều kiện, quản lý tài khoản nhân viên và sao lưu CSDL. |
 | Độc giả | Đối tượng được quản lý và nhận dịch vụ mượn/trả; chưa đăng nhập trực tiếp trong phiên bản này. |
 
 ## Ranh giới hệ thống
 
-Ứng dụng phục vụ một thư viện, một CSDL tại máy chủ. Không tích hợp thanh toán, SMS/email, thẻ từ hoặc tài khoản Google. Dữ liệu độc giả mẫu là giả lập. Giao diện dùng tiếng Việt, thao tác bằng trình duyệt trên Windows.
+Ứng dụng phục vụ một thư viện, một CSDL tại máy chủ. Không tích hợp thanh toán, SMS/email, thẻ từ hoặc tài khoản Google. Dữ liệu độc giả mẫu là giả lập. Giao diện dùng tiếng Việt, thao tác bằng trình duyệt; máy chủ chạy trên Windows, macOS hoặc Linux. Bản demo trên Vercel chỉ để xem và thao tác thử, không lưu dữ liệu bền.
 
 ## Tiêu chí hoàn thành
 
@@ -72,14 +72,18 @@ Người dùng thực hiện được một vòng khép kín: tạo sách và đ
 | FR03 | Quản lý độc giả | Thêm, sửa, xóa mềm; mã duy nhất; họ tên bắt buộc; điện thoại không bắt buộc. |
 | FR04 | Mượn sách | Chọn sách còn bản và độc giả hoạt động; kiểm tra giới hạn; lưu phiếu và hạn trả. |
 | FR05 | Trả sách | Chọn phiếu chưa trả; xác nhận đã nhận; ghi ngày trả/người nhận; từ chối trả lặp. |
-| FR06 | Tìm kiếm | Sách theo mã/tên/tác giả/thể loại; độc giả theo mã/tên/điện thoại. |
+| FR06 | Tìm kiếm, phân trang | Sách theo mã/mã vạch/tên/tác giả/thể loại; độc giả theo mã/tên/điện thoại; danh sách chia trang 5–50 dòng. |
 | FR07 | Theo dõi quá hạn | Lọc phiếu chưa trả đã qua hạn; hiển thị số ngày trễ. |
 | FR08 | Thống kê cơ bản | Số đầu sách, tổng bản, bản có sẵn, độc giả, đang mượn, đã trả, quá hạn, top sách. |
-| FR09 | Phân quyền | API kiểm tra phiên; chỉ admin được xóa mềm, kể cả khi gọi API trực tiếp. |
+| FR09 | Phân quyền | API kiểm tra phiên; chỉ admin được xóa mềm, quản lý tài khoản và sao lưu, kể cả khi gọi API trực tiếp. |
+| FR10 | Gia hạn phiếu | Phiếu còn trong hạn được gia hạn đúng một lần, thêm 1–30 ngày; phiếu quá hạn hoặc đã trả bị từ chối. |
+| FR11 | Quản lý tài khoản | Admin tạo tài khoản, đổi vai trò, đặt lại mật khẩu, ngừng/kích hoạt; mọi người tự đổi mật khẩu. |
+| FR12 | Xuất CSV | Xuất danh sách sách, độc giả, phiếu ra CSV UTF-8 mở được bằng Excel. |
+| FR13 | Sao lưu | Tự sao lưu khi khởi động và theo yêu cầu admin; giữ 10 bản mới nhất. |
 
-FR02–FR05 là các chức năng cốt lõi của đề tài. FR01 và FR09 hỗ trợ truy cập an toàn; FR06–FR08 giúp tìm thông tin và theo dõi vận hành. Bản ghi đã xóa mềm không xuất hiện trong danh sách đang hoạt động, nhưng phiếu lịch sử vẫn hiển thị.
+FR02–FR05 là các chức năng cốt lõi của đề tài. FR01, FR09 và FR11 hỗ trợ truy cập an toàn; FR06–FR08, FR10, FR12–FR13 giúp tìm thông tin, vận hành và bảo toàn dữ liệu. Bản ghi đã xóa mềm không xuất hiện trong danh sách đang hoạt động, nhưng phiếu lịch sử vẫn hiển thị.
 
-Tìm kiếm dùng so khớp chuỗi con và casefold Unicode, không phân biệt chữ hoa/thường nhưng phân biệt dấu. Ví dụ “PYTHON” tìm được “Python”; “De Men” chưa thay thế cho “Dế Mèn”.
+Tìm kiếm dùng so khớp chuỗi con và casefold Unicode ngay trong SQL (hàm casefold đăng ký từ Python), không phân biệt chữ hoa/thường nhưng phân biệt dấu. Ví dụ “PYTHON” tìm được “Python”; “De Men” chưa thay thế cho “Dế Mèn”. Máy quét mã vạch gõ mã vào ô tìm kiếm rồi Enter là ra đúng đầu sách.
 
 # A3 Quy tắc và yêu cầu phi chức năng
 
@@ -92,23 +96,26 @@ Tìm kiếm dùng so khớp chuỗi con và casefold Unicode, không phân biệ
 | BR05 | Không xóa mềm sách/độc giả có phiếu chưa trả; mã xóa mềm không tái sử dụng. |
 | BR06 | Cho phép mượn tiếp khi có quá hạn nếu chưa đạt giới hạn 5; chưa thu phạt. |
 | BR07 | Ngày nghiệp vụ theo ngày máy chủ; phiếu đã trả giữ độ trễ đến ngày trả. |
+| BR08 | Gia hạn: chỉ phiếu chưa trả và chưa quá hạn, đúng một lần, thêm 1–30 ngày tính từ hạn trả hiện tại. |
+| BR09 | Mã vạch sách tối đa 20 ký tự chữ số/chữ cái/gạch nối, không bắt buộc, duy nhất khi có nhập. |
+| BR10 | Tài khoản: tên 3–50 ký tự chữ/số/._-, mật khẩu ≥ 8 ký tự; không tự hạ quyền/tự ngừng; luôn còn ≥ 1 admin hoạt động. |
 
 | Yêu cầu | Cách thực hiện / giới hạn |
 | --- | --- |
 | Toàn vẹn | Khóa ngoại, UNIQUE/CHECK, giao dịch BEGIN IMMEDIATE; tính số có sẵn từ phiếu. |
-| Bảo mật cơ bản | Băm mật khẩu với salt; cookie HttpOnly/SameSite; phiên 8 giờ; phân quyền server; SQL tham số hóa. |
+| Bảo mật cơ bản | Băm mật khẩu PBKDF2 với salt; phiên là token ký HMAC trong cookie HttpOnly/SameSite, hạn 8 giờ; khóa tạm sau 5 lần sai mật khẩu; phân quyền server; SQL tham số hóa; HTML tự thoát ký tự. |
 | Dễ dùng | Tiếng Việt, trường bắt buộc, thông báo lỗi; xác nhận khi trả hoặc xóa mềm. |
-| Dễ triển khai | Windows + Python 3.11+, SQLite file; không dịch vụ trả phí; giao diện chính không cần mạng sau cài. |
-| Hiệu năng | Thiết kế cho thư viện nhỏ; có chỉ mục nhưng chưa có benchmark tải lớn hoặc SLA. |
-| Bảo trì | Tách module đầu vào, xác thực, nghiệp vụ, CSDL và giao diện; bộ test chạy CSDL tạm. |
+| Dễ triển khai | Python 3.11+ trên Windows/macOS/Linux, SQLite file; không dịch vụ trả phí; giao diện chính không cần mạng sau cài; có cấu hình demo Vercel. |
+| Hiệu năng | Thiết kế cho thư viện nhỏ; lọc và phân trang bằng SQL (LIMIT/OFFSET), có chỉ mục; chưa có benchmark tải lớn hoặc SLA. |
+| Bảo trì | Backend tách module đầu vào, xác thực, nghiệp vụ, CSDL; frontend chia ES modules theo màn hình, kiểm tra bằng Prettier/ESLint/TypeScript (@ts-check); bộ test API chạy CSDL tạm và test giao diện Playwright. |
 
-Các ngưỡng BR01–BR03 là giả định triển khai, không phải quy định định lượng trong đề gốc. Chưa kiểm toán bảo mật, thử tải lớn hoặc chứng minh vận hành liên tục 24/7.
+Các ngưỡng BR01–BR03, BR08–BR10 là giả định triển khai, không phải quy định định lượng trong đề gốc. Chưa kiểm toán bảo mật, thử tải lớn hoặc chứng minh vận hành liên tục 24/7.
 
 # B1 Use Case Diagram
 
 ![Hình 1. Tác nhân và chức năng hệ thống](uml/01_use_case.png)
 
-Quản trị viên kế thừa quyền thủ thư và có thêm xóa mềm sách/độc giả. Độc giả không là tác nhân tương tác trực tiếp với phần mềm trong phạm vi này. Quản lý sách gồm thêm, sửa, tìm; xóa mềm là ca riêng có phân quyền quản trị.
+Quản trị viên kế thừa quyền thủ thư và có thêm xóa mềm sách/độc giả, quản lý tài khoản và sao lưu. Độc giả không là tác nhân tương tác trực tiếp với phần mềm trong phạm vi này. Quản lý sách gồm thêm, sửa, tìm và ghi mã vạch; gia hạn và xuất CSV là ca bổ sung của thủ thư.
 
 Đăng nhập là tiền điều kiện cho các ca nghiệp vụ, không phải thao tác được thực thi lại ở mỗi ca. Vì vậy sơ đồ không gắn include Đăng nhập vào mọi chức năng.
 
@@ -128,23 +135,23 @@ Quản trị viên kế thừa quyền thủ thư và có thêm xóa mềm sách
 
 3. Server so sánh PBKDF2 của mật khẩu nhập với password_hash lưu trong CSDL.
 
-4. Server tạo token ngẫu nhiên, lưu bản băm token cùng user_id và hạn 8 giờ.
+4. Server tạo token phiên gồm user_id, hạn 8 giờ, dấu vết mật khẩu và chữ ký HMAC-SHA256 bằng khóa bí mật của máy chủ; không lưu phiên vào CSDL.
 
-5. Trình duyệt nhận cookie HttpOnly, chuyển tới tổng quan và hiển thị đúng vai trò.
+5. Trình duyệt nhận cookie HttpOnly, chuyển tới màn hình theo URL hiện tại (mặc định tổng quan) và hiển thị đúng vai trò.
 
 ## Scenario ngoại lệ và nhánh thay thế
 
-E1. Tài khoản không tồn tại hoặc mật khẩu sai: trả 401 với cùng thông báo, vẫn ở trang đăng nhập.
+E1. Tài khoản không tồn tại, đã ngừng hoặc mật khẩu sai: trả 401 với cùng thông báo, vẫn ở trang đăng nhập. Sai 5 lần trong 15 phút với cùng tài khoản–địa chỉ: 429, khóa tạm 15 phút.
 
 E2. Thiếu trường, chuỗi rỗng hoặc quá dài: trả 422; giao diện yêu cầu nhập lại.
 
-E3. Phiên hết hạn ở thao tác sau: API trả 401, giao diện quay về đăng nhập. Người dùng đăng nhập lại.
+E3. Phiên hết hạn, chữ ký sai hoặc mật khẩu đã đổi ở thao tác sau: API trả 401, giao diện quay về đăng nhập.
 
-Nhánh đăng xuất: xóa phiên trong CSDL và cookie; yêu cầu tiếp theo với phiên cũ không được truy cập.
+Nhánh đăng xuất: xóa cookie. Nhánh đổi mật khẩu: nhập mật khẩu hiện tại và mật khẩu mới ≥ 8 ký tự; các phiên khác của tài khoản tự hết hiệu lực vì dấu vết mật khẩu trong token không còn khớp; phiên đang dùng được cấp cookie mới.
 
 ## Hậu điều kiện
 
-Thành công: có phiên hợp lệ và quyền tương ứng. Thất bại: không cấp phiên mới. Đối chiếu TC01, TC02, TC17.
+Thành công: có phiên hợp lệ và quyền tương ứng. Thất bại: không cấp phiên mới. Đối chiếu TC01, TC02, TC17, TC24, TC27, UI01–02, UI07.
 
 # B2 UC02 Quản lý sách
 
@@ -156,11 +163,11 @@ Thành công: có phiên hợp lệ và quyền tương ứng. Thất bại: kh�
 
 ## Scenario chuẩn
 
-1. Thủ thư bấm Thêm sách, nhập mã, tên, tác giả, thể loại và tổng số bản.
+1. Thủ thư bấm Thêm sách, nhập mã, tên, tác giả, thể loại, tổng số bản và mã vạch/ISBN (không bắt buộc, có thể quét).
 
 2. Giao diện kiểm tra trường bắt buộc; server kiểm tra độ dài và tổng số bản nguyên 0–999.
 
-3. Server thêm bản ghi books, CSDL kiểm tra tính duy nhất của code.
+3. Server thêm bản ghi books, CSDL kiểm tra tính duy nhất của code và của barcode khi khác rỗng.
 
 4. Giao diện đóng biểu mẫu, tải lại danh sách, hiển thị sách mới và thông báo đã lưu.
 
@@ -168,11 +175,13 @@ Thành công: có phiên hợp lệ và quyền tương ứng. Thất bại: kh�
 
 ## Scenario ngoại lệ và nhánh thay thế
 
-A1. Tìm kiếm: nhập chuỗi, danh sách lọc theo mã/tên/tác giả/thể loại; rỗng trả tất cả sách hoạt động.
+A1. Tìm kiếm: nhập chuỗi, danh sách lọc theo mã/mã vạch/tên/tác giả/thể loại; rỗng trả tất cả sách hoạt động. Kết quả chia trang; thanh phân trang cho chọn 5/10/20/50 dòng.
+
+A3. Xuất CSV: tải toàn bộ sách đang hoạt động (có cột mã vạch, tổng bản, có sẵn) dạng UTF-8 có BOM.
 
 A2. Xóa mềm: quản trị bấm Ngừng, xác nhận; nếu không có phiếu mở thì active=0 và sách rời danh sách.
 
-E1. Mã trùng: 409, giữ biểu mẫu để sửa. E2. Tổng âm, không nguyên, >999 hoặc tên rỗng: 422.
+E1. Mã hoặc mã vạch trùng: 409, giữ biểu mẫu để sửa. E2. Tổng âm, không nguyên, >999, tên rỗng hoặc mã vạch sai định dạng: 422.
 
 E3. Tổng mới thấp hơn số đang mượn hoặc xóa khi còn phiếu mở: 409, dữ liệu cũ giữ nguyên.
 
@@ -180,7 +189,7 @@ E4. Không tìm thấy bản ghi: 404. Thủ thư gọi API xóa trực tiếp: 
 
 ## Hậu điều kiện
 
-Thành công: danh mục cập nhật và lịch sử còn nguyên. Thất bại: không ghi thay đổi. Đối chiếu TC03–04, TC11–13, TC21–22, B02–03, B05–06.
+Thành công: danh mục cập nhật và lịch sử còn nguyên. Thất bại: không ghi thay đổi. Đối chiếu TC03–04, TC11–13, TC21–22, TC29, TC32, TC37, B02–03, B05–06, UI04–05.
 
 # B2 UC03 Quản lý độc giả
 
@@ -204,7 +213,7 @@ Thành công: danh mục cập nhật và lịch sử còn nguyên. Thất bại
 
 ## Scenario ngoại lệ và nhánh thay thế
 
-A1. Tìm kiếm theo mã, họ tên hoặc điện thoại; không khớp thì hiển thị trạng thái không tìm thấy.
+A1. Tìm kiếm theo mã, họ tên hoặc điện thoại; không khớp thì hiển thị trạng thái không tìm thấy. Kết quả chia trang; có xuất CSV.
 
 A2. Xóa mềm: quản trị xác nhận Ngừng. Server kiểm tra không có phiếu chưa trả rồi cập nhật active=0.
 
@@ -286,7 +295,55 @@ A1. Trả quá hạn vẫn được chấp nhận; hệ thống hiển thị s�
 
 ## Hậu điều kiện
 
-Phiếu giữ nguyên thông tin mượn và bổ sung ngày/người nhận trả. Sách có thể mượn lại. Đối chiếu TC06, TC08–10, TC16, U01–02.
+Phiếu giữ nguyên thông tin mượn và bổ sung ngày/người nhận trả. Sách có thể mượn lại. Đối chiếu TC06, TC08–10, TC16, U01–02, UI06.
+
+# B2 UC06 Gia hạn phiếu
+
+| Thuộc tính | Mô tả |
+| --- | --- |
+| Tác nhân | Thủ thư hoặc quản trị viên. |
+| Tiền điều kiện | Đã đăng nhập; phiếu chưa trả, chưa quá hạn và chưa gia hạn lần nào. |
+| Kích hoạt | Bấm Gia hạn tại phiếu trong hạn, nhập số ngày (mặc định 7). |
+
+## Scenario chuẩn
+
+1. Thủ thư bấm Gia hạn, nhập số ngày thêm từ 1 đến 30.
+
+2. LoanService mở giao dịch, đọc phiếu, kiểm tra ba điều kiện: chưa trả, chưa quá hạn, extensions = 0.
+
+3. Server cộng số ngày vào hạn trả hiện tại, đặt extensions = 1 và commit; giao diện hiển thị hạn mới và nhãn “Đã gia hạn”.
+
+## Ngoại lệ
+
+E1. Phiếu không tồn tại: 404. E2. Đã trả, đã quá hạn hoặc đã gia hạn: 409 với thông báo tương ứng. E3. Số ngày 0/31: 422.
+
+## Hậu điều kiện
+
+Hạn trả lùi đúng số ngày; phiếu không thể gia hạn lần hai. Đối chiếu TC28.
+
+# B2 UC07 Quản lý tài khoản và sao lưu
+
+| Thuộc tính | Mô tả |
+| --- | --- |
+| Tác nhân | Quản trị viên. |
+| Tiền điều kiện | Đã đăng nhập với vai trò admin. |
+| Kích hoạt | Mở trang Tài khoản; hoặc bấm Sao lưu dữ liệu ở Tổng quan. |
+
+## Scenario chuẩn
+
+1. Admin bấm Thêm tài khoản, nhập tên đăng nhập, mật khẩu ≥ 8 ký tự và vai trò; server băm mật khẩu và ghi users.
+
+2. Với tài khoản có sẵn, admin có thể đổi vai trò, đặt lại mật khẩu hoặc Ngừng/Kích hoạt. Đặt lại mật khẩu hoặc ngừng làm mọi phiên của người đó hết hiệu lực.
+
+3. Sao lưu: server chép CSDL bằng API backup của SQLite vào data/backups với tên theo thời điểm, giữ 10 bản mới nhất; cũng tự chạy mỗi lần khởi động.
+
+## Ngoại lệ
+
+E1. Tên đăng nhập trùng: 409. E2. Mật khẩu ngắn, tên sai định dạng: 422. E3. Tự hạ quyền, tự ngừng, hoặc ngừng/hạ quyền admin cuối cùng: 409. E4. Thủ thư gọi các API này: 403.
+
+## Hậu điều kiện
+
+Danh sách tài khoản cập nhật; tài khoản đã ngừng không đăng nhập được. Đối chiếu TC25–27, TC30, UI08.
 
 # B3 Entity classes và lớp phân tích
 
@@ -295,11 +352,11 @@ Phiếu giữ nguyên thông tin mượn và bổ sung ngày/người nhận tr�
 | Sách | Mô tả đầu sách, tổng bản, trạng thái hoạt động. Số có sẵn là giá trị suy ra. |
 | Độc giả | Thông tin người mượn, mã duy nhất, trạng thái được phục vụ. |
 | Phiếu mượn | Liên kết một sách, một độc giả, người lập; lưu ngày mượn/hạn trả/ngày trả. |
-| Người dùng | Tài khoản vận hành và vai trò; có thể lập phiếu hoặc nhận trả. |
+| Người dùng | Tài khoản vận hành, vai trò và trạng thái hoạt động; có thể lập phiếu, nhận trả hoặc gia hạn. |
 
 ![Hình 2. Lớp phân tích và quan hệ một–nhiều](uml/02_analysis_class.png)
 
-Một sách hoặc độc giả có thể có nhiều phiếu theo thời gian. Mỗi phiếu thuộc đúng một sách và một độc giả. Người nhận trả có thể chưa có khi phiếu đang mở. Session là đối tượng kỹ thuật bổ sung ở thiết kế, không phải thực thể nghiệp vụ trung tâm.
+Một sách hoặc độc giả có thể có nhiều phiếu theo thời gian. Mỗi phiếu thuộc đúng một sách và một độc giả. Người nhận trả có thể chưa có khi phiếu đang mở. Phiên đăng nhập là chi tiết kỹ thuật (token ký trong cookie), không phải thực thể nghiệp vụ nên không xuất hiện ở đây.
 
 # B4 Sequence phân tích mượn sách
 
@@ -329,15 +386,15 @@ Bộ test chức năng không chỉ kiểm tra mã phản hồi mà còn tìm l�
 
 ![Hình 6. Module, DTO và LoanService thực tế](uml/06_design_class.png)
 
-Lớp trình bày là index.html, style.css và app.js. Module main.py nhận HTTP, gọi DTO Pydantic để xác thực và kiểm tra phiên bằng dependency. LoanService trong services.py nắm các thao tác mượn/trả; db.py cung cấp kết nối và transaction context manager.
+Lớp trình bày gồm index.html (khung chung), views/*.html (khung từng màn hình), style.css và các ES module trong static/js: main.js gắn sự kiện, router.js định tuyến bằng History API (/books, /loans/overdue…), api.js gọi fetch, dom.js tạo HTML an toàn bằng tagged template tự thoát ký tự, state.js giữ trạng thái, pages/*.js điền dữ liệu cho từng màn hình. Module main.py nhận HTTP, gọi DTO Pydantic để xác thực và kiểm tra phiên bằng dependency; security.py băm mật khẩu, ký/kiểm tra token và khóa đăng nhập sai. LoanService trong services.py nắm mượn/trả/gia hạn; db.py cung cấp kết nối, transaction context manager, migration cột mới và sao lưu.
 
-CRUD danh mục được thực hiện trong hàm save_record của main.py. Bản này không tạo thêm Repository class hoặc ORM. Các hộp «module» là module Python, không phải class được cài đặt. Các lớp entity khái niệm ở pha phân tích được ánh xạ thành bảng SQLite; Book/Reader ở code là DTO đầu vào.
+CRUD danh mục được thực hiện trong hàm save_record của main.py; danh sách sách/độc giả/phiếu dùng chung hàm paginated (lọc và LIMIT/OFFSET trong SQL). Bản này không tạo thêm Repository class hoặc ORM. Các hộp «module» là module Python/JavaScript, không phải class được cài đặt. Các lớp entity khái niệm ở pha phân tích được ánh xạ thành bảng SQLite; Book/Reader ở code là DTO đầu vào. Không có bước build frontend: trình duyệt nạp trực tiếp ES modules; Node chỉ dùng ở máy phát triển để chạy Prettier, ESLint và kiểm tra kiểu TypeScript trên file .js (npm run check).
 
 # C2 Thiết kế cơ sở dữ liệu
 
 ![Hình 7. Lược đồ quan hệ SQLite](uml/07_er.png)
 
-Năm bảng: users, sessions, books, readers và loans. ID số nguyên làm khóa chính nội bộ cho các thực thể; code/username là khóa duy nhất phục vụ nghiệp vụ. Không sử dụng ON DELETE CASCADE cho lịch sử mượn. PRAGMA foreign_keys=ON được bật trên mỗi kết nối.
+Bốn bảng nghiệp vụ: users, books, readers và loans (bảng sessions còn trong schema để tương thích CSDL cũ nhưng không dùng nữa). ID số nguyên làm khóa chính nội bộ; code/username là khóa duy nhất phục vụ nghiệp vụ; books.barcode duy nhất bằng chỉ mục có điều kiện WHERE barcode<>''. Không sử dụng ON DELETE CASCADE cho lịch sử mượn. PRAGMA foreign_keys=ON được bật trên mỗi kết nối. Các cột thêm sau bản đầu (users.active, loans.extensions, books.barcode) do initialize() tự ALTER TABLE khi mở CSDL cũ, nên dữ liệu đã có không phải tạo lại.
 
 Mỗi phiếu tham chiếu một sách và một độc giả. created_by bắt buộc; returned_by có thể NULL. Ngày lưu chuỗi ISO YYYY-MM-DD, giúp so sánh nhất quán khi ứng dụng tạo đúng định dạng. Trạng thái phiếu và tồn có sẵn là dữ liệu tính toán.
 
@@ -346,24 +403,22 @@ Mỗi phiếu tham chiếu một sách và một độc giả. created_by bắt 
 | Bảng.cột | Kiểu / ràng buộc | Ý nghĩa |
 | --- | --- | --- |
 | users.id | INTEGER PRIMARY KEY | Định danh người dùng |
-| users.username | TEXT NOT NULL UNIQUE | Tên đăng nhập |
+| users.username | TEXT NOT NULL UNIQUE | Tên đăng nhập, 3–50 ký tự chữ/số/._- |
 | users.password_hash | TEXT NOT NULL | Salt và băm PBKDF2 |
 | users.role | TEXT CHECK admin/librarian | Vai trò vận hành |
-| sessions.token_hash | TEXT PRIMARY KEY | SHA256 của token ngẫu nhiên |
-| sessions.user_id | INTEGER NOT NULL FK users | Chủ sở hữu phiên |
-| sessions.expires_at | INTEGER NOT NULL | Thời điểm hết hạn Unix giây |
+| users.active | INTEGER CHECK 0/1 | 0 = đã ngừng, không đăng nhập được |
 
 ## Vòng đời phiên
 
-Đăng nhập thành công tạo token 32 byte ngẫu nhiên URL-safe; server lưu SHA256 token. Cookie session là HttpOnly, SameSite=strict, thời hạn 28.800 giây. Server đọc phiên và vai trò ở mỗi yêu cầu bảo vệ. Đăng xuất xóa dòng session; phiên hết hạn không được chấp nhận.
+Đăng nhập thành công tạo token dạng user_id.hạn.dấu_vết.chữ_ký: hạn là thời điểm Unix sau 28.800 giây, dấu vết là 16 ký tự SHA-256 của password_hash, chữ ký là HMAC-SHA256 của ba phần trước bằng khóa LIBRARY_SECRET (không đặt thì tự sinh và lưu data/.secret). Cookie session là HttpOnly, SameSite=strict. Ở mỗi yêu cầu bảo vệ, server kiểm tra chữ ký bằng so sánh hằng thời gian, hạn, tài khoản còn hoạt động và dấu vết mật khẩu còn khớp. Phiên không lưu server nên nhiều tiến trình hoặc nhiều instance serverless đều xác minh được. Đăng xuất xóa cookie; đổi/đặt lại mật khẩu hoặc ngừng tài khoản làm token cũ mất hiệu lực.
 
 ## Bảo vệ đầu vào
 
-Mật khẩu dùng PBKDF2-HMAC-SHA256 với 260.000 vòng và salt riêng. verify_password dùng so sánh hằng thời gian. Các yêu cầu ghi cần X-Library-Request: 1; ứng dụng không mở CORS cho origin khác. Giao diện mã hóa ký tự khi hiển thị dữ liệu vào HTML.
+Mật khẩu dùng PBKDF2-HMAC-SHA256 với 260.000 vòng và salt riêng. verify_password dùng so sánh hằng thời gian. LoginGuard đếm số lần sai theo cặp tài khoản–địa chỉ, 5 lần trong 15 phút thì khóa 15 phút (bộ nhớ tiến trình). Các yêu cầu ghi cần X-Library-Request: 1; ứng dụng không mở CORS cho origin khác. Giao diện tạo HTML bằng tagged template html`...` trong dom.js: mọi giá trị chèn vào đều được thoát ký tự, chỉ hằng số trong mã mới đi qua raw(); test UI05 nhập tiêu đề chứa thẻ img onerror và xác nhận không có thẻ nào được tạo.
 
 ## Giới hạn
 
-Chưa có quản lý tài khoản/đổi mật khẩu qua giao diện, khóa đăng nhập sai nhiều lần hoặc HTTPS. Cookie không bật Secure vì bản demo chạy HTTP localhost. Khi triển khai trên mạng cần cấu hình HTTPS, Secure cookie và chính sách tài khoản phù hợp.
+Chưa có HTTPS tự cấu hình; cookie không bật Secure vì bản chạy tại máy dùng HTTP localhost (trên Vercel đã có HTTPS do nền tảng cấp). Khóa đăng nhập sai đếm trong bộ nhớ nên khởi động lại là xóa. Khi triển khai trên mạng LAN cần reverse proxy HTTPS phía trước.
 
 # C4 Từ điển dữ liệu sách và độc giả
 
@@ -371,6 +426,7 @@ Chưa có quản lý tài khoản/đổi mật khẩu qua giao diện, khóa đ�
 | --- | --- | --- |
 | books.id | INTEGER PK | Server tạo |
 | books.code | TEXT NOT NULL UNIQUE | 1–30 ký tự sau trim |
+| books.barcode | TEXT NOT NULL DEFAULT rỗng, UNIQUE khi khác rỗng | 0–20 ký tự chữ số, chữ cái, gạch nối; ISBN/EAN-13 in trên sách |
 | books.title | TEXT NOT NULL | 1–200 ký tự |
 | books.author | TEXT NOT NULL | 1–100 ký tự |
 | books.category | TEXT NOT NULL | 1–60 ký tự |
@@ -398,6 +454,7 @@ Thay code không thay ID, nên phiếu lịch sử vẫn liên kết đúng. Cod
 | due_on | TEXT NOT NULL | Hạn trả, không trước ngày mượn |
 | returned_on | TEXT nullable | Ngày trả, không trước ngày mượn |
 | returned_by | INTEGER nullable FK | Người nhận sách trả |
+| extensions | INTEGER CHECK 0..1 | Số lần đã gia hạn (tối đa 1) |
 
 ## Giao dịch mượn
 
@@ -405,11 +462,11 @@ BEGIN IMMEDIATE → đọc sách và độc giả đang hoạt động → đế
 
 ## Giao dịch trả và xóa mềm
 
-Trả: đọc phiếu trong giao dịch, từ chối nếu đã có returned_on, cập nhật ngày và người nhận rồi commit. Xóa mềm và sửa tổng bản cũng kiểm tra phiếu mở trong cùng giao dịch ghi.
+Trả: đọc phiếu trong giao dịch, từ chối nếu đã có returned_on, cập nhật ngày và người nhận rồi commit. Gia hạn: đọc phiếu, từ chối nếu đã trả, đã quá hạn hoặc extensions ≥ 1, rồi cập nhật due_on và extensions cùng một UPDATE. Xóa mềm và sửa tổng bản cũng kiểm tra phiếu mở trong cùng giao dịch ghi.
 
 ## Chỉ mục và giá trị suy ra
 
-ix_loans_book(book_id, returned_on), ix_loans_reader(reader_id, returned_on) và chỉ mục due_on cho phiếu chưa trả. Available = total − count(open loans). Không có cột available/status vì đây là dữ liệu suy ra, tránh cập nhật trùng nguồn.
+ix_loans_book(book_id, returned_on), ix_loans_reader(reader_id, returned_on), chỉ mục due_on cho phiếu chưa trả và ux_books_barcode. Available = total − count(open loans); trạng thái phiếu suy ra từ returned_on và due_on so với ngày hiện tại, tính ngay trong SQL khi lọc. Không có cột available/status vì đây là dữ liệu suy ra, tránh cập nhật trùng nguồn. Thống kê ở /api/stats dùng COUNT/SUM thay vì tải toàn bộ bảng.
 
 # C6 Activity Diagram mượn sách
 
@@ -443,28 +500,37 @@ Nhánh không có phiếu trả 404; đã trả trả 409. Hai yêu cầu trả 
 
 ![Hình 12. Tổng quan chụp từ ứng dụng chạy thật](images/dashboard.png)
 
-Ứng dụng khởi động bằng uvicorn app.main:app. Lifespan tạo cấu trúc bảng nếu thiếu; seed.py tạo dữ liệu minh họa riêng khi CSDL chưa có người dùng. Không tự xóa dữ liệu mỗi lần khởi động.
+Ứng dụng khởi động bằng uvicorn app.main:app (start.bat trên Windows, start.sh trên macOS/Linux). Lifespan tạo cấu trúc bảng nếu thiếu, thêm cột mới cho CSDL cũ và sao lưu vào data/backups; seed.py tạo dữ liệu minh họa riêng khi CSDL chưa có người dùng, seed.py --demo sinh bộ demo lớn. Không tự xóa dữ liệu mỗi lần khởi động.
 
-Giao diện có bốn khu vực: Tổng quan, Kho sách, Độc giả và Mượn & trả. Các biểu mẫu dùng HTML dialog, kiểm tra trường ở trình duyệt và kiểm tra lại ở server. JavaScript fetch gọi API cùng origin; không cần framework frontend hoặc dịch vụ bên ngoài.
+Giao diện có năm khu vực: Tổng quan, Kho sách, Độc giả, Mượn & trả và Tài khoản (chỉ admin thấy). Mỗi khu vực có URL riêng (/books, /loans/overdue…) nên tải lại trang hay nút Back vẫn đúng màn hình; đường dẫn lạ có trang 404 riêng. Bảng danh sách có thanh phân trang, nút Xuất CSV; menu dùng icon SVG và logo tự vẽ, không tải font hay icon ngoài. Các biểu mẫu dùng HTML dialog, kiểm tra trường ở trình duyệt và kiểm tra lại ở server. JavaScript fetch gọi API cùng origin; không cần framework frontend hoặc dịch vụ bên ngoài.
 
-Thống kê mẫu ban đầu: 8 đầu sách / 29 bản, 26 bản có sẵn, 4 độc giả, 3 phiếu chưa trả, 2 phiếu đã trả và 1 phiếu quá hạn tại ngày tạo dữ liệu. Số liệu thay đổi khi thao tác hoặc khi thời gian trôi qua.
+CSDL cung cấp sẵn là bộ demo lớn do seed.py --demo sinh với hạt giống cố định: 4 tài khoản, 63 đầu sách (80% có mã vạch EAN-13 hư cấu), 60 độc giả, 257 phiếu trong 180 ngày gồm đã trả đúng hạn, trả muộn, đang mượn, quá hạn và đã gia hạn; mọi quy tắc nghiệp vụ được tuân thủ khi sinh. Bộ mẫu nhỏ của seed.py (8 đầu sách / 29 bản, 4 độc giả, 5 phiếu) dùng cho test tự động. Số liệu thay đổi khi thao tác hoặc khi thời gian trôi qua.
 
 # D2 Danh mục và API
 
-![Hình 13. Kho sách với số bản tổng và số có sẵn](images/books.png)
+![Hình 13. Kho sách với mã vạch, số bản tổng, số có sẵn và thanh phân trang](images/books.png)
+
+![Hình 14. Mượn & trả với bộ lọc trạng thái, nút Trả sách và Gia hạn](images/loans.png)
+
+![Hình 15. Hộp thoại lập phiếu mượn](images/borrow.png)
+
+![Hình 16. Trang Tài khoản dành cho quản trị viên](images/users.png)
 
 | Phương thức và đường dẫn | Chức năng |
 | --- | --- |
 | POST /api/login; POST /api/logout | Tạo / hủy phiên |
-| GET /api/me | Người dùng và vai trò hiện tại |
-| GET, POST /api/books hoặc /api/readers | Danh sách/tìm và tạo mới |
+| GET /api/me; POST /api/password | Người dùng hiện tại; đổi mật khẩu |
+| GET, POST /api/users; PUT /api/users/{id} | Quản lý tài khoản, chỉ quản trị |
+| GET, POST /api/books hoặc /api/readers | Danh sách/tìm (q, page, size) và tạo mới |
 | PUT /api/books/{id}; /api/readers/{id} | Cập nhật danh mục |
 | DELETE /api/books/{id}; /api/readers/{id} | Xóa mềm, chỉ quản trị |
-| GET, POST /api/loans | Lọc lịch sử và lập phiếu |
-| POST /api/loans/{id}/return | Nhận trả sách |
+| GET, POST /api/loans | Lọc lịch sử (status, page, size) và lập phiếu |
+| POST /api/loans/{id}/return; /extend | Nhận trả sách; gia hạn |
 | GET /api/stats | Thống kê cơ bản |
+| GET /api/export/{books,readers,loans}.csv | Xuất CSV |
+| POST /api/backup | Sao lưu CSDL, chỉ quản trị |
 
-Các endpoint danh mục, phiếu và thống kê đều yêu cầu phiên. Mã 200/201 biểu thị thành công; 401 chưa đăng nhập, 403 không được phép, 404 không có đối tượng, 409 xung đột nghiệp vụ, 422 đầu vào không hợp lệ.
+Các endpoint danh mục, phiếu và thống kê đều yêu cầu phiên. Mã 200/201 biểu thị thành công; 401 chưa đăng nhập, 403 không được phép, 404 không có đối tượng, 409 xung đột nghiệp vụ, 422 đầu vào không hợp lệ, 429 khóa tạm do sai mật khẩu nhiều lần. GET danh sách không truyền page thì trả toàn bộ (dùng cho hộp chọn và xuất CSV); có page thì trả {items, total, page, size, pages}.
 
 # E1 Test case chức năng chính
 
@@ -499,12 +565,43 @@ Tiền điều kiện chung: mỗi test có CSDL tạm được seed mới và p
 | TC16 | Trả sách thiếu custom header | 403 |
 | TC17 | Cho phiên hết hạn rồi GET me | 401 |
 | TC18 | Thêm hai độc giả cùng mã | Lần hai 409 |
-| TC19 | GET / và /static/app.js | 200, trang tiếng Việt |
+| TC19 | GET / và /static/js/main.js | 200, trang tiếng Việt |
 | TC20 | Đọc thống kê seed ban đầu | 8 / 29 / 26 / 4 / 3 / 1 / 2 |
 | TC21 | Sửa sách không tồn tại | 404 |
 | TC22 | Xóa mềm sách 8 rồi mượn | 200 rồi 404 |
 
 Kết quả thực tế: các ca trên đều PASS trong lần chạy cung cấp. Test thực hiện assertion theo phản hồi HTTP và/hoặc dữ liệu sau thao tác; xem test-results.xml và CSV để đối chiếu từng ca.
+
+# E2b Test case chức năng bổ sung và giao diện
+
+| Mã | Bước và dữ liệu | Kết quả mong đợi |
+| --- | --- | --- |
+| TC23 | Khung HTML bộ lọc phiếu | Đúng 4 option, không có thẻ lỗi |
+| TC24 | Sai mật khẩu 5 lần rồi đúng | 401×5 rồi 429; reset thì 200 |
+| TC25 | Tạo/sửa/ngừng tài khoản, tự hạ quyền | 201, 409 trùng, 422 mật khẩu ngắn, 200, 401 khi đăng nhập tài khoản ngừng, 409 tự hạ quyền |
+| TC26 | Thủ thư gọi API tài khoản, sao lưu | 403 |
+| TC27 | Đổi mật khẩu khi có phiên thứ hai | Phiên khác 401, phiên đang dùng 200, đăng nhập mật khẩu mới 200 |
+| TC28 | Gia hạn phiếu 2; lặp; phiếu quá hạn; đã trả; 31 ngày | 200 hạn +7; 409; 409; 409; 422 |
+| TC29 | Xuất CSV phiếu, sách; tài nguyên lạ | text/csv có BOM, đúng số dòng; 404 |
+| TC30 | POST /api/backup | File trong data/backups mở được, đủ 8 sách |
+| TC31 | Mở CSDL thiếu cột | initialize() tự thêm users.active, loans.extensions |
+| TC32 | 29 độc giả, size 10 | total 29, 3 trang, trang 99 kẹp về 3, size 101 → 422 |
+| TC33 | Header cache của / và js | Cache-Control: no-cache |
+| TC34 | GET /books, /loans/overdue, /users, /nope | 200 trả SPA; 404 |
+| TC35 | GET đường dẫn lạ với Accept text/html | Trang 404 HTML; /api/* vẫn JSON |
+| TC36 | seed.py --demo vào CSDL tạm | ≥ 60 sách, 60 độc giả, > 200 phiếu; không ai > 5 bản; không vượt tổng bản |
+| TC37 | Sách có mã vạch; trùng; rỗng; sai định dạng; tìm | 201; 409; 201; 422; tìm ra đúng sách |
+| TC38 | Chế độ Vercel (VERCEL=1) | CSDL chép ra thư mục tạm, ghi được, không sao lưu |
+| UI01 | Đăng nhập admin bằng trình duyệt | Tổng quan 4 ô thống kê, tiêu đề tab đúng |
+| UI02 | Sai mật khẩu | Thông báo lỗi, không vào app |
+| UI03 | Menu, bộ lọc, F5, Back, /khong-co | URL đổi theo, giữ bộ lọc sau F5, trang 404 |
+| UI04 | Chọn 5 dòng/trang, sang trang 2 | Trang 1/2 rồi 2/2, đúng số dòng |
+| UI05 | Thêm sách tiêu đề chứa thẻ img onerror; sửa; tìm mã vạch | Hiển thị nguyên văn, không tạo thẻ; sửa được; tìm ra |
+| UI06 | Lập phiếu rồi trả trên giao diện | Thông báo đã lưu / đã ghi nhận trả |
+| UI07 | Đổi mật khẩu (nhập lại sai rồi đúng), đăng xuất, đăng nhập lại | Báo không khớp; sau đó vào được bằng mật khẩu mới |
+| UI08 | Thủ thư mở /users | Về tổng quan; không thấy menu Tài khoản, nút Sao lưu, nút Ngừng |
+
+Các ca UI chạy trên Chromium headless bằng Playwright với server uvicorn trong thread và CSDL tạm; máy chưa cài Playwright thì tự bỏ qua, không làm sai kết quả phần API.
 
 # E3 Boundary testing và unit tests
 
@@ -530,23 +627,24 @@ I01 tạo đầu sách đúng một bản và gửi hai lời gọi LoanService 
 
 | Nhóm kiểm thử | Số ca thực thi | Pass | Fail |
 | --- | --- | --- | --- |
-| Chức năng TC01–TC22 | 22 | 22 | 0 |
+| Chức năng TC01–TC38 | 38 | 38 | 0 |
 | Boundary B01–B06 | 20 | 20 | 0 |
 | Unit U01–U03 | 5 | 5 | 0 |
 | Tích hợp I01–I02 | 2 | 2 | 0 |
-| Tổng | 49 | 49 | 0 |
+| Giao diện UI01–UI08 (Playwright) | 8 | 8 | 0 |
+| Tổng | 73 | 73 | 0 |
 
-Lần chạy trên Windows, Python 3.12, với các phiên bản được khóa trong requirements.txt. Lệnh: python -m pytest -q --junitxml=docs/test-results.xml. Kết quả 49 passed, thời gian khoảng 86 giây. Thời gian này là thời gian chạy bộ test, không phải thời gian đáp ứng nghiệp vụ hay benchmark hệ thống.
+Lần chạy cung cấp thực hiện trên macOS, Python 3.14, với các phiên bản khóa trong requirements.txt (bản 49 ca ban đầu đã chạy trên Windows, Python 3.12). Lệnh: python -m pytest -q --junitxml=docs/test-results.xml. Kết quả 73 passed trong khoảng 8 giây. Thời gian này là thời gian chạy bộ test, không phải thời gian đáp ứng nghiệp vụ hay benchmark hệ thống.
 
 Hai cảnh báo deprecation từ thư viện Starlette/TestClient và AnyIO xuất hiện trong lần chạy, không làm ca kiểm thử thất bại. Kết quả nguyên bản XML cùng CSV được lưu để tránh tự điền bảng Pass/Fail không có bằng chứng.
 
 ## Phạm vi chứng minh
 
-Bộ test xác minh các quy tắc chính ở lớp hàm, service và API với CSDL tạm. Giao diện được kiểm tra riêng bằng trình duyệt với dữ liệu demo, có ảnh chụp thực tế. Không cộng các thao tác giao diện vào tổng 49 ca pytest.
+Bộ test xác minh các quy tắc chính ở lớp hàm, service và API với CSDL tạm; 8 ca Playwright điều khiển Chromium thật qua các luồng đăng nhập, định tuyến, phân trang, thêm/sửa, mượn/trả, đổi mật khẩu và phân quyền. Ảnh chụp trong báo cáo lấy từ ứng dụng chạy thật với CSDL demo. Ngoài pytest còn có kiểm tra tĩnh frontend (Prettier, ESLint, tsc) chạy sạch.
 
 ## Những phần chưa kiểm chứng
 
-Chưa có kiểm thử tải lớn, phân trang trên hàng chục nghìn bản ghi, kiểm toán an toàn thông tin, phục hồi sự cố ổ đĩa, ma trận nhiều phiên bản Windows/trình duyệt hoặc chạy liên tục 24/7. 49 ca đạt không đồng nghĩa mọi tình huống ngoài phạm vi đều bảo đảm.
+Chưa có kiểm thử tải lớn hoặc phân trang trên hàng chục nghìn bản ghi, kiểm toán an toàn thông tin, phục hồi từ bản sao lưu bằng giao diện, ma trận nhiều phiên bản hệ điều hành/trình duyệt (UI chỉ chạy Chromium) hoặc chạy liên tục 24/7. 73 ca đạt không đồng nghĩa mọi tình huống ngoài phạm vi đều bảo đảm.
 
 ## Khả năng tái lập
 
@@ -556,12 +654,13 @@ Mỗi test dùng tmp_path và biến LIBRARY_DB để cô lập dữ liệu. Ch�
 
 ## Cài đặt
 
-Cài Python 3.11+ từ python.org, khuyến nghị 3.12 đã kiểm thử. Giải nén bộ nộp và mở start.bat trong thư mục ThuVienMini. Lần đầu cần Internet tải dependency miễn phí. Khi Uvicorn báo chạy, mở http://127.0.0.1:8000; giữ cửa sổ server mở. Không cần đổi PowerShell ExecutionPolicy.
+Cài Python 3.11+ từ python.org, khuyến nghị 3.12 đã kiểm thử. Giải nén bộ nộp và mở start.bat trong thư mục ThuVienMini (macOS/Linux: ./start.sh). Lần đầu cần Internet tải dependency miễn phí. Khi Uvicorn báo chạy, mở http://127.0.0.1:8000; giữ cửa sổ server mở. Không cần đổi PowerShell ExecutionPolicy. Bản demo công khai có thể triển khai lên Vercel theo README (không lưu dữ liệu bền, cần biến LIBRARY_SECRET).
 
 | Vai trò | Tên đăng nhập | Mật khẩu mẫu |
 | --- | --- | --- |
 | Quản trị | admin | Admin@123 |
-| Thủ thư | thuthu | ThuThu@123 |
+| Thủ thư | thuthu, thuthu2 | ThuThu@123 |
+| Thủ thư đã ngừng | cu_nhan_vien | ThuThu@123 (không đăng nhập được) |
 
 ## Trình tự demo chức năng chính
 
@@ -577,13 +676,19 @@ Cài Python 3.11+ từ python.org, khuyến nghị 3.12 đã kiểm thử. Giả
 
 6. Xóa mềm sách/độc giả sau khi trả; mở lịch sử để chứng minh phiếu được giữ.
 
-7. Minh họa lọc quá hạn, vai trò thủ thư và bảng kết quả kiểm thử.
+7. Gia hạn một phiếu đang trong hạn (hạn lùi 7 ngày, nhãn Đã gia hạn), thử gia hạn lần hai để thấy bị chặn.
+
+8. Tìm sách bằng mã vạch (gõ 13 chữ số vào ô tìm kiếm), chọn 5 dòng/trang để thấy phân trang, bấm Xuất CSV.
+
+9. Trang Tài khoản: tạo thủ thư mới, đăng nhập bằng tài khoản đó ở tab khác, ngừng tài khoản và thấy tab kia bị đăng xuất. Bấm Sao lưu dữ liệu.
+
+10. Minh họa lọc quá hạn qua URL /loans/overdue, vai trò thủ thư và bảng kết quả kiểm thử.
 
 Chi tiết lệnh cài/chạy, sao lưu và cách tạo CSDL demo mới không xóa dữ liệu cũ có trong README.md. KICH_BAN_BAO_VE.md có phân chia trình bày và câu hỏi dự kiến.
 
 # Kết luận và tài liệu tham khảo
 
-Sản phẩm thực hiện đầy đủ quản lý sách, quản lý độc giả, mượn và trả ở quy mô thư viện mini. Các mô hình phân tích và thiết kế mô tả cùng quy tắc với ứng dụng. Kiểm thử tự động xác minh luồng chuẩn, ngoại lệ, biên và tranh chấp bản sách cuối. Tài liệu chạy Windows, dữ liệu mẫu và kịch bản demo giúp nhóm tái hiện kết quả khi bảo vệ.
+Sản phẩm thực hiện đầy đủ quản lý sách, quản lý độc giả, mượn và trả ở quy mô thư viện mini, bổ sung gia hạn, mã vạch, quản lý tài khoản, xuất CSV, sao lưu, phân trang và bản demo trực tuyến. Các mô hình phân tích và thiết kế mô tả cùng quy tắc với ứng dụng. Kiểm thử tự động xác minh luồng chuẩn, ngoại lệ, biên, tranh chấp bản sách cuối và các luồng giao diện trên trình duyệt thật. Tài liệu chạy Windows/macOS, dữ liệu mẫu và kịch bản demo giúp nhóm tái hiện kết quả khi bảo vệ.
 
 ## Phân chia trình bày đề xuất
 
@@ -598,7 +703,7 @@ Bảng trên là gợi ý phân chia buổi bảo vệ, không xác nhận khố
 
 ## Hướng phát triển
 
-Tách bản sách theo mã vạch, quản lý tài khoản, khôi phục xóa mềm, gia hạn, tiền phạt và đặt trước. Khi mở rộng người dùng, cần thử tải, tối ưu phân trang và triển khai HTTPS/sao lưu có kiểm chứng.
+Quản lý từng bản vật lý (bảng book_copies, mỗi bản một mã), khôi phục xóa mềm và phục hồi sao lưu bằng giao diện, tiền phạt, đặt trước, cổng tự phục vụ cho độc giả. Khi mở rộng người dùng thật, cần thử tải, HTTPS tự cấu hình và chuyển CSDL sang dịch vụ có lưu trữ bền nếu muốn ở lại nền tảng serverless.
 
 ## Tài liệu tham khảo
 
@@ -608,4 +713,10 @@ Tách bản sách theo mã vạch, quản lý tài khoản, khôi phục xóa m�
 
 [3] SQLite, Transaction. https://www.sqlite.org/lang_transaction.html
 
-Tài liệu trực tuyến được đối chiếu ngày 15/09/2026. Thông tin bốn thành viên lấy từ danh sách nhóm cung cấp. Các sơ đồ và nội dung triển khai thuộc bộ bài tập này.
+[4] SQLite, Online Backup API. https://www.sqlite.org/backup.html
+
+[5] Playwright for Python. https://playwright.dev/python/
+
+[6] Vercel, Python runtime. https://vercel.com/docs/functions/runtimes/python
+
+Tài liệu trực tuyến được đối chiếu ngày 17/09/2026. Thông tin bốn thành viên lấy từ danh sách nhóm cung cấp. Các sơ đồ và nội dung triển khai thuộc bộ bài tập này.

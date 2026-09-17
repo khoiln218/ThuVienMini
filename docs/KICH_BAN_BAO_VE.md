@@ -2,7 +2,7 @@
 
 ## Chuẩn bị
 
-Chạy ứng dụng trước buổi báo cáo. Mở sẵn báo cáo PDF, slide và trình duyệt tại localhost. Đảm bảo Python và dependency đã cài để không phụ thuộc Internet tại phòng bảo vệ. Dùng `data/demo_moi.db` theo README nếu muốn dữ liệu sạch theo ngày hiện tại. Đây là đề tài **nhóm 1**, có đủ bốn thành viên trên bìa.
+Chạy ứng dụng trước buổi báo cáo (`start.bat` hoặc `./start.sh`). Mở sẵn báo cáo PDF và trình duyệt tại localhost. Đảm bảo Python và dependency đã cài để không phụ thuộc Internet tại phòng bảo vệ. CSDL nộp kèm là bộ demo lớn (63 sách, 60 độc giả, ~260 phiếu); muốn ngày mượn tính lại theo hôm nay thì chạy `python seed.py --demo --force` rồi chép `data/demo.db` đè `data/library.db` khi server đã dừng. Có thể mở thêm link Vercel làm phương án dự phòng nếu máy trục trặc (nhớ rằng dữ liệu trên đó không lưu bền). Đây là đề tài **nhóm 1**, có đủ bốn thành viên trên bìa.
 
 ## Phân chia trình bày đề xuất
 
@@ -12,7 +12,7 @@ Chạy ứng dụng trước buổi báo cáo. Mở sẵn báo cáo PDF, slide v
 |---|---|---|
 | Phạm Tuấn Anh | Bài toán, phạm vi, yêu cầu, Use Case | 2 phút |
 | Phạm Phước Hòa | Lớp phân tích, CSDL, quy tắc dữ liệu | 2 phút |
-| Lê Ngọc Khôi | Kiến trúc và demo chức năng chính | 4 phút |
+| Lê Ngọc Khôi | Kiến trúc, demo chức năng chính và phần bổ sung | 4 phút |
 | Lê Bá Quảng | Kiểm thử, kết quả, hạn chế | 2 phút |
 
 ## Demo bắt buộc theo thứ tự
@@ -24,7 +24,10 @@ Chạy ứng dụng trước buổi báo cáo. Mở sẵn báo cáo PDF, slide v
 5. **Ràng buộc:** vào Kho sách, bấm `Ngừng` cho sách đang mượn. Hệ thống báo còn phiếu chưa trả và giữ nguyên sách.
 6. **Trả:** mở Mượn & trả, bấm Trả sách cho đúng phiếu vừa lập, xác nhận đã nhận sách. Kiểm tra trạng thái Đã trả và tồn có sẵn trở lại 1.
 7. **Xóa mềm:** sau khi trả, bấm Ngừng cho sách và độc giả demo. Bản ghi rời danh sách hoạt động nhưng phiếu trong lịch sử vẫn giữ tên sách và độc giả.
-8. **Phần bổ sung:** lọc Quá hạn để xem phiếu mẫu. Đăng nhập `thuthu / ThuThu@123` để chỉ ra thủ thư không có nút Ngừng. Trình bày kết quả pytest thật, không chạy toàn bộ test nếu thời gian bảo vệ ngắn.
+8. **Gia hạn:** ở Mượn & trả, lọc "Đang mượn trong hạn", bấm Gia hạn một phiếu (7 ngày), thấy hạn lùi và nhãn Đã gia hạn; nút Gia hạn biến mất vì chỉ được một lần. Phiếu quá hạn không có nút này.
+9. **Mã vạch và phân trang:** ở Kho sách, gõ 13 chữ số mã vạch của một sách vào ô tìm kiếm rồi Enter (mô phỏng máy quét). Chọn "5 dòng" ở thanh phân trang, bấm Sau. Bấm Xuất CSV và mở file bằng Excel nếu có.
+10. **Tài khoản (admin):** trang Tài khoản → Thêm tài khoản `demo_bv` vai trò thủ thư. Ở tab ẩn danh đăng nhập bằng tài khoản đó, rồi quay lại bấm Ngừng: tab kia bị đăng xuất ngay. Bấm Sao lưu dữ liệu ở Tổng quan, chỉ file trong `data/backups/`.
+11. **Phần bổ sung:** gõ URL `/loans/overdue` để thấy bộ lọc theo đường dẫn; gõ `/abc` để thấy trang 404. Đăng nhập `thuthu / ThuThu@123` để chỉ ra thủ thư không có nút Ngừng, menu Tài khoản và nút Sao lưu. Trình bày kết quả pytest thật (73 ca, gồm 8 ca giao diện Playwright), không chạy toàn bộ test nếu thời gian bảo vệ ngắn.
 
 Nếu cần làm lại demo trong cùng CSDL, dùng mã BV002 vì mã xóa mềm vẫn duy nhất. Không đổi ngày máy hoặc sửa CSDL trực tiếp chỉ để tạo kết quả demo.
 
@@ -32,15 +35,15 @@ Nếu cần làm lại demo trong cùng CSDL, dùng mã BV002 vì mã xóa mềm
 
 ### 1. Tại sao chọn FastAPI và SQLite?
 
-FastAPI cung cấp định tuyến và kiểm tra kiểu dữ liệu; SQLite lưu trong một file, không cần cài dịch vụ máy chủ CSDL. Phù hợp quy mô nhỏ và Windows. JavaScript thuần giúp mở giao diện mà không cần quy trình build frontend. Tất cả công cụ chạy bài là miễn phí.
+FastAPI cung cấp định tuyến và kiểm tra kiểu dữ liệu; SQLite lưu trong một file, không cần cài dịch vụ máy chủ CSDL. Phù hợp quy mô nhỏ, chạy được Windows/macOS/Linux. JavaScript thuần chia ES modules giúp mở giao diện mà không cần bước build; Node chỉ dùng ở máy dev để format/lint/kiểm tra kiểu. Tất cả công cụ chạy bài là miễn phí.
 
 ### 2. Phân biệt đầu sách và bản sách thế nào?
 
-Một dòng books mô tả một đầu sách, total là số bản vật lý thuộc đầu sách đó. Mỗi loan giữ một bản. Bản demo chưa có bảng book_copies và barcode riêng từng bản. Nếu mở rộng thì tách Book và BookCopy, loan tham chiếu copy_id.
+Một dòng books mô tả một đầu sách, total là số bản vật lý thuộc đầu sách đó; cột barcode là ISBN/EAN-13 in trên bìa, chung cho mọi bản của đầu sách và dùng để tìm nhanh bằng máy quét. Mỗi loan giữ một bản. Bản này chưa có bảng book_copies với mã riêng từng bản. Nếu mở rộng thì tách Book và BookCopy, loan tham chiếu copy_id.
 
 ### 3. Vì sao không lưu số có sẵn?
 
-Số có sẵn được tính từ total và số phiếu chưa trả, tránh sai lệch giữa tồn kho và phiếu. Chỉ mục theo book_id và returned_on hỗ trợ truy vấn. Khi dữ liệu lớn cần đo hiệu năng trước khi quyết định lưu cache.
+Số có sẵn được tính từ total và số phiếu chưa trả, tránh sai lệch giữa tồn kho và phiếu. Chỉ mục theo book_id và returned_on hỗ trợ truy vấn; lọc, tìm kiếm và phân trang đều làm trong SQL nên không tải cả bảng lên Python. Khi dữ liệu lớn cần đo hiệu năng trước khi quyết định lưu cache.
 
 ### 4. Hai thủ thư mượn bản cuối cùng cùng lúc thì sao?
 
@@ -52,23 +55,23 @@ Context manager transaction rollback khi có exception và luôn đóng kết n�
 
 ### 6. Tại sao “xóa” lại là nút Ngừng?
 
-Đây là xóa mềm: active=0. Nếu xóa cứng sẽ ảnh hưởng lịch sử và khóa ngoại. Khi đang có phiếu chưa trả thì từ chối, khi đã trả thì ẩn khỏi danh sách hoạt động nhưng vẫn xem được lịch sử. README công khai giới hạn chưa có chức năng khôi phục bằng giao diện.
+Đây là xóa mềm: active=0. Nếu xóa cứng sẽ ảnh hưởng lịch sử và khóa ngoại. Khi đang có phiếu chưa trả thì từ chối, khi đã trả thì ẩn khỏi danh sách hoạt động nhưng vẫn xem được lịch sử và trong CSV. README công khai giới hạn chưa có chức năng khôi phục bằng giao diện; tài khoản thì có Kích hoạt lại.
 
 ### 7. Cách xác định quá hạn?
 
 Ngày hôm nay lớn hơn due_on và returned_on còn rỗng thì phiếu đang quá hạn. Ngày đến hạn chưa quá hạn. Khi đã trả, độ trễ tính đến ngày trả và không tăng nữa. Các biên trước hạn, đúng hạn và sau hạn một ngày đều có unit test.
 
-### 8. Báo cáo 49 ca Pass có ý nghĩa gì?
+### 8. Báo cáo 73 ca Pass có ý nghĩa gì?
 
-49 là số test instance thực thi, gồm 22 ca chức năng, 20 ca biên, 5 unit test và 2 ca tích hợp. Một test parametrized tạo nhiều lần chạy. Đây không phải bằng chứng hệ thống không còn lỗi và không đại diện cho thử tải hay kiểm toán bảo mật.
+Bản cuối có 73 test instance: 38 ca chức năng API, 20 ca biên, 5 unit test, 2 ca tích hợp và 8 ca giao diện Playwright trên Chromium thật. Một test parametrized tạo nhiều lần chạy. Đây không phải bằng chứng hệ thống không còn lỗi và không đại diện cho thử tải hay kiểm toán bảo mật.
 
 ### 9. Phân biệt kiểm thử đơn vị và API?
 
-Unit test gọi trực tiếp hàm băm/kiểm tra mật khẩu và overdue_days. API test dùng TestClient đi qua định tuyến, kiểm tra đầu vào, xác thực và CSDL tạm. Ca tích hợp đồng thời gọi LoanService với hai luồng và kiểm tra số dòng cuối cùng.
+Unit test gọi trực tiếp hàm băm/kiểm tra mật khẩu và overdue_days. API test dùng TestClient đi qua định tuyến, kiểm tra đầu vào, xác thực và CSDL tạm. Ca tích hợp đồng thời gọi LoanService với hai luồng và kiểm tra số dòng cuối cùng. Test giao diện chạy server thật trong thread, mở Chromium headless, bấm nút và đọc DOM như người dùng — ví dụ nhập tiêu đề chứa thẻ `<img onerror>` để chứng minh không bị XSS.
 
 ### 10. Mật khẩu và phiên đăng nhập lưu ở đâu?
 
-Mật khẩu lưu PBKDF2-HMAC-SHA256 với salt ngẫu nhiên, không lưu bản rõ. Cookie HttpOnly chứa token ngẫu nhiên; CSDL chỉ lưu SHA256 của token và thời điểm hết hạn 8 giờ. Khi đăng xuất, server xóa phiên. Cookie SameSite strict và custom header bảo vệ yêu cầu ghi trên cùng origin.
+Mật khẩu lưu PBKDF2-HMAC-SHA256 260.000 vòng với salt ngẫu nhiên, không lưu bản rõ. Phiên không lưu server: cookie HttpOnly chứa token `user_id.hạn.dấu_vết_mật_khẩu.chữ_ký` ký bằng HMAC-SHA256 với khóa LIBRARY_SECRET; server kiểm tra chữ ký, hạn 8 giờ, tài khoản còn hoạt động và dấu vết mật khẩu. Nhờ vậy đổi mật khẩu hoặc ngừng tài khoản là phiên cũ hết hiệu lực, và nhiều instance (như trên Vercel) đều xác minh được. Sai mật khẩu 5 lần trong 15 phút bị khóa tạm. Cookie SameSite strict và custom header bảo vệ yêu cầu ghi trên cùng origin.
 
 ### 11. Vì sao độc giả không đăng nhập?
 
@@ -84,15 +87,27 @@ Mật khẩu lưu PBKDF2-HMAC-SHA256 với salt ngẫu nhiên, không lưu bản
 
 ### 14. Chức năng chưa có là gì?
 
-Chưa quản lý barcode từng bản, phạt tiền, gia hạn, đặt trước, khôi phục bằng UI hoặc quản lý tài khoản bằng UI. Chưa xác nhận tải lớn, hoạt động 24/7 hay triển khai Internet. Bản hiện tại hoàn thành các luồng chính ở quy mô thư viện mini.
+Chưa quản lý mã riêng từng bản vật lý (chỉ có mã vạch theo đầu sách), phạt tiền, đặt trước, khôi phục xóa mềm hay phục hồi sao lưu bằng giao diện, HTTPS tự cấu hình. Chưa xác nhận tải lớn hay hoạt động 24/7; bản Vercel chỉ là demo không lưu dữ liệu bền. Bản hiện tại hoàn thành các luồng chính cộng gia hạn, quản lý tài khoản, xuất CSV, sao lưu và phân trang ở quy mô thư viện mini.
 
 ### 15. Giai đoạn phân tích khác thiết kế ra sao?
 
-Phân tích mô tả khái niệm Sách, Độc giả, Phiếu mượn và tương tác nghiệp vụ. Thiết kế chỉ rõ DTO Pydantic, LoanService, module main/db, route HTTP, khóa ngoại và giao dịch. Các mô hình được đối chiếu với code, không mặc định mọi lớp khái niệm đều là Python class.
+Phân tích mô tả khái niệm Sách, Độc giả, Phiếu mượn và tương tác nghiệp vụ. Thiết kế chỉ rõ DTO Pydantic, LoanService, module main/db/security, route HTTP, khóa ngoại và giao dịch, cùng cấu trúc ES modules của frontend. Các mô hình được đối chiếu với code, không mặc định mọi lớp khái niệm đều là Python class.
+
+### 16. Gia hạn theo quy tắc nào, sao không cho gia hạn phiếu quá hạn?
+
+Chỉ phiếu chưa trả, chưa quá hạn, chưa gia hạn lần nào; thêm 1–30 ngày tính từ hạn hiện tại, tối đa một lần. Phiếu đã quá hạn phải trả sách trước để tránh "hợp thức hóa" việc trễ hạn; đó là giả định nghiệp vụ của nhóm và có thể đổi theo quy định thư viện.
+
+### 17. Vì sao frontend không dùng React/Vue?
+
+Yêu cầu bản nộp là chạy bằng một cú đúp `start.bat`, không cài Node. JavaScript thuần chia ES modules, mỗi màn hình một file HTML + một file JS, HTML tạo bằng tagged template tự thoát ký tự nên vẫn an toàn và chia việc được cho bốn người. Nhóm dùng Prettier, ESLint và TypeScript kiểm tra kiểu trên file .js ở máy dev; nếu tiếp tục dự án thì có thể chuyển sang Vue với cùng cấu trúc trang.
+
+### 18. Deploy lên Vercel thì dữ liệu ở đâu?
+
+Vercel là serverless, đĩa chỉ đọc; app chép `library.db` ra `/tmp` của từng instance nên dữ liệu thêm/sửa chỉ sống trong instance đó và reset khi khởi động lạnh. Nhóm coi đó là bản demo để xem giao diện; dùng thật cần máy chủ có đĩa (VPS, Fly.io volume) hoặc đổi sang CSDL dịch vụ. Phiên đăng nhập đã làm stateless (token ký HMAC) nên không bị văng khi đổi instance.
 
 ## Các điểm cần kiểm tra trước khi nộp
 
 - Bốn tên, mã sinh viên và lớp đúng danh sách nhóm.
 - Nếu trường yêu cầu tên giảng viên, khoa hoặc mẫu bìa riêng, bổ sung thông tin thật vào DOCX. Không điền giả.
 - Nhóm đọc và chạy ít nhất một vòng demo, hiểu quy tắc và giới hạn đã ghi.
-- Gửi cả source, database mẫu, báo cáo, slide và test results. Không gửi thư mục môi trường ảo `.venv`.
+- Gửi cả source, database mẫu, báo cáo và test results. Không gửi `.venv`, `node_modules`, `data/backups`, `data/demo.db`.

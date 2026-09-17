@@ -6,17 +6,17 @@ actor "Thủ thư" as T
 actor "Quản trị viên" as A
 A --|> T
 rectangle "Thư viện mini" {
-usecase "Đăng nhập" as U1
-usecase "Quản lý sách
-(thêm, sửa, tìm)" as U2
-usecase "Quản lý độc giả
-(thêm, sửa, tìm)" as U3
+usecase "Đăng nhập /\nđổi mật khẩu" as U1
+usecase "Quản lý sách\n(thêm, sửa, tìm, mã vạch)" as U2
+usecase "Quản lý độc giả\n(thêm, sửa, tìm)" as U3
 usecase "Mượn sách" as U4
 usecase "Trả sách" as U5
-usecase "Tìm kiếm sách" as U6
-usecase "Xem quá hạn" as U7
-usecase "Xem thống kê" as U8
+usecase "Gia hạn phiếu" as U6
+usecase "Xem quá hạn,\nthống kê" as U7
+usecase "Xuất CSV" as U8
 usecase "Xóa mềm sách / độc giả" as U9
+usecase "Quản lý tài khoản" as U10
+usecase "Sao lưu CSDL" as U11
 }
 T -- U1
 T -- U2
@@ -27,4 +27,6 @@ T -- U6
 T -- U7
 T -- U8
 A -- U9
+A -- U10
+A -- U11
 @enduml

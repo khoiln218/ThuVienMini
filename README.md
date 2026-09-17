@@ -133,7 +133,7 @@ Quy ước:
 
 ## Định tuyến
 
-**Giao diện** (một trang, định tuyến bằng History API trong `app/static/app.js`; server trả `index.html` cho các đường dẫn dưới đây nên tải lại trang hoặc Back/Forward vẫn giữ đúng màn hình):
+**Giao diện** (một trang, định tuyến bằng History API trong `app/static/js/router.js`; server trả `index.html` cho các đường dẫn dưới đây nên tải lại trang hoặc Back/Forward vẫn giữ đúng màn hình):
 
 | URL | Màn hình |
 |---|---|
@@ -191,7 +191,7 @@ vercel_app.py, pyproject.toml, vercel.json  Điểm vào và cấu hình cho b�
 data/library.db      Database demo
 tests/               API, unit, boundary, concurrency tests
 docs/uml/            11 sơ đồ PNG và nguồn PlantUML
-docs/                Báo cáo, slide, bảng kiểm thử, kịch bản bảo vệ
+docs/                Báo cáo (MD/DOCX/PDF), ảnh giao diện, bảng kiểm thử, kịch bản bảo vệ
 ```
 
 ## Sao lưu và tạo demo mới an toàn
@@ -206,7 +206,7 @@ $env:LIBRARY_DB = "$PWD\data\demo_moi.db"
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Để trở về database mặc định trong cửa sổ PowerShell: `Remove-Item Env:LIBRARY_DB`. Không cần xóa database cũ. Khi chuyển sang database mới, đăng nhập lại vì cookie phiên cũ không nằm trong CSDL mới.
+Để trở về database mặc định trong cửa sổ PowerShell: `Remove-Item Env:LIBRARY_DB`. Không cần xóa database cũ. Phiên đăng nhập là token ký nên vẫn hợp lệ khi đổi CSDL, miễn tài khoản cùng mật khẩu tồn tại ở CSDL mới.
 
 ## CSDL demo lớn
 

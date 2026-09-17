@@ -183,3 +183,16 @@ def test_UI08_librarian_has_no_admin_controls(page, server):
     expect(page.locator('#backup')).to_be_hidden()
     page.click('nav button[data-page=books]')
     expect(page.locator('#book-rows button[data-remove]')).to_have_count(0)
+
+
+def test_UI09_reload_keeps_page_without_login_flash(signed_in, server):
+    page = signed_in
+    page.click('nav button[data-page=books]')
+    expect(page.locator('#book-rows tr').first).to_be_visible()
+    # Chặn /api/me để giữ trạng thái "đang tải" và nhìn xem màn hình đăng nhập có lộ ra không
+    page.route('**/api/me', lambda route: (page.wait_for_timeout(300), route.continue_()))
+    page.reload()
+    assert page.evaluate("document.querySelector('#login-view').hidden") is True
+    expect(page.locator('#app-view')).to_be_visible()
+    expect(page.locator('#books')).to_be_visible()
+    expect(page).to_have_url(server + '/books')

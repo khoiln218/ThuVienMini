@@ -167,7 +167,7 @@ Quy ước:
 
 Test giao diện (`tests/test_ui.py`) dùng Playwright điều khiển Chromium thật trên một server uvicorn chạy trong thread với CSDL tạm. Cần cài thêm một lần (có Internet): `pip install -r requirements-dev.txt` rồi `python -m playwright install chromium`. Máy chưa cài Playwright thì các test này tự bỏ qua, phần API vẫn chạy.
 
-74 ca tự động đã đạt trong lần kiểm thử cung cấp (66 API/unit + 8 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
+75 ca tự động đã đạt trong lần kiểm thử cung cấp (66 API/unit + 9 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
 
 ## Cấu trúc
 

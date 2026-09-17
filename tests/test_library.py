@@ -307,3 +307,17 @@ def test_TC37_barcode(client,book):
     assert client.get('/api/books?q=S001').json()[0]['barcode']=='8930000000019'
     header=client.get('/api/export/books.csv').text.lstrip('﻿').splitlines()[0]
     assert 'Mã vạch' in header
+
+def test_TC38_vercel_entrypoint(tmp_path, monkeypatch):
+    # api/index.py chép CSDL mẫu vào đường dẫn tạm rồi mở app; kiểm tra bằng TestClient như trên Vercel
+    import importlib, sys
+    monkeypatch.setenv('LIBRARY_DB', str(tmp_path/'vercel'/'library.db'))
+    sys.modules.pop('api.index', None)
+    module=importlib.import_module('api.index')
+    assert (tmp_path/'vercel'/'library.db').exists()
+    login_guard.reset()
+    with TestClient(module.app, headers={'X-Library-Request':'1'}) as c:
+        assert c.post('/api/login',json={'username':'admin','password':'Admin@123'}).status_code==200
+        assert c.get('/api/stats').json()['titles']>=8
+        assert c.get('/').status_code==200
+    assert not (tmp_path/'vercel'/'backups').exists()   # LIBRARY_BACKUP=0

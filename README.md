@@ -41,6 +41,8 @@ Các gói khác trong `requirements.txt` (anyio, h11, httpcore, click, certifi, 
 |---|---|---|
 | Quản trị viên | admin | Admin@123 |
 | Thủ thư | thuthu | ThuThu@123 |
+| Thủ thư | thuthu2 | ThuThu@123 |
+| Thủ thư (đã ngừng, không đăng nhập được) | cu_nhan_vien | ThuThu@123 |
 
 Quản trị có toàn bộ quyền. Thủ thư được thêm, sửa, tìm sách/độc giả, mượn/trả/gia hạn, xuất CSV và xem thống kê; chỉ quản trị được xóa mềm (nút **Ngừng**), quản lý tài khoản (trang **Tài khoản**) và sao lưu. Mọi người dùng tự đổi mật khẩu bằng nút **Mật khẩu** ở góc trái dưới. Tài khoản này dùng cho bài tập trên localhost, không phải tài khoản thật; hãy đổi mật khẩu ngay nếu dùng thật.
 
@@ -115,7 +117,8 @@ Quy ước:
 ## Dữ liệu và quy tắc
 
 - CSDL `data/library.db` được cung cấp sẵn. `seed.py` chỉ tạo mẫu khi chưa có người dùng, không xóa dữ liệu đang có.
-- Mẫu ban đầu: 2 tài khoản, 8 đầu sách / 29 bản (7 có mã vạch EAN-13 hư cấu tiền tố 893), 4 độc giả, 5 phiếu (3 chưa trả, 2 đã trả). Một phiếu quá hạn tại ngày tạo mẫu. Ngày quá hạn thay đổi theo ngày máy chủ.
+- `data/library.db` cung cấp sẵn là bộ dữ liệu demo lớn sinh bởi `seed.py --demo` (xem mục CSDL demo lớn): 4 tài khoản, 63 đầu sách (khoảng 80% có mã vạch EAN-13 hư cấu tiền tố 893), 60 độc giả, ~260 phiếu trong 180 ngày với đủ trạng thái. Ngày quá hạn thay đổi theo ngày máy chủ.
+- Bộ mẫu nhỏ của `seed.py` (2 tài khoản, 8 đầu sách / 29 bản, 4 độc giả, 5 phiếu, 1 phiếu quá hạn) dùng cho test tự động và khi khởi động với CSDL trống.
 - Một phiếu tương ứng một bản sách, không quản lý mã vạch từng bản vật lý. Mỗi đầu sách có thể ghi một **mã vạch/ISBN** (tối đa 20 ký tự chữ số, chữ cái, gạch nối; không bắt buộc; duy nhất khi có nhập). Ô tìm kiếm sách tìm cả theo mã vạch, nên máy quét gõ mã rồi Enter là ra đúng đầu sách. Một độc giả được giữ tối đa 5 bản, có thể mượn nhiều bản cùng đầu sách.
 - Hạn mượn 1–30 ngày, mặc định 14. Ngày hạn trả vẫn trong hạn. Quá hạn = số ngày dương từ hạn trả đến ngày hiện tại, hoặc đến ngày trả nếu đã trả.
 - Cho phép độc giả đang có phiếu quá hạn tiếp tục mượn nếu còn dưới 5 bản. Bản demo chưa áp dụng phạt tiền/đặt trước.
@@ -165,7 +168,7 @@ Quy ước:
 
 Test giao diện (`tests/test_ui.py`) dùng Playwright điều khiển Chromium thật trên một server uvicorn chạy trong thread với CSDL tạm. Cần cài thêm một lần (có Internet): `pip install -r requirements-dev.txt` rồi `python -m playwright install chromium`. Máy chưa cài Playwright thì các test này tự bỏ qua, phần API vẫn chạy.
 
-72 ca tự động đã đạt trong lần kiểm thử cung cấp (64 API/unit + 8 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
+73 ca tự động đã đạt trong lần kiểm thử cung cấp (65 API/unit + 8 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
 
 ## Cấu trúc
 
@@ -183,6 +186,7 @@ package.json, eslint.config.js, jsconfig.json, .prettierrc  Công cụ frontend 
 schema.sql           DDL, khóa ngoại và chỉ mục
 seed.py              Dữ liệu mẫu nhỏ, không ghi đè (bản nộp, test); `--demo` tạo CSDL demo lớn riêng (data/demo.db)
 start.bat, start.sh  Script khởi động Windows / macOS-Linux
+api/index.py, vercel.json  Điểm vào và cấu hình cho bản demo trên Vercel
 .vscode/, requests.http  Cấu hình VS Code (debug, task, test) và mẫu gọi API
 data/library.db      Database demo
 tests/               API, unit, boundary, concurrency tests
@@ -206,7 +210,7 @@ $env:LIBRARY_DB = "$PWD\data\demo_moi.db"
 
 ## CSDL demo lớn
 
-`data/library.db` cố ý nhỏ (8 sách, 4 độc giả, 5 phiếu) để chấm bài dễ theo dõi. Để trình diễn phân trang, tìm kiếm, thống kê và lọc quá hạn với dữ liệu "thật" hơn, tạo một CSDL riêng:
+`data/library.db` trong bản nộp chính là bộ này. Muốn tạo lại (dữ liệu mới, ngày mượn tính lại theo hôm nay) hoặc tạo một CSDL riêng để thử nghiệm:
 
 ```bash
 python seed.py --demo                    # tạo data/demo.db: 63 đầu sách, 60 độc giả, ~260 phiếu trong 180 ngày
@@ -215,11 +219,36 @@ LIBRARY_DB=data/demo.db python -m uvicorn app.main:app --port 8001
 
 Windows PowerShell: `$env:LIBRARY_DB="data\demo.db"` rồi chạy uvicorn như trên. Trong VS Code chọn cấu hình **"Chạy server với CSDL demo lớn"** (tự chạy `seed.py --demo` nếu chưa có file).
 
-Dữ liệu hư cấu, sinh bằng hạt giống cố định nên tạo lại vẫn giống nhau (`--seed` để đổi, `--force` để ghi đè). Có sách/độc giả đã ngừng, phiếu quá hạn, trả muộn, đã gia hạn; tuân thủ mọi quy tắc nghiệp vụ (≤ 5 bản/độc giả, không vượt tổng bản). Tài khoản như bản nhỏ, thêm `thuthu2` và `cu_nhan_vien` (đã ngừng, không đăng nhập được). `data/library.db` không bị đụng tới.
+Dữ liệu hư cấu, sinh bằng hạt giống cố định nên tạo lại vẫn giống nhau (`--seed` để đổi, `--force` để ghi đè). Có sách/độc giả đã ngừng, phiếu quá hạn, trả muộn, đã gia hạn; tuân thủ mọi quy tắc nghiệp vụ (≤ 5 bản/độc giả, không vượt tổng bản). Tài khoản như bảng ở đầu README. `seed.py --demo` mặc định ghi vào `data/demo.db`, không đụng `data/library.db`; muốn thay `library.db` thì chép đè khi server đã dừng.
+
+## Triển khai lên Internet
+
+### Vercel (bản demo công khai)
+
+Đã có sẵn `api/index.py` (điểm vào ASGI), `vercel.json` và `.vercelignore`. Cách đưa lên:
+
+1. Đẩy mã nguồn lên GitHub (repo này đã có remote `origin`).
+2. Vào https://vercel.com → **Add New → Project** → chọn repo → Framework Preset để **Other** → **Deploy**. Hoặc dùng CLI: `npx vercel` rồi `npx vercel --prod`.
+3. (Tuỳ chọn) Biến môi trường `LIBRARY_VERCEL_DEMO=1` để mỗi instance tự sinh lại CSDL demo với ngày mượn tính theo hôm nay, thay vì chép `data/library.db` (ngày cố định tại thời điểm tạo).
+
+**Giới hạn phải biết trước khi gửi link:**
+- Vercel chạy serverless, không có ổ đĩa bền vững. `api/index.py` chép CSDL vào `/tmp` khi function khởi động; mọi thay đổi (thêm sách, lập phiếu, đổi mật khẩu) **chỉ tồn tại trong instance đó và mất khi Vercel khởi động lại** (thường sau vài phút không dùng). Đây là bản để xem giao diện và thao tác thử, không phải để lưu dữ liệu thật.
+- Phiên đăng nhập cũng nằm trong CSDL đó; nếu Vercel mở nhiều instance song song, có thể phải đăng nhập lại.
+- Tài khoản demo (`admin/Admin@123`) là công khai vì CSDL reset về mẫu. Không đưa dữ liệu thật lên bản này.
+- Sao lưu tự động bị tắt (`LIBRARY_BACKUP=0`); khoá tạm sai mật khẩu đếm theo từng instance.
+
+### Chạy thật (giữ dữ liệu)
+
+Cần một máy chủ có đĩa ghi bền vững, chạy `uvicorn` như trên máy cá nhân và đặt HTTPS phía trước:
+- **VPS** (Ubuntu): `python -m uvicorn app.main:app --host 127.0.0.1 --port 8000` dưới `systemd`, Nginx/Caddy làm reverse proxy HTTPS. Đơn giản và rẻ nhất cho SQLite.
+- **Fly.io** hoặc **Railway/Render** với volume/persistent disk gắn vào `data/`.
+- Nếu muốn ở lại Vercel lâu dài thì phải đổi CSDL sang dịch vụ ngoài (Turso/libSQL tương thích SQLite, hoặc Postgres như Neon) — cần sửa `app/db.py`.
+
+Dù chạy ở đâu cũng phải đổi mật khẩu demo ngay sau khi triển khai (trang **Tài khoản** hoặc nút **Mật khẩu**).
 
 ## Phạm vi triển khai
 
-Bản nộp phù hợp thư viện mini và trình diễn tại máy. Đã có quản lý tài khoản, đổi mật khẩu, gia hạn, xuất CSV, phân trang, sao lưu tự động và chống dò mật khẩu cơ bản. Chưa đo tải lớn, chưa có phục hồi dữ liệu bằng giao diện, quản lý bản sách theo barcode, phạt tiền/đặt trước hoặc cấu hình HTTPS. Không tự công khai máy chủ lên Internet; nếu dùng trong mạng LAN cần đặt reverse proxy HTTPS phía trước. Khi triển khai thật cần bổ sung các phần này và đổi tài khoản demo.
+Bản nộp phù hợp thư viện mini và trình diễn tại máy. Đã có quản lý tài khoản, đổi mật khẩu, gia hạn, xuất CSV, phân trang, sao lưu tự động và chống dò mật khẩu cơ bản. Chưa đo tải lớn, chưa có phục hồi dữ liệu bằng giao diện, quản lý bản sách theo barcode, phạt tiền/đặt trước hoặc cấu hình HTTPS. Không tự công khai máy chủ lên Internet; nếu dùng trong mạng LAN cần đặt reverse proxy HTTPS phía trước. Bản Vercel chỉ là demo không lưu dữ liệu (xem mục Triển khai). Khi triển khai thật cần bổ sung các phần này và đổi tài khoản demo.
 
 ## Tài liệu căn cứ
 

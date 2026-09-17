@@ -104,6 +104,7 @@ def test_UI05_add_edit_book_escapes_html(signed_in):
     dialog = page.locator('#editor')
     expect(dialog).to_be_visible()
     page.fill('#editor input[name=code]', 'UI-XSS')
+    page.fill('#editor input[name=barcode]', '8930000009999')
     page.fill('#editor input[name=title]', '<img src=x onerror=alert(1)>')
     page.fill('#editor input[name=author]', 'Kiểm thử')
     page.fill('#editor input[name=category]', 'Tin học')
@@ -114,6 +115,13 @@ def test_UI05_add_edit_book_escapes_html(signed_in):
     cell = page.locator('#book-rows tr', has_text='UI-XSS').locator('td.text-wrap b')
     expect(cell).to_have_text('<img src=x onerror=alert(1)>')
     assert page.locator('#book-rows img').count() == 0
+    # Tìm theo mã vạch (như máy quét gõ vào ô tìm kiếm rồi Enter)
+    page.fill('#book-search input', '8930000009999')
+    page.press('#book-search input', 'Enter')
+    expect(page.locator('#book-rows tr')).to_have_count(1)
+    expect(page.locator('#book-rows .barcode')).to_have_text('8930000009999')
+    page.fill('#book-search input', '')
+    page.press('#book-search input', 'Enter')
     # Sửa
     page.locator('#book-rows tr', has_text='UI-XSS').locator('button[data-edit-book]').click()
     expect(page.locator('#editor input[name=code]')).to_have_value('UI-XSS')

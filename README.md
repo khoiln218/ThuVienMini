@@ -115,8 +115,8 @@ Quy ước:
 ## Dữ liệu và quy tắc
 
 - CSDL `data/library.db` được cung cấp sẵn. `seed.py` chỉ tạo mẫu khi chưa có người dùng, không xóa dữ liệu đang có.
-- Mẫu ban đầu: 2 tài khoản, 8 đầu sách / 29 bản, 4 độc giả, 5 phiếu (3 chưa trả, 2 đã trả). Một phiếu quá hạn tại ngày tạo mẫu. Ngày quá hạn thay đổi theo ngày máy chủ.
-- Một phiếu tương ứng một bản sách, không quản lý mã vạch từng bản vật lý. Một độc giả được giữ tối đa 5 bản, có thể mượn nhiều bản cùng đầu sách.
+- Mẫu ban đầu: 2 tài khoản, 8 đầu sách / 29 bản (7 có mã vạch EAN-13 hư cấu tiền tố 893), 4 độc giả, 5 phiếu (3 chưa trả, 2 đã trả). Một phiếu quá hạn tại ngày tạo mẫu. Ngày quá hạn thay đổi theo ngày máy chủ.
+- Một phiếu tương ứng một bản sách, không quản lý mã vạch từng bản vật lý. Mỗi đầu sách có thể ghi một **mã vạch/ISBN** (tối đa 20 ký tự chữ số, chữ cái, gạch nối; không bắt buộc; duy nhất khi có nhập). Ô tìm kiếm sách tìm cả theo mã vạch, nên máy quét gõ mã rồi Enter là ra đúng đầu sách. Một độc giả được giữ tối đa 5 bản, có thể mượn nhiều bản cùng đầu sách.
 - Hạn mượn 1–30 ngày, mặc định 14. Ngày hạn trả vẫn trong hạn. Quá hạn = số ngày dương từ hạn trả đến ngày hiện tại, hoặc đến ngày trả nếu đã trả.
 - Cho phép độc giả đang có phiếu quá hạn tiếp tục mượn nếu còn dưới 5 bản. Bản demo chưa áp dụng phạt tiền/đặt trước.
 - Gia hạn: phiếu còn trong hạn được gia hạn đúng một lần, thêm 1–30 ngày tính từ hạn trả hiện tại. Phiếu quá hạn phải trả sách trước.
@@ -147,7 +147,7 @@ Quy ước:
 | `POST /api/login`, `POST /api/logout`, `GET /api/me` | — / đã đăng nhập | Phiên làm việc |
 | `POST /api/password` | đã đăng nhập | Đổi mật khẩu của chính mình |
 | `GET/POST /api/users`, `PUT /api/users/{id}` | admin | Quản lý tài khoản |
-| `GET/POST /api/books`, `PUT /api/books/{id}` | đã đăng nhập | Sách; `GET` nhận `q`, `page`, `size` |
+| `GET/POST /api/books`, `PUT /api/books/{id}` | đã đăng nhập | Sách (có `barcode`); `GET` nhận `q` (mã, mã vạch, tên, tác giả, thể loại), `page`, `size` |
 | `GET/POST /api/readers`, `PUT /api/readers/{id}` | đã đăng nhập | Độc giả; `GET` nhận `q`, `page`, `size` |
 | `DELETE /api/{books\|readers}/{id}` | admin | Ngừng hoạt động (xóa mềm) |
 | `GET/POST /api/loans` | đã đăng nhập | Phiếu; `GET` nhận `status`, `page`, `size` |
@@ -165,7 +165,7 @@ Quy ước:
 
 Test giao diện (`tests/test_ui.py`) dùng Playwright điều khiển Chromium thật trên một server uvicorn chạy trong thread với CSDL tạm. Cần cài thêm một lần (có Internet): `pip install -r requirements-dev.txt` rồi `python -m playwright install chromium`. Máy chưa cài Playwright thì các test này tự bỏ qua, phần API vẫn chạy.
 
-71 ca tự động đã đạt trong lần kiểm thử cung cấp (63 API/unit + 8 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
+72 ca tự động đã đạt trong lần kiểm thử cung cấp (64 API/unit + 8 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
 
 ## Cấu trúc
 

@@ -33,6 +33,12 @@ def transaction():
 MIGRATIONS = [
     ('users', 'active', 'INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1))'),
     ('loans', 'extensions', 'INTEGER NOT NULL DEFAULT 0 CHECK(extensions BETWEEN 0 AND 1)'),
+    ('books', 'barcode', "TEXT NOT NULL DEFAULT ''"),
+]
+# Chỉ mục trên cột bổ sung: phải tạo sau ALTER nên không đặt trong schema.sql
+POST_MIGRATION_SQL = [
+    # Mã vạch duy nhất khi có nhập (chuỗi rỗng = chưa có, được phép trùng)
+    "CREATE UNIQUE INDEX IF NOT EXISTS ux_books_barcode ON books(barcode) WHERE barcode<>''",
 ]
 
 def initialize():
@@ -42,6 +48,8 @@ def initialize():
             columns = [row['name'] for row in db.execute(f'PRAGMA table_info({table})')]
             if column not in columns:
                 db.execute(f'ALTER TABLE {table} ADD COLUMN {column} {definition}')
+        for sql in POST_MIGRATION_SQL:
+            db.execute(sql)
 
 def db_path():
     return Path(os.environ.get('LIBRARY_DB', ROOT / 'data/library.db'))

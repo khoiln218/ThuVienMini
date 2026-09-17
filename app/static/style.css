@@ -673,3 +673,8 @@ nav button.active .icon {
 .not-found-card small {
   display: block;
 }
+
+.barcode {
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+  letter-spacing: 0.5px;
+}

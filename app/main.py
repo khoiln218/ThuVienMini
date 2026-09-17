@@ -172,7 +172,7 @@ SIZE = Query(default=20, ge=1, le=100)
 @app.get('/api/books')
 def books(q: str = '', page: int | None = PAGE, size: int = SIZE, user=Depends(current_user)):
     return paginated('SELECT b.*, b.total-(SELECT COUNT(*) FROM loans l WHERE l.book_id=b.id AND l.returned_on IS NULL) AS available',
-        "FROM books b WHERE b.active=1 AND instr(casefold(b.code||' '||b.title||' '||b.author||' '||b.category), ?)>0",
+        "FROM books b WHERE b.active=1 AND instr(casefold(b.code||' '||b.barcode||' '||b.title||' '||b.author||' '||b.category), ?)>0",
         'ORDER BY b.id DESC', (q.strip().casefold(),), page, size)
 
 @app.get('/api/readers')
@@ -255,7 +255,7 @@ def extend_loan(loan_id: int, data: Extend, user=Depends(current_user)):
     return LoanService.extend(loan_id, data.days)
 
 EXPORTS = {
-    'books': (['Mã sách', 'Tên sách', 'Tác giả', 'Thể loại', 'Tổng bản', 'Có sẵn'], ('code', 'title', 'author', 'category', 'total', 'available')),
+    'books': (['Mã sách', 'Mã vạch', 'Tên sách', 'Tác giả', 'Thể loại', 'Tổng bản', 'Có sẵn'], ('code', 'barcode', 'title', 'author', 'category', 'total', 'available')),
     'readers': (['Mã độc giả', 'Họ tên', 'Điện thoại'], ('code', 'name', 'phone')),
     'loans': (['Phiếu', 'Mã sách', 'Tên sách', 'Mã độc giả', 'Độc giả', 'Ngày mượn', 'Hạn trả', 'Ngày trả', 'Quá hạn (ngày)', 'Trạng thái', 'Gia hạn', 'Thủ thư'],
               ('id', 'book_code', 'title', 'reader_code', 'name', 'borrowed_on', 'due_on', 'returned_on', 'overdue_days', 'status', 'extensions', 'staff')),

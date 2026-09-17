@@ -13,6 +13,8 @@ class Book(Input):
     author: str = Field(min_length=1, max_length=100)
     category: str = Field(min_length=1, max_length=60)
     total: int = Field(ge=0, le=999, strict=True)
+    # Mã vạch/ISBN in trên sách (EAN-13 là 13 chữ số); không bắt buộc, duy nhất khi có
+    barcode: str = Field(default='', max_length=20, pattern=r'^[0-9A-Za-z-]*$')
 
 class Reader(Input):
     code: str = Field(min_length=1, max_length=30)

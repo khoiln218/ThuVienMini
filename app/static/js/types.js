@@ -2,7 +2,7 @@
 // Kiểu dữ liệu của API (khớp app/models.py và các endpoint trong app/main.py). Chỉ dùng cho JSDoc/@ts-check, không có mã chạy.
 
 /** @typedef {{ id: number, username: string, role: 'admin' | 'librarian', active?: number }} User */
-/** @typedef {{ id: number, code: string, title: string, author: string, category: string, total: number, available: number }} Book */
+/** @typedef {{ id: number, code: string, barcode: string, title: string, author: string, category: string, total: number, available: number }} Book */
 /** @typedef {{ id: number, code: string, name: string, phone: string }} Reader */
 /**
  * @typedef {object} Loan

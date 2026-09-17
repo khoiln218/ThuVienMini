@@ -292,3 +292,18 @@ def test_TC36_seed_demo(tmp_path, monkeypatch):
         assert c.post('/api/login',json={'username':'admin','password':'Admin@123'}).status_code==200
         assert c.get('/api/books?page=1&size=20').json()['pages']>=3
         assert c.get('/api/stats').json()['overdue']>0
+
+def test_TC37_barcode(client,book):
+    book['barcode']='8935236412345'
+    r=client.post('/api/books',json=book); assert r.status_code==201
+    bid=r.json()['id']
+    assert client.get('/api/books?q=8935236412').json()[0]['id']==bid          # tìm theo một phần mã vạch
+    book2={**book,'code':'NEW2'}
+    assert client.post('/api/books',json=book2).status_code==409                 # mã vạch trùng
+    book2['barcode']=''
+    assert client.post('/api/books',json=book2).status_code==201                 # trống được phép trùng
+    assert client.post('/api/books',json={**book,'code':'NEW3','barcode':'abc def'}).status_code==422
+    assert client.post('/api/books',json={**book,'code':'NEW4','barcode':'1'*21}).status_code==422
+    assert client.get('/api/books?q=S001').json()[0]['barcode']=='8930000000019'
+    header=client.get('/api/export/books.csv').text.lstrip('﻿').splitlines()[0]
+    assert 'Mã vạch' in header

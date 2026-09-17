@@ -22,6 +22,12 @@ from app.security import hash_password
 ROOT = Path(__file__).resolve().parent
 
 
+def ean13(body12: str) -> str:
+    """Thêm chữ số kiểm tra EAN-13 vào 12 chữ số đầu."""
+    total = sum(int(d) * (1 if i % 2 == 0 else 3) for i, d in enumerate(body12))
+    return body12 + str((10 - total % 10) % 10)
+
+
 def seed():
     """Dữ liệu mẫu nhỏ cho bản nộp và test; chỉ tạo khi bảng users còn trống."""
     initialize()
@@ -33,7 +39,9 @@ def seed():
             ('admin', hash_password('Admin@123'), 'admin'),
             ('thuthu', hash_password('ThuThu@123'), 'librarian')])
         books=[('S001','Dế Mèn phiêu lưu ký','Tô Hoài','Văn học',5),('S002','Tôi thấy hoa vàng trên cỏ xanh','Nguyễn Nhật Ánh','Văn học',4),('S003','Lập trình Python cơ bản','Nhóm biên soạn','Tin học',3),('S004','Cơ sở dữ liệu','Nhóm biên soạn','Tin học',4),('S005','Nhập môn Công nghệ Phần mềm','Nhóm biên soạn','Tin học',6),('S006','Toán rời rạc','Nhóm biên soạn','Toán học',2),('S007','Kỹ năng học tập đại học','Nhóm biên soạn','Kỹ năng',3),('S008','Lịch sử Việt Nam nhập môn','Nhóm biên soạn','Lịch sử',2)]
-        db.executemany('INSERT INTO books(code,title,author,category,total) VALUES(?,?,?,?,?)',books)
+        # Mã vạch EAN-13 hư cấu, tiền tố 893 (Việt Nam); sách S006 cố ý để trống để demo trường không bắt buộc
+        db.executemany('INSERT INTO books(code,title,author,category,total,barcode) VALUES(?,?,?,?,?,?)',
+                       [(*b, '' if b[0]=='S006' else ean13(f'893000000{i+1:03}')) for i, b in enumerate(books)])
         db.executemany('INSERT INTO readers(code,name,phone) VALUES(?,?,?)', [('DG001','Nguyễn Minh An','0900000001'),('DG002','Trần Hà Linh','0900000002'),('DG003','Lê Hoàng Nam','0900000003'),('DG004','Phạm Ngọc Mai','0900000004')])
         today=date.today()
         for book,reader,start,due,returned in [(1,1,-20,-6,None),(2,2,-4,10,None),(3,3,-8,6,None),(4,4,-25,-11,-13),(1,2,-30,-16,-15)]:
@@ -94,8 +102,9 @@ def seed_demo(db_path: Path, today: date, seed: int = 2026):
                 total = rng.choice([1, 2, 2, 3, 3, 4, 5, 6, 8])
                 author = rng.choice(AUTHORS) if category != 'Văn học' else AUTHORS[(n - 1) % 12]
                 active = 0 if rng.random() < 0.05 else 1
-                db.execute('INSERT INTO books(code,title,author,category,total,active) VALUES(?,?,?,?,?,?)',
-                           (f'S{n:03}', title, author, category, total, active))
+                barcode = '' if rng.random() < 0.2 else ean13('893' + ''.join(rng.choice('0123456789') for _ in range(9)))
+                db.execute('INSERT INTO books(code,title,author,category,total,active,barcode) VALUES(?,?,?,?,?,?,?)',
+                           (f'S{n:03}', title, author, category, total, active, barcode))
                 if active:
                     books.append((n, total))
 

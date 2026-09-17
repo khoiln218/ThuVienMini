@@ -21,7 +21,7 @@ export async function render() {
       ? result.items.map(
           (b) => html`
             <tr>
-              <td>${b.code}</td>
+              <td>${b.code}${b.barcode ? html`<small class="barcode">${b.barcode}</small>` : ''}</td>
               <td class="text-wrap"><b>${b.title}</b><small>${b.author}</small></td>
               <td>${b.category}</td>
               <td>${b.total}</td>
@@ -47,6 +47,7 @@ export function editBook(id) {
     id ? 'Chỉnh sửa sách' : 'Thêm sách mới',
     html`
       ${field('Mã sách', 'code', b?.code, 'required maxlength="30"')}
+      ${field('Mã vạch / ISBN (không bắt buộc)', 'barcode', b?.barcode, 'maxlength="20" pattern="[0-9A-Za-z-]*" inputmode="numeric" placeholder="Quét hoặc nhập, ví dụ 8935236412345"')}
       ${field('Tên sách', 'title', b?.title, 'required maxlength="200"')}
       ${field('Tác giả', 'author', b?.author, 'required maxlength="100"')}
       ${field('Thể loại', 'category', b?.category, 'required maxlength="60"')}

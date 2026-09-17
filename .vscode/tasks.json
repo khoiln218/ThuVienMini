@@ -57,6 +57,15 @@
       },
       "group": "test",
       "problemMatcher": []
+    },
+    {
+      "label": "Tạo CSDL demo lớn (nếu chưa có)",
+      "type": "shell",
+      "command": "test -f data/demo.db || .venv/bin/python seed.py --demo",
+      "windows": {
+        "command": "if (-not (Test-Path data\\demo.db)) { .\\.venv\\Scripts\\python.exe seed.py --demo }"
+      },
+      "problemMatcher": []
     }
   ]
 }

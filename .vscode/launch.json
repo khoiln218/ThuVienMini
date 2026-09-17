@@ -6,7 +6,14 @@
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",
-      "args": ["app.main:app", "--host", "127.0.0.1", "--port", "8000", "--reload"],
+      "args": [
+        "app.main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000",
+        "--reload"
+      ],
       "cwd": "${workspaceFolder}",
       "jinja": false,
       "justMyCode": true
@@ -16,9 +23,40 @@
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",
-      "args": ["app.main:app", "--host", "127.0.0.1", "--port", "8001", "--reload"],
+      "args": [
+        "app.main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8001",
+        "--reload"
+      ],
       "cwd": "${workspaceFolder}",
-      "env": { "LIBRARY_DB": "${workspaceFolder}/data/dev.db", "LIBRARY_BACKUP": "0" },
+      "env": {
+        "LIBRARY_DB": "${workspaceFolder}/data/dev.db",
+        "LIBRARY_BACKUP": "0"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "Chạy server với CSDL demo lớn (seed.py --demo)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8001",
+        "--reload"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "LIBRARY_DB": "${workspaceFolder}/data/demo.db",
+        "LIBRARY_BACKUP": "0"
+      },
+      "preLaunchTask": "Tạo CSDL demo lớn (nếu chưa có)",
       "justMyCode": true
     },
     {
@@ -26,7 +64,10 @@
       "type": "debugpy",
       "request": "launch",
       "module": "pytest",
-      "args": ["-q", "tests"],
+      "args": [
+        "-q",
+        "tests"
+      ],
       "cwd": "${workspaceFolder}",
       "justMyCode": true
     },

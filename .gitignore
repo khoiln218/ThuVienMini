@@ -6,3 +6,4 @@ data/*.db-shm
 data/backups/
 data/dev.db
 node_modules/
+data/demo.db

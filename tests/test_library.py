@@ -274,3 +274,21 @@ def test_TC35_not_found_page(client):
     r=client.get('/api/khong-co',headers={'accept':'text/html'})
     assert r.status_code==404 and r.headers['content-type'].startswith('application/json')
     assert client.get('/khong-co').json()['detail']
+
+def test_TC36_seed_demo(tmp_path, monkeypatch):
+    import seed as seed_module
+    db=tmp_path/'demo.db'
+    assert seed_module.main(['--demo','--db',str(db)])==0
+    assert seed_module.main(['--demo','--db',str(db)])==1          # không ghi đè khi đã có
+    assert seed_module.main(['--demo','--db',str(db),'--force'])==0
+    monkeypatch.setenv('LIBRARY_DB',str(db))
+    counts={t:query(f'SELECT COUNT(*) AS n FROM {t}')[0]['n'] for t in ('users','books','readers','loans')}
+    assert counts['books']>=60 and counts['readers']==60 and counts['loans']>200
+    assert query('SELECT COUNT(*) AS n FROM loans WHERE returned_on IS NULL AND due_on<date("now")')[0]['n']>0
+    assert query('SELECT MAX(c) AS m FROM (SELECT COUNT(*) c FROM loans WHERE returned_on IS NULL GROUP BY reader_id)')[0]['m']<=5
+    assert query('SELECT COUNT(*) AS n FROM books b WHERE (SELECT COUNT(*) FROM loans l WHERE l.book_id=b.id AND l.returned_on IS NULL)>b.total')[0]['n']==0
+    login_guard.reset()
+    with TestClient(app,headers={'X-Library-Request':'1'}) as c:
+        assert c.post('/api/login',json={'username':'admin','password':'Admin@123'}).status_code==200
+        assert c.get('/api/books?page=1&size=20').json()['pages']>=3
+        assert c.get('/api/stats').json()['overdue']>0

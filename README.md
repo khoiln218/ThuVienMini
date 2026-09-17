@@ -165,7 +165,7 @@ Quy ước:
 
 Test giao diện (`tests/test_ui.py`) dùng Playwright điều khiển Chromium thật trên một server uvicorn chạy trong thread với CSDL tạm. Cần cài thêm một lần (có Internet): `pip install -r requirements-dev.txt` rồi `python -m playwright install chromium`. Máy chưa cài Playwright thì các test này tự bỏ qua, phần API vẫn chạy.
 
-70 ca tự động đã đạt trong lần kiểm thử cung cấp (62 API/unit + 8 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
+71 ca tự động đã đạt trong lần kiểm thử cung cấp (63 API/unit + 8 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
 
 ## Cấu trúc
 
@@ -181,7 +181,7 @@ app/static/js/       Frontend chia module: main.js (điểm vào), api.js, dom.j
 app/static/js/pages/ Mỗi màn hình một module xuất meta + render(): dashboard, books, readers, loans, users; pager dùng chung
 package.json, eslint.config.js, jsconfig.json, .prettierrc  Công cụ frontend (không cần để chạy app)
 schema.sql           DDL, khóa ngoại và chỉ mục
-seed.py              Dữ liệu mẫu không ghi đè
+seed.py              Dữ liệu mẫu nhỏ, không ghi đè (bản nộp, test); `--demo` tạo CSDL demo lớn riêng (data/demo.db)
 start.bat, start.sh  Script khởi động Windows / macOS-Linux
 .vscode/, requests.http  Cấu hình VS Code (debug, task, test) và mẫu gọi API
 data/library.db      Database demo
@@ -203,6 +203,19 @@ $env:LIBRARY_DB = "$PWD\data\demo_moi.db"
 ```
 
 Để trở về database mặc định trong cửa sổ PowerShell: `Remove-Item Env:LIBRARY_DB`. Không cần xóa database cũ. Khi chuyển sang database mới, đăng nhập lại vì cookie phiên cũ không nằm trong CSDL mới.
+
+## CSDL demo lớn
+
+`data/library.db` cố ý nhỏ (8 sách, 4 độc giả, 5 phiếu) để chấm bài dễ theo dõi. Để trình diễn phân trang, tìm kiếm, thống kê và lọc quá hạn với dữ liệu "thật" hơn, tạo một CSDL riêng:
+
+```bash
+python seed.py --demo                    # tạo data/demo.db: 63 đầu sách, 60 độc giả, ~260 phiếu trong 180 ngày
+LIBRARY_DB=data/demo.db python -m uvicorn app.main:app --port 8001
+```
+
+Windows PowerShell: `$env:LIBRARY_DB="data\demo.db"` rồi chạy uvicorn như trên. Trong VS Code chọn cấu hình **"Chạy server với CSDL demo lớn"** (tự chạy `seed.py --demo` nếu chưa có file).
+
+Dữ liệu hư cấu, sinh bằng hạt giống cố định nên tạo lại vẫn giống nhau (`--seed` để đổi, `--force` để ghi đè). Có sách/độc giả đã ngừng, phiếu quá hạn, trả muộn, đã gia hạn; tuân thủ mọi quy tắc nghiệp vụ (≤ 5 bản/độc giả, không vượt tổng bản). Tài khoản như bản nhỏ, thêm `thuthu2` và `cu_nhan_vien` (đã ngừng, không đăng nhập được). `data/library.db` không bị đụng tới.
 
 ## Phạm vi triển khai
 

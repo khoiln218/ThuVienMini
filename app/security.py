@@ -1,7 +1,9 @@
 import hashlib
 import hmac
+import os
 import secrets
 import time
+from pathlib import Path
 
 def hash_password(password):
     salt = secrets.token_hex(16)
@@ -13,8 +15,57 @@ def verify_password(password, stored):
     actual = hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 260000).hex()
     return hmac.compare_digest(actual, digest)
 
-def token_hash(token):
-    return hashlib.sha256(token.encode()).hexdigest()
+SESSION_SECONDS = 8 * 3600
+_secret = None
+
+
+def get_secret():
+    """Khóa ký phiên. Ưu tiên biến môi trường LIBRARY_SECRET (bắt buộc khi chạy nhiều instance như Vercel);
+    tại máy thì tự sinh một lần và lưu vào data/.secret để khởi động lại không phải đăng nhập lại."""
+    global _secret
+    if _secret:
+        return _secret
+    if os.environ.get('LIBRARY_SECRET'):
+        _secret = os.environ['LIBRARY_SECRET'].encode()
+        return _secret
+    path = Path(__file__).resolve().parent.parent / 'data' / '.secret'
+    try:
+        if not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(secrets.token_hex(32))
+        _secret = path.read_text().strip().encode()
+    except OSError:
+        # Đĩa chỉ đọc (serverless) mà không đặt LIBRARY_SECRET: mỗi instance một khóa → phiên chỉ hợp lệ trên instance đó
+        print('CẢNH BÁO: không lưu được data/.secret; đặt biến môi trường LIBRARY_SECRET để phiên đăng nhập ổn định.')
+        _secret = secrets.token_bytes(32)
+    return _secret
+
+
+def password_fingerprint(password_hash):
+    """Dấu vết của mật khẩu hiện tại gắn vào token: đổi mật khẩu thì mọi phiên cũ tự hết hạn."""
+    return hashlib.sha256(password_hash.encode()).hexdigest()[:16]
+
+
+def _sign(payload):
+    return hmac.new(get_secret(), payload.encode(), 'sha256').hexdigest()[:32]
+
+
+def make_token(user_id, password_hash, expires_at=None):
+    """Token phiên không lưu server (stateless): user_id.hạn.dấu_vết_mật_khẩu.chữ_ký."""
+    payload = f"{user_id}.{expires_at if expires_at is not None else int(time.time()) + SESSION_SECONDS}.{password_fingerprint(password_hash)}"
+    return f'{payload}.{_sign(payload)}'
+
+
+def parse_token(token):
+    """Trả về (user_id, fingerprint) nếu chữ ký đúng và chưa hết hạn, ngược lại None."""
+    try:
+        user_id, expires_at, fingerprint, signature = token.split('.')
+        payload = f'{user_id}.{expires_at}.{fingerprint}'
+        if not hmac.compare_digest(_sign(payload), signature) or int(expires_at) <= time.time():
+            return None
+        return int(user_id), fingerprint
+    except (ValueError, AttributeError):
+        return None
 
 class LoginGuard:
     """Chống dò mật khẩu: khóa tạm một cặp (tài khoản, địa chỉ) sau nhiều lần sai liên tiếp. Lưu trong bộ nhớ, đủ cho một máy chủ."""

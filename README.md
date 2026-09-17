@@ -19,7 +19,7 @@ Web application chạy tại máy, không có dịch vụ trả phí. Python Fas
 | Backend | FastAPI 0.141 trên Starlette 1.6, chạy bằng Uvicorn 0.53 |
 | Kiểm tra dữ liệu | Pydantic v2 (`app/models.py`) |
 | Cơ sở dữ liệu | SQLite qua module chuẩn `sqlite3`, `PRAGMA foreign_keys=ON`, giao dịch tường minh (`app/db.py`, `schema.sql`) |
-| Xác thực | Thư viện chuẩn: `hashlib.pbkdf2_hmac` (SHA-256, 260 000 vòng) băm mật khẩu, `secrets` sinh token, session lưu trong CSDL, cookie `HttpOnly` + `SameSite=Strict`, khóa tạm sau 5 lần sai mật khẩu |
+| Xác thực | Thư viện chuẩn: `hashlib.pbkdf2_hmac` (SHA-256, 260 000 vòng) băm mật khẩu; phiên là token ký HMAC-SHA256 trong cookie `HttpOnly` + `SameSite=Strict` (không lưu server, chạy được nhiều instance); khóa tạm sau 5 lần sai mật khẩu |
 | Frontend | HTML / CSS / JavaScript thuần (ES modules, `@ts-check` + JSDoc), một trang, gọi API bằng `fetch`; không framework, không CDN, không bước build |
 | Công cụ frontend (chỉ dev) | Prettier, ESLint, TypeScript (kiểm tra kiểu file .js) qua `npm run check`; Playwright cho test giao diện |
 | Kiểm thử | pytest 9 + `fastapi.testclient` (httpx); test API, unit, boundary, concurrency, migration; pytest-playwright cho 8 luồng giao diện trên Chromium; xuất JUnit XML |
@@ -127,7 +127,7 @@ Quy ước:
 - Không giảm tổng bản xuống dưới số đang mượn. Chặn xóa mềm sách/độc giả khi còn phiếu chưa trả. Lịch sử luôn được giữ.
 - Mã sách và độc giả là duy nhất trong cả bản ghi hoạt động và đã xóa mềm, có phân biệt chữ hoa/thường. Tìm kiếm không phân biệt hoa/thường Unicode nhưng có phân biệt dấu tiếng Việt; lọc và phân trang thực hiện ngay trong SQL (`LIMIT/OFFSET`).
 - Phân trang: thanh "N bản ghi · Trang x/y" dưới các bảng sách, độc giả, phiếu; chọn 5/10/20/50 dòng mỗi trang (mặc định 20, ghi nhớ trong trình duyệt). API nhận `page` (từ 1) và `size` (1–100); không truyền `page` thì trả toàn bộ danh sách (dùng cho hộp chọn khi lập phiếu và xuất CSV).
-- Ngày nghiệp vụ lấy theo ngày máy chạy server. Phiên đăng nhập có hạn 8 giờ; đổi mật khẩu hoặc ngừng tài khoản sẽ hủy các phiên khác của tài khoản đó.
+- Ngày nghiệp vụ lấy theo ngày máy chạy server. Phiên đăng nhập là token ký HMAC có hạn 8 giờ, gắn dấu vết mật khẩu: đổi/đặt lại mật khẩu hoặc ngừng tài khoản làm các phiên khác của tài khoản đó hết hiệu lực. Khóa ký lấy từ biến môi trường `LIBRARY_SECRET`, nếu không có thì tự sinh và lưu ở `data/.secret`.
 - Tài khoản: tên đăng nhập 3–50 ký tự chữ/số/`._-`, mật khẩu tối thiểu 8 ký tự. Không thể tự hạ quyền/tự ngừng, và luôn phải còn ít nhất một quản trị viên hoạt động. Sai mật khẩu 5 lần trong 15 phút sẽ bị khóa tạm 15 phút cho cặp tài khoản–địa chỉ đó (đếm trong bộ nhớ, khởi động lại server sẽ xóa).
 - Xuất CSV (UTF-8 có BOM, mở được bằng Excel) cho sách, độc giả và toàn bộ phiếu từ nút **Xuất CSV** trên mỗi trang.
 
@@ -229,11 +229,11 @@ Dữ liệu hư cấu, sinh bằng hạt giống cố định nên tạo lại v
 
 1. Đẩy mã nguồn lên GitHub (repo này đã có remote `origin`).
 2. Vào https://vercel.com → **Add New → Project** → chọn repo → Framework Preset để **Other** → **Deploy**. Hoặc dùng CLI: `npx vercel` rồi `npx vercel --prod`.
-3. (Tuỳ chọn) Biến môi trường `LIBRARY_VERCEL_DEMO=1` để mỗi instance tự sinh lại CSDL demo với ngày mượn tính theo hôm nay, thay vì chép `data/library.db` (ngày cố định tại thời điểm tạo).
+3. **Bắt buộc**: thêm Environment Variable `LIBRARY_SECRET` = một chuỗi ngẫu nhiên dài (tạo bằng `python -c "import secrets;print(secrets.token_hex(32))"`). Vercel chạy nhiều instance, không có biến này mỗi instance tự sinh khóa riêng → đăng nhập xong bị văng ra.
+4. (Tuỳ chọn) Biến môi trường `LIBRARY_VERCEL_DEMO=1` để mỗi instance tự sinh lại CSDL demo với ngày mượn tính theo hôm nay, thay vì chép `data/library.db` (ngày cố định tại thời điểm tạo).
 
 **Giới hạn phải biết trước khi gửi link:**
 - Vercel chạy serverless, không có ổ đĩa bền vững. App chép CSDL vào `/tmp` khi function khởi động; mọi thay đổi (thêm sách, lập phiếu, đổi mật khẩu) **chỉ tồn tại trong instance đó và mất khi Vercel khởi động lại** (thường sau vài phút không dùng). Đây là bản để xem giao diện và thao tác thử, không phải để lưu dữ liệu thật.
-- Phiên đăng nhập cũng nằm trong CSDL đó; nếu Vercel mở nhiều instance song song, có thể phải đăng nhập lại.
 - Tài khoản demo (`admin/Admin@123`) là công khai vì CSDL reset về mẫu. Không đưa dữ liệu thật lên bản này.
 - Sao lưu tự động bị tắt (`LIBRARY_BACKUP=0`); khoá tạm sai mật khẩu đếm theo từng instance.
 

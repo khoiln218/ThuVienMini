@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
  password_hash TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('admin','librarian')),
  active INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1))
 );
+-- Bảng sessions không còn dùng từ bản token ký HMAC (giữ lại để CSDL cũ không lỗi)
 CREATE TABLE IF NOT EXISTS sessions (
  token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id), expires_at INTEGER NOT NULL
 );

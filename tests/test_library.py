@@ -88,8 +88,14 @@ def test_TC16_csrf_header(client):
     assert client.post('/api/loans/1/return').status_code==403
 
 def test_TC17_expired_session(client):
-    with transaction() as db: db.execute('UPDATE sessions SET expires_at=0')
+    from app.security import make_token
+    stored=query('SELECT password_hash FROM users WHERE id=1')[0]['password_hash']
+    client.cookies.set('session', make_token(1, stored, expires_at=0))
     assert client.get('/api/me').status_code==401
+    client.cookies.set('session', make_token(1, stored)[:-1]+'0')     # chữ ký sai
+    assert client.get('/api/me').status_code==401
+    client.cookies.set('session', make_token(1, stored))
+    assert client.get('/api/me').status_code==200
 
 def test_TC18_duplicate_reader(client,reader):
     client.post('/api/readers',json=reader)

@@ -1,7 +1,6 @@
 import csv
 import io
 import os
-import secrets
 import sqlite3
 import time
 from contextlib import asynccontextmanager
@@ -13,7 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from .db import backup, initialize, query, transaction
 from .models import Login, Book, Reader, Borrow, Extend, UserCreate, UserUpdate, PasswordChange
-from .security import hash_password, verify_password, token_hash, LoginGuard
+from .security import hash_password, verify_password, make_token, parse_token, password_fingerprint, SESSION_SECONDS, LoginGuard
 from .services import LoanService, overdue_days
 
 login_guard = LoginGuard()
@@ -49,10 +48,12 @@ async def integrity_error(request, exc):
     return JSONResponse(status_code=409, content={'detail': 'Mã đã tồn tại hoặc dữ liệu vi phạm ràng buộc'})
 
 def current_user(request: Request):
-    token = request.cookies.get('session', '')
-    rows = query('SELECT u.id,u.username,u.role FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.active=1', (token_hash(token), int(time.time())))
-    if not rows:
+    # Phiên là token ký HMAC trong cookie, không lưu server: mọi instance (kể cả serverless) đều tự kiểm tra được.
+    parsed = parse_token(request.cookies.get('session', ''))
+    rows = parsed and query('SELECT id,username,role,password_hash FROM users WHERE id=? AND active=1', (parsed[0],))
+    if not rows or password_fingerprint(rows[0]['password_hash']) != parsed[1]:
         raise HTTPException(401, 'Vui lòng đăng nhập')
+    del rows[0]['password_hash']
     if request.method not in ('GET', 'HEAD', 'OPTIONS') and request.headers.get('X-Library-Request') != '1':
         raise HTTPException(403, 'Thiếu xác thực yêu cầu')
     return rows[0]
@@ -94,33 +95,31 @@ def login(data: Login, response: Response, request: Request):
         login_guard.fail(key)
         raise HTTPException(401, 'Tên đăng nhập hoặc mật khẩu không đúng')
     login_guard.succeed(key)
-    token = secrets.token_urlsafe(32)
-    with transaction() as db:
-        db.execute('DELETE FROM sessions WHERE expires_at<=?', (int(time.time()),))
-        db.execute('INSERT INTO sessions VALUES(?,?,?)', (token_hash(token), rows[0]['id'], int(time.time()) + 28800))
-    response.set_cookie('session', token, httponly=True, samesite='strict', max_age=28800)
+    set_session_cookie(response, rows[0]['id'], rows[0]['password_hash'])
     return {'username': rows[0]['username'], 'role': rows[0]['role']}
+
+def set_session_cookie(response: Response, user_id, password_hash):
+    response.set_cookie('session', make_token(user_id, password_hash), httponly=True, samesite='strict', max_age=SESSION_SECONDS)
 
 @app.get('/api/me')
 def me(user=Depends(current_user)):
     return user
 
 @app.post('/api/logout')
-def logout(request: Request, response: Response, user=Depends(current_user)):
-    with transaction() as db:
-        db.execute('DELETE FROM sessions WHERE token_hash=?', (token_hash(request.cookies.get('session', '')),))
+def logout(response: Response, user=Depends(current_user)):
     response.delete_cookie('session')
     return {'message': 'Đã đăng xuất'}
 
 @app.post('/api/password')
-def change_password(data: PasswordChange, request: Request, user=Depends(current_user)):
+def change_password(data: PasswordChange, response: Response, user=Depends(current_user)):
     with transaction() as db:
         stored = db.execute('SELECT password_hash FROM users WHERE id=?', (user['id'],)).fetchone()[0]
         if not verify_password(data.current_password, stored):
             raise HTTPException(401, 'Mật khẩu hiện tại không đúng')
-        db.execute('UPDATE users SET password_hash=? WHERE id=?', (hash_password(data.new_password), user['id']))
-        # Hủy các phiên khác của cùng tài khoản, giữ phiên đang dùng
-        db.execute('DELETE FROM sessions WHERE user_id=? AND token_hash<>?', (user['id'], token_hash(request.cookies.get('session', ''))))
+        new_hash = hash_password(data.new_password)
+        db.execute('UPDATE users SET password_hash=? WHERE id=?', (new_hash, user['id']))
+    # Token gắn dấu vết mật khẩu nên các phiên khác tự hết hạn; cấp cookie mới cho phiên đang dùng
+    set_session_cookie(response, user['id'], new_hash)
     return {'message': 'Đã đổi mật khẩu'}
 
 @app.get('/api/users')
@@ -151,8 +150,7 @@ def edit_user(record_id: int, data: UserUpdate, user=Depends(admin)):
             if not admins:
                 raise HTTPException(409, 'Phải còn ít nhất một quản trị viên hoạt động')
         db.execute(f"UPDATE users SET {','.join(k+'=?' for k in changes)} WHERE id=?", (*changes.values(), record_id))
-        if changes.get('active') == 0 or 'password_hash' in changes:
-            db.execute('DELETE FROM sessions WHERE user_id=?', (record_id,))
+        # Ngừng tài khoản hoặc đặt lại mật khẩu → mọi phiên của người đó tự hết hạn (current_user kiểm tra active và dấu vết mật khẩu)
     return {'message': 'Đã cập nhật tài khoản'}
 
 def paginated(select, source, order, params, page, size):

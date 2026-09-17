@@ -1,4 +1,5 @@
 import os
+import shutil
 import sqlite3
 import time
 from pathlib import Path
@@ -52,7 +53,17 @@ def initialize():
             db.execute(sql)
 
 def db_path():
-    return Path(os.environ.get('LIBRARY_DB', ROOT / 'data/library.db'))
+    if os.environ.get('LIBRARY_DB'):
+        return Path(os.environ['LIBRARY_DB'])
+    if os.environ.get('VERCEL'):
+        # Serverless (Vercel đặt sẵn VERCEL=1): mã nguồn nằm trên đĩa chỉ đọc, chỉ /tmp ghi được và mất khi
+        # function khởi động lạnh. Chép CSDL mẫu ra /tmp một lần cho instance này → chế độ demo, không lưu bền.
+        tmp = Path(os.environ.get('LIBRARY_TMP', '/tmp/thuvienmini')) / 'library.db'
+        if not tmp.exists():
+            tmp.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(ROOT / 'data/library.db', tmp)
+        return tmp
+    return ROOT / 'data/library.db'
 
 def backup(keep=10):
     """Sao chép CSDL bằng API backup của SQLite (an toàn khi server đang chạy); giữ lại `keep` bản mới nhất."""

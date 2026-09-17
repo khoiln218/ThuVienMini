@@ -1,0 +1,13 @@
+# Chỉ dùng cho Vercel: chỉ định entrypoint và phiên bản Python. Cài đặt tại máy vẫn dùng requirements.txt.
+[project]
+name = "thuvienmini"
+version = "1.0.0"
+description = "Quản lý thư viện mini — BTL Nhập môn Công nghệ Phần mềm, nhóm 1"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi==0.141.1",
+  "pydantic==2.13.5",
+]
+
+[tool.vercel]
+entrypoint = "vercel_app:app"

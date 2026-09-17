@@ -186,7 +186,7 @@ package.json, eslint.config.js, jsconfig.json, .prettierrc  Công cụ frontend 
 schema.sql           DDL, khóa ngoại và chỉ mục
 seed.py              Dữ liệu mẫu nhỏ, không ghi đè (bản nộp, test); `--demo` tạo CSDL demo lớn riêng (data/demo.db)
 start.bat, start.sh  Script khởi động Windows / macOS-Linux
-api/index.py, vercel.json  Điểm vào và cấu hình cho bản demo trên Vercel
+vercel_app.py, pyproject.toml, vercel.json  Điểm vào và cấu hình cho bản demo trên Vercel
 .vscode/, requests.http  Cấu hình VS Code (debug, task, test) và mẫu gọi API
 data/library.db      Database demo
 tests/               API, unit, boundary, concurrency tests
@@ -225,14 +225,14 @@ Dữ liệu hư cấu, sinh bằng hạt giống cố định nên tạo lại v
 
 ### Vercel (bản demo công khai)
 
-Đã có sẵn `api/index.py` (điểm vào ASGI), `vercel.json` và `.vercelignore`. Cách đưa lên:
+Đã có sẵn `vercel_app.py` (điểm vào ASGI, khai báo trong `pyproject.toml` mục `[tool.vercel]`), `vercel.json` và `.vercelignore`. Khi thấy biến môi trường `VERCEL=1` (Vercel tự đặt), `app/db.py` chép `data/library.db` ra `/tmp` để có chỗ ghi và `app/main.py` bỏ qua sao lưu tự động. Cách đưa lên:
 
 1. Đẩy mã nguồn lên GitHub (repo này đã có remote `origin`).
 2. Vào https://vercel.com → **Add New → Project** → chọn repo → Framework Preset để **Other** → **Deploy**. Hoặc dùng CLI: `npx vercel` rồi `npx vercel --prod`.
 3. (Tuỳ chọn) Biến môi trường `LIBRARY_VERCEL_DEMO=1` để mỗi instance tự sinh lại CSDL demo với ngày mượn tính theo hôm nay, thay vì chép `data/library.db` (ngày cố định tại thời điểm tạo).
 
 **Giới hạn phải biết trước khi gửi link:**
-- Vercel chạy serverless, không có ổ đĩa bền vững. `api/index.py` chép CSDL vào `/tmp` khi function khởi động; mọi thay đổi (thêm sách, lập phiếu, đổi mật khẩu) **chỉ tồn tại trong instance đó và mất khi Vercel khởi động lại** (thường sau vài phút không dùng). Đây là bản để xem giao diện và thao tác thử, không phải để lưu dữ liệu thật.
+- Vercel chạy serverless, không có ổ đĩa bền vững. App chép CSDL vào `/tmp` khi function khởi động; mọi thay đổi (thêm sách, lập phiếu, đổi mật khẩu) **chỉ tồn tại trong instance đó và mất khi Vercel khởi động lại** (thường sau vài phút không dùng). Đây là bản để xem giao diện và thao tác thử, không phải để lưu dữ liệu thật.
 - Phiên đăng nhập cũng nằm trong CSDL đó; nếu Vercel mở nhiều instance song song, có thể phải đăng nhập lại.
 - Tài khoản demo (`admin/Admin@123`) là công khai vì CSDL reset về mẫu. Không đưa dữ liệu thật lên bản này.
 - Sao lưu tự động bị tắt (`LIBRARY_BACKUP=0`); khoá tạm sai mật khẩu đếm theo từng instance.

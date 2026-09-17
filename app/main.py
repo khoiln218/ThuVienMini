@@ -21,8 +21,8 @@ login_guard = LoginGuard()
 @asynccontextmanager
 async def lifespan(app):
     initialize()
-    if os.environ.get('LIBRARY_BACKUP', '1') != '0':
-        backup()  # sao lưu tự động mỗi lần khởi động, giữ 10 bản gần nhất
+    if os.environ.get('LIBRARY_BACKUP', '1') != '0' and not os.environ.get('VERCEL'):
+        backup()  # sao lưu tự động mỗi lần khởi động, giữ 10 bản gần nhất (không có chỗ lưu trên serverless)
     yield
 
 app = FastAPI(title='Thư viện mini • Nhóm 1', lifespan=lifespan)

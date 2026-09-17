@@ -308,16 +308,21 @@ def test_TC37_barcode(client,book):
     header=client.get('/api/export/books.csv').text.lstrip('﻿').splitlines()[0]
     assert 'Mã vạch' in header
 
-def test_TC38_vercel_entrypoint(tmp_path, monkeypatch):
-    # api/index.py chép CSDL mẫu vào đường dẫn tạm rồi mở app; kiểm tra bằng TestClient như trên Vercel
+def test_TC38_vercel_mode(tmp_path, monkeypatch):
+    # Trên Vercel (VERCEL=1, không có LIBRARY_DB) app phải tự chép CSDL mẫu ra thư mục ghi được và không sao lưu
     import importlib, sys
-    monkeypatch.setenv('LIBRARY_DB', str(tmp_path/'vercel'/'library.db'))
-    sys.modules.pop('api.index', None)
-    module=importlib.import_module('api.index')
-    assert (tmp_path/'vercel'/'library.db').exists()
+    from app import db as dbmod
+    monkeypatch.delenv('LIBRARY_DB', raising=False)
+    monkeypatch.setenv('VERCEL', '1')
+    monkeypatch.setenv('LIBRARY_TMP', str(tmp_path/'tmp'))
+    assert dbmod.db_path()==tmp_path/'tmp'/'library.db' and dbmod.db_path().exists()
+    sys.modules.pop('vercel_app', None)
+    module=importlib.import_module('vercel_app')
     login_guard.reset()
     with TestClient(module.app, headers={'X-Library-Request':'1'}) as c:
         assert c.post('/api/login',json={'username':'admin','password':'Admin@123'}).status_code==200
         assert c.get('/api/stats').json()['titles']>=8
+        assert c.post('/api/books',json={'code':'VC1','title':'Ghi được trên /tmp','author':'a','category':'c','total':1}).status_code==201
         assert c.get('/').status_code==200
-    assert not (tmp_path/'vercel'/'backups').exists()   # LIBRARY_BACKUP=0
+    assert not (tmp_path/'tmp'/'backups').exists()
+    

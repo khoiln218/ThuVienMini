@@ -1,0 +1,51 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+entity books {
+ *id : INTEGER <<PK>>
+ --
+ code : TEXT <<UQ>>
+ title : TEXT
+ author : TEXT
+ category : TEXT
+ total : INTEGER
+ active : INTEGER
+}
+entity readers {
+ *id : INTEGER <<PK>>
+ --
+ code : TEXT <<UQ>>
+ name : TEXT
+ phone : TEXT
+ active : INTEGER
+}
+entity loans {
+ *id : INTEGER <<PK>>
+ --
+ book_id : INTEGER <<FK>>
+ reader_id : INTEGER <<FK>>
+ created_by : INTEGER <<FK>>
+ returned_by : INTEGER <<FK nullable>>
+ borrowed_on : TEXT
+ due_on : TEXT
+ returned_on : TEXT nullable
+}
+entity users {
+ *id : INTEGER <<PK>>
+ --
+ username : TEXT <<UQ>>
+ password_hash : TEXT
+ role : TEXT
+}
+entity sessions {
+ *token_hash : TEXT <<PK>>
+ --
+ user_id : INTEGER <<FK>>
+ expires_at : INTEGER
+}
+books ||--o{ loans
+readers ||--o{ loans
+users ||--o{ loans : created_by
+users |o--o{ loans : returned_by
+users ||--o{ sessions
+@enduml

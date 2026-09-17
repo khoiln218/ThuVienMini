@@ -1,0 +1,30 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+left to right direction
+actor "Thủ thư" as T
+actor "Quản trị viên" as A
+A --|> T
+rectangle "Thư viện mini" {
+usecase "Đăng nhập" as U1
+usecase "Quản lý sách
+(thêm, sửa, tìm)" as U2
+usecase "Quản lý độc giả
+(thêm, sửa, tìm)" as U3
+usecase "Mượn sách" as U4
+usecase "Trả sách" as U5
+usecase "Tìm kiếm sách" as U6
+usecase "Xem quá hạn" as U7
+usecase "Xem thống kê" as U8
+usecase "Xóa mềm sách / độc giả" as U9
+}
+T -- U1
+T -- U2
+T -- U3
+T -- U4
+T -- U5
+T -- U6
+T -- U7
+T -- U8
+A -- U9
+@enduml

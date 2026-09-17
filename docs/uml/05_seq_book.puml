@@ -1,0 +1,15 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+participant "Thủ thư" as P0
+participant "Biểu mẫu sách" as P1
+participant "Xử lý sách" as P2
+participant "Dữ liệu" as P3
+P0 -> P1: 1. Nhập thông tin sách
+P1 -> P2: 2. Gửi thông tin
+P2 -> P3: 3. [Dữ liệu hợp lệ] Thêm sách
+P3 --> P2: 4. Mã mới hoặc lỗi trùng mã
+P2 --> P1: 5. Thông báo kết quả
+P1 --> P0: 6. Cập nhật kho sách
+
+@enduml

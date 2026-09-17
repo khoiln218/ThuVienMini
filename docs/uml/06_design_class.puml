@@ -1,0 +1,54 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+class Main <<module>> {
+ +current_user(request): dict
+ +save_record(table, data, record_id): dict
+ +borrow(data, user): dict
+ +return_book(loan_id, user): dict
+}
+class LoanService {
+ {static} +borrow(data: Borrow, user_id: int): dict
+ {static} +return_book(loan_id: int, user_id: int): dict
+}
+class DB <<module>> {
+ +connect(): Connection
+ +transaction(): contextmanager
+ +initialize(): None
+ +query(sql, params): list
+}
+class Input {
+ str_strip_whitespace = true
+ extra = forbid
+}
+class Book {
+ code: str[1..30]
+ title: str[1..200]
+ author: str[1..100]
+ category: str[1..60]
+ total: int[0..999]
+}
+class Reader {
+ code: str[1..30]
+ name: str[1..100]
+ phone: str[0..20]
+}
+class Borrow {
+ book_id: int > 0
+ reader_id: int > 0
+ days: int[1..30]
+}
+class Login {
+ username: str
+ password: str
+}
+Input <|-- Book
+Input <|-- Reader
+Input <|-- Borrow
+Input <|-- Login
+Main ..> LoanService
+Main ..> Input
+Main ..> DB
+LoanService ..> DB
+LoanService ..> Borrow
+@enduml

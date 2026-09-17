@@ -1,0 +1,17 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+participant "Thủ thư" as P0
+participant "Giao diện" as P1
+participant "Xử lý trả" as P2
+participant "Dữ liệu" as P3
+P0 -> P1: 1. Chọn phiếu và xác nhận
+P1 -> P2: 2. Yêu cầu trả
+P2 -> P3: 3. Đọc phiếu mượn
+P3 --> P2: 4. Phiếu và trạng thái
+P2 -> P3: 5. [Chưa trả] Ghi ngày trả
+P3 --> P2: 6. Đã lưu
+P2 --> P1: 7. Kết quả và số ngày quá hạn
+P1 --> P0: 8. Hiển thị trạng thái mới
+
+@enduml

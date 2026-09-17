@@ -1,0 +1,19 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+start
+:Chọn sách và độc giả;
+:Nhập số ngày 1..30;
+:Xác thực phiên và dữ liệu;
+:BEGIN IMMEDIATE;
+if (Còn bản và độc giả hoạt động
+và đang mượn dưới 5?) then (Có)
+ :INSERT phiếu mượn;
+ :COMMIT;
+ :Hiển thị phiếu và số có sẵn;
+else (Không)
+ :ROLLBACK;
+ :Hiển thị lỗi nghiệp vụ;
+endif
+stop
+@enduml

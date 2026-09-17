@@ -1,0 +1,18 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+participant "app.js" as P0
+participant "main.py" as P1
+participant "LoanService" as P2
+participant "SQLite" as P3
+P0 -> P1: POST return + cookie + header
+P1 -> P3: current_user(): xác thực phiên
+P3 --> P1: Người dùng hợp lệ
+P1 -> P2: return_book(id, user.id)
+P2 -> P3: BEGIN IMMEDIATE; SELECT loans
+P3 --> P2: Phiếu mượn
+P2 -> P3: [Chưa trả] UPDATE; COMMIT
+P2 --> P1: message, overdue_days
+P1 --> P0: 200 JSON; hoặc lỗi 404 / 409
+
+@enduml

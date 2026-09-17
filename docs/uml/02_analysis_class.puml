@@ -1,0 +1,33 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+class Sach {
+ maSach
+ tenSach
+ tacGia
+ theLoai
+ tongSoBan
+ hoatDong
+}
+class DocGia {
+ maDocGia
+ hoTen
+ dienThoai
+ hoatDong
+}
+class PhieuMuon {
+ ngayMuon
+ hanTra
+ ngayTra
+ /soNgayQuaHan
+}
+class NguoiDung {
+ tenDangNhap
+ matKhauBam
+ vaiTro
+}
+Sach "1" -- "0..*" PhieuMuon
+DocGia "1" -- "0..*" PhieuMuon
+NguoiDung "1" -- "0..*" PhieuMuon : lập
+NguoiDung "0..1" -- "0..*" PhieuMuon : nhận trả
+@enduml

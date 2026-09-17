@@ -1,0 +1,17 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+participant "Thủ thư" as P0
+participant "Giao diện" as P1
+participant "Xử lý mượn" as P2
+participant "Dữ liệu" as P3
+P0 -> P1: 1. Chọn sách, độc giả, số ngày
+P1 -> P2: 2. Yêu cầu mượn
+P2 -> P3: 3. Kiểm tra độc giả và sách
+P3 --> P2: 4. Số đang mượn, số bản có sẵn
+P2 -> P3: 5. [Hợp lệ] Lưu phiếu
+P3 --> P2: 6. Mã phiếu
+P2 --> P1: 7. Kết quả hoặc lỗi nghiệp vụ
+P1 --> P0: 8. Hiển thị và cập nhật danh sách
+
+@enduml

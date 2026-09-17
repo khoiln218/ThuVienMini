@@ -2,11 +2,11 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Cài môi trường (venv + pip)",
+      "label": "Cài môi trường và dữ liệu demo",
       "type": "shell",
-      "command": "python3 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt",
+      "command": "test -x .venv/bin/python || python3 -m venv .venv; .venv/bin/python -m pip install -q -r requirements.txt && .venv/bin/python seed.py",
       "windows": {
-        "command": "py -3 -m venv .venv; .\\.venv\\Scripts\\python.exe -m pip install -r requirements.txt"
+        "command": "if (-not (Test-Path .venv\\Scripts\\python.exe)) { py -3 -m venv .venv }; .\\.venv\\Scripts\\python.exe -m pip install -q -r requirements.txt; .\\.venv\\Scripts\\python.exe seed.py"
       },
       "problemMatcher": []
     },
@@ -24,22 +24,6 @@
       "problemMatcher": []
     },
     {
-      "label": "Khởi động server (start.sh / start.bat)",
-      "type": "shell",
-      "command": "./start.sh",
-      "windows": {
-        "command": ".\\start.bat"
-      },
-      "isBackground": true,
-      "problemMatcher": []
-    },
-    {
-      "label": "Frontend: cài công cụ (npm install)",
-      "type": "shell",
-      "command": "npm install",
-      "problemMatcher": []
-    },
-    {
       "label": "Frontend: format + lint + typecheck",
       "type": "shell",
       "command": "npm run check",
@@ -47,25 +31,6 @@
         "$eslint-stylish",
         "$tsc"
       ]
-    },
-    {
-      "label": "Test giao diện (Playwright)",
-      "type": "shell",
-      "command": ".venv/bin/python -m pytest tests/test_ui.py -q",
-      "windows": {
-        "command": ".\\.venv\\Scripts\\python.exe -m pytest tests/test_ui.py -q"
-      },
-      "group": "test",
-      "problemMatcher": []
-    },
-    {
-      "label": "Tạo CSDL demo lớn (nếu chưa có)",
-      "type": "shell",
-      "command": "test -f data/demo.db || .venv/bin/python seed.py --demo",
-      "windows": {
-        "command": "if (-not (Test-Path data\\demo.db)) { .\\.venv\\Scripts\\python.exe seed.py --demo }"
-      },
-      "problemMatcher": []
     }
   ]
 }

@@ -3,8 +3,8 @@
 Trên Vercel không có đĩa ghi bền vững: app/db.py thấy biến VERCEL=1 sẽ chép data/library.db ra /tmp và dùng ở đó,
 nên bản này là CHẾ ĐỘ DEMO — dữ liệu thêm/sửa chỉ tồn tại trong instance hiện tại. Xem README mục "Triển khai lên Internet".
 
-Đặt biến môi trường LIBRARY_VERCEL_DEMO=1 nếu muốn mỗi instance tự sinh lại CSDL demo (ngày mượn tính theo hôm nay)
-thay vì chép data/library.db.
+Đặt biến môi trường LIBRARY_VERCEL_DEMO=1 nếu muốn mỗi instance tự sinh lại dữ liệu demo (ngày mượn tính theo hôm nay)
+thay vì chép data/library.db. Bộ demo là xác định (cả salt mật khẩu) nên các instance vẫn dùng chung phiên.
 """
 import os
 from datetime import date

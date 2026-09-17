@@ -500,11 +500,11 @@ Nhánh không có phiếu trả 404; đã trả trả 409. Hai yêu cầu trả 
 
 ![Hình 12. Tổng quan chụp từ ứng dụng chạy thật](images/dashboard.png)
 
-Ứng dụng khởi động bằng uvicorn app.main:app (start.bat trên Windows, start.sh trên macOS/Linux). Lifespan tạo cấu trúc bảng nếu thiếu, thêm cột mới cho CSDL cũ và sao lưu vào data/backups; seed.py tạo dữ liệu minh họa riêng khi CSDL chưa có người dùng, seed.py --demo sinh bộ demo lớn. Không tự xóa dữ liệu mỗi lần khởi động.
+Ứng dụng khởi động bằng uvicorn app.main:app (start.bat trên Windows, start.sh trên macOS/Linux). Lifespan tạo cấu trúc bảng nếu thiếu, thêm cột mới cho CSDL cũ và sao lưu vào data/backups; seed.py sinh bộ dữ liệu demo khi CSDL chưa có người dùng (--force để sinh lại). Không tự xóa dữ liệu mỗi lần khởi động.
 
 Giao diện có năm khu vực: Tổng quan, Kho sách, Độc giả, Mượn & trả và Tài khoản (chỉ admin thấy). Mỗi khu vực có URL riêng (/books, /loans/overdue…) nên tải lại trang hay nút Back vẫn đúng màn hình; đường dẫn lạ có trang 404 riêng. Bảng danh sách có thanh phân trang, nút Xuất CSV; menu dùng icon SVG và logo tự vẽ, không tải font hay icon ngoài. Các biểu mẫu dùng HTML dialog, kiểm tra trường ở trình duyệt và kiểm tra lại ở server. JavaScript fetch gọi API cùng origin; không cần framework frontend hoặc dịch vụ bên ngoài.
 
-CSDL cung cấp sẵn là bộ demo lớn do seed.py --demo sinh với hạt giống cố định: 4 tài khoản, 63 đầu sách (80% có mã vạch EAN-13 hư cấu), 60 độc giả, 257 phiếu trong 180 ngày gồm đã trả đúng hạn, trả muộn, đang mượn, quá hạn và đã gia hạn; mọi quy tắc nghiệp vụ được tuân thủ khi sinh. Bộ mẫu nhỏ của seed.py (8 đầu sách / 29 bản, 4 độc giả, 5 phiếu) dùng cho test tự động. Số liệu thay đổi khi thao tác hoặc khi thời gian trôi qua.
+CSDL cung cấp sẵn là bộ demo do seed.py sinh với hạt giống cố định (kể cả salt mật khẩu): 4 tài khoản, 63 đầu sách (80% có mã vạch EAN-13 hư cấu), 60 độc giả, 257 phiếu trong 180 ngày gồm đã trả đúng hạn, trả muộn, đang mượn, quá hạn và đã gia hạn; mọi quy tắc nghiệp vụ được tuân thủ khi sinh. Bộ mẫu nhỏ (hàm seed(): 8 đầu sách / 29 bản, 4 độc giả, 5 phiếu) chỉ dùng cho test tự động. Số liệu thay đổi khi thao tác hoặc khi thời gian trôi qua.
 
 # D2 Danh mục và API
 
@@ -589,7 +589,7 @@ Kết quả thực tế: các ca trên đều PASS trong lần chạy cung cấp
 | TC33 | Header cache của / và js | Cache-Control: no-cache |
 | TC34 | GET /books, /loans/overdue, /users, /nope | 200 trả SPA; 404 |
 | TC35 | GET đường dẫn lạ với Accept text/html | Trang 404 HTML; /api/* vẫn JSON |
-| TC36 | seed.py --demo vào CSDL tạm | ≥ 60 sách, 60 độc giả, > 200 phiếu; không ai > 5 bản; không vượt tổng bản |
+| TC36 | seed.py vào CSDL tạm; chạy lại; --force | ≥ 60 sách, 60 độc giả, > 200 phiếu; không ai > 5 bản; không vượt tổng bản |
 | TC37 | Sách có mã vạch; trùng; rỗng; sai định dạng; tìm | 201; 409; 201; 422; tìm ra đúng sách |
 | TC38 | Chế độ Vercel (VERCEL=1) | CSDL chép ra thư mục tạm, ghi được, không sao lưu |
 | UI01 | Đăng nhập admin bằng trình duyệt | Tổng quan 4 ô thống kê, tiêu đề tab đúng |

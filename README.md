@@ -87,12 +87,11 @@ Chạy lại khi đã cài xong, không cần mạng:
 Thư mục `.vscode/` đã có sẵn cấu hình; mở thư mục `ThuVienMini` bằng **File → Open Folder** là dùng được.
 
 1. Cài extension được gợi ý khi VS Code hỏi (Python, Debugpy, Pylance, SQLite Viewer, PlantUML, REST Client).
-2. **Terminal → Run Task → "Cài môi trường (venv + pip)"** một lần. VS Code tự chọn `.venv` làm interpreter (góc phải dưới hiện `.venv`).
-3. **Run and Debug (F5) → "Chạy server (tự tải lại khi sửa code)"**: uvicorn chạy với `--reload`, lưu file Python là server tự khởi động lại; đặt breakpoint trong `app/*.py` để dừng và xem biến. Sửa HTML/CSS/JS chỉ cần tải lại trình duyệt.
-4. Cấu hình **"Chạy server với CSDL demo riêng"** dùng `data/dev.db` ở cổng 8001 và tắt sao lưu tự động, để thử nghiệm không đụng `data/library.db` nộp bài.
-5. **Testing** (biểu tượng ống nghiệm ở thanh bên): chạy/debug từng test bằng nút ▶ cạnh tên hàm. Task "Chạy test + xuất JUnit" (`Cmd/Ctrl+Shift+B` → chọn test) tái tạo `docs/test-results.xml`.
-6. `requests.http`: gọi thử từng API ngay trong editor bằng REST Client, cookie phiên được giữ sau khi đăng nhập.
-7. Mở `data/library.db` bằng SQLite Viewer để xem bảng; mở `docs/uml/*.puml` và bấm `Alt+D` để xem sơ đồ PlantUML.
+2. **F5** → "Chạy server (tự tải lại khi sửa code)". Lần đầu task tiền khởi động tự tạo `.venv`, cài thư viện và sinh dữ liệu demo — đúng những gì `start.bat`/`start.sh` làm. uvicorn chạy với `--reload`, lưu file Python là server tự khởi động lại; đặt breakpoint trong `app/*.py` để dừng và xem biến. Sửa HTML/CSS/JS chỉ cần tải lại trình duyệt.
+3. Muốn dữ liệu demo mới (ngày mượn tính lại theo hôm nay): dừng server, chạy `python seed.py --force`.
+4. **Testing** (biểu tượng ống nghiệm ở thanh bên): chạy/debug từng test bằng nút ▶ cạnh tên hàm. Task "Chạy test + xuất JUnit" (`Cmd/Ctrl+Shift+B` → chọn test) tái tạo `docs/test-results.xml`.
+5. `requests.http`: gọi thử từng API ngay trong editor bằng REST Client, cookie phiên được giữ sau khi đăng nhập.
+6. Mở `data/library.db` bằng SQLite Viewer để xem bảng; mở `docs/uml/*.puml` và bấm `Alt+D` để xem sơ đồ PlantUML.
 
 ## Phát triển frontend
 
@@ -117,8 +116,8 @@ Quy ước:
 ## Dữ liệu và quy tắc
 
 - CSDL `data/library.db` được cung cấp sẵn. `seed.py` chỉ tạo mẫu khi chưa có người dùng, không xóa dữ liệu đang có.
-- `data/library.db` cung cấp sẵn là bộ dữ liệu demo lớn sinh bởi `seed.py --demo` (xem mục CSDL demo lớn): 4 tài khoản, 63 đầu sách (khoảng 80% có mã vạch EAN-13 hư cấu tiền tố 893), 60 độc giả, ~260 phiếu trong 180 ngày với đủ trạng thái. Ngày quá hạn thay đổi theo ngày máy chủ.
-- Bộ mẫu nhỏ của `seed.py` (2 tài khoản, 8 đầu sách / 29 bản, 4 độc giả, 5 phiếu, 1 phiếu quá hạn) dùng cho test tự động và khi khởi động với CSDL trống.
+- `data/library.db` cung cấp sẵn là bộ dữ liệu demo sinh bởi `seed.py` (xem mục Dữ liệu demo): 4 tài khoản, 63 đầu sách (khoảng 80% có mã vạch EAN-13 hư cấu tiền tố 893), 60 độc giả, ~260 phiếu trong 180 ngày với đủ trạng thái. Ngày quá hạn thay đổi theo ngày máy chủ.
+- Bộ mẫu nhỏ (2 tài khoản, 8 đầu sách / 29 bản, 4 độc giả, 5 phiếu, 1 phiếu quá hạn) là hàm `seed()` trong `seed.py`, chỉ dùng cho test tự động.
 - Một phiếu tương ứng một bản sách, không quản lý mã vạch từng bản vật lý. Mỗi đầu sách có thể ghi một **mã vạch/ISBN** (tối đa 20 ký tự chữ số, chữ cái, gạch nối; không bắt buộc; duy nhất khi có nhập). Ô tìm kiếm sách tìm cả theo mã vạch, nên máy quét gõ mã rồi Enter là ra đúng đầu sách. Một độc giả được giữ tối đa 5 bản, có thể mượn nhiều bản cùng đầu sách.
 - Hạn mượn 1–30 ngày, mặc định 14. Ngày hạn trả vẫn trong hạn. Quá hạn = số ngày dương từ hạn trả đến ngày hiện tại, hoặc đến ngày trả nếu đã trả.
 - Cho phép độc giả đang có phiếu quá hạn tiếp tục mượn nếu còn dưới 5 bản. Bản demo chưa áp dụng phạt tiền/đặt trước.
@@ -184,7 +183,7 @@ app/static/js/       Frontend chia module: main.js (điểm vào), api.js, dom.j
 app/static/js/pages/ Mỗi màn hình một module xuất meta + render(): dashboard, books, readers, loans, users; pager dùng chung
 package.json, eslint.config.js, jsconfig.json, .prettierrc  Công cụ frontend (không cần để chạy app)
 schema.sql           DDL, khóa ngoại và chỉ mục
-seed.py              Dữ liệu mẫu nhỏ, không ghi đè (bản nộp, test); `--demo` tạo CSDL demo lớn riêng (data/demo.db)
+seed.py              Sinh dữ liệu demo vào data/library.db nếu trống (--force sinh lại); hàm seed() là bộ nhỏ cho test
 start.bat, start.sh  Script khởi động Windows / macOS-Linux
 vercel_app.py, pyproject.toml, vercel.json  Điểm vào và cấu hình cho bản demo trên Vercel
 .vscode/, requests.http  Cấu hình VS Code (debug, task, test) và mẫu gọi API
@@ -198,28 +197,16 @@ docs/                Báo cáo (MD/DOCX/PDF), ảnh giao diện, bảng kiểm t
 
 Server tự sao lưu vào `data/backups/library-<ngày>-<giờ>.db` mỗi lần khởi động và khi quản trị bấm **Sao lưu dữ liệu** ở trang Tổng quan; chỉ giữ 10 bản mới nhất. Sao lưu dùng API backup của SQLite nên an toàn khi server đang chạy. Đặt biến môi trường `LIBRARY_BACKUP=0` để tắt sao lưu tự động. Để phục hồi: dừng server, chép bản sao lưu đè lên `data/library.db`.
 
-Có thể tạo một database khác mà giữ nguyên bản cũ:
+Muốn dùng một file CSDL khác (ví dụ thử nghiệm mà không đụng bản nộp): đặt biến môi trường `LIBRARY_DB` trỏ tới file đó rồi chạy `seed.py` và uvicorn như bình thường; bỏ biến là quay về `data/library.db`.
 
-```powershell
-$env:LIBRARY_DB = "$PWD\data\demo_moi.db"
-.\.venv\Scripts\python.exe seed.py
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
+## Dữ liệu demo
 
-Để trở về database mặc định trong cửa sổ PowerShell: `Remove-Item Env:LIBRARY_DB`. Không cần xóa database cũ. Phiên đăng nhập là token ký nên vẫn hợp lệ khi đổi CSDL, miễn tài khoản cùng mật khẩu tồn tại ở CSDL mới.
-
-## CSDL demo lớn
-
-`data/library.db` trong bản nộp chính là bộ này. Muốn tạo lại (dữ liệu mới, ngày mượn tính lại theo hôm nay) hoặc tạo một CSDL riêng để thử nghiệm:
+`data/library.db` trong bản nộp là bộ demo do `seed.py` sinh: 63 đầu sách (80% có mã vạch EAN-13 hư cấu), 60 độc giả, ~260 phiếu trong 180 ngày với đủ trạng thái (đúng hạn, trả muộn, đang mượn, quá hạn, đã gia hạn), có sách/độc giả/tài khoản đã ngừng; mọi quy tắc nghiệp vụ được tuân thủ khi sinh. Dữ liệu hư cấu, sinh bằng hạt giống cố định (kể cả salt mật khẩu) nên sinh lại ở đâu cũng giống hệt nhau.
 
 ```bash
-python seed.py --demo                    # tạo data/demo.db: 63 đầu sách, 60 độc giả, ~260 phiếu trong 180 ngày
-LIBRARY_DB=data/demo.db python -m uvicorn app.main:app --port 8001
+python seed.py            # có dữ liệu rồi thì giữ nguyên
+python seed.py --force    # sinh lại, ngày mượn tính theo hôm nay (dừng server trước)
 ```
-
-Windows PowerShell: `$env:LIBRARY_DB="data\demo.db"` rồi chạy uvicorn như trên. Trong VS Code chọn cấu hình **"Chạy server với CSDL demo lớn"** (tự chạy `seed.py --demo` nếu chưa có file).
-
-Dữ liệu hư cấu, sinh bằng hạt giống cố định nên tạo lại vẫn giống nhau (`--seed` để đổi, `--force` để ghi đè). Có sách/độc giả đã ngừng, phiếu quá hạn, trả muộn, đã gia hạn; tuân thủ mọi quy tắc nghiệp vụ (≤ 5 bản/độc giả, không vượt tổng bản). Tài khoản như bảng ở đầu README. `seed.py --demo` mặc định ghi vào `data/demo.db`, không đụng `data/library.db`; muốn thay `library.db` thì chép đè khi server đã dừng.
 
 ## Triển khai lên Internet
 
@@ -230,7 +217,7 @@ Dữ liệu hư cấu, sinh bằng hạt giống cố định nên tạo lại v
 1. Đẩy mã nguồn lên GitHub (repo này đã có remote `origin`).
 2. Vào https://vercel.com → **Add New → Project** → chọn repo → Framework Preset để **Other** → **Deploy**. Hoặc dùng CLI: `npx vercel` rồi `npx vercel --prod`.
 3. Thêm Environment Variable `LIBRARY_SECRET` = một chuỗi ngẫu nhiên dài (tạo bằng `python -c "import secrets;print(secrets.token_hex(32))"`), chọn cả Production/Preview, rồi **Redeploy** (biến môi trường chỉ áp dụng cho deployment mới). Không có biến này app dự phòng bằng khóa suy từ định danh deployment để phiên vẫn dùng được trên mọi instance, nhưng khóa đó không bí mật nên chỉ chấp nhận cho demo.
-4. (Tuỳ chọn) Biến môi trường `LIBRARY_VERCEL_DEMO=1` để mỗi instance tự sinh lại CSDL demo với ngày mượn tính theo hôm nay, thay vì chép `data/library.db` (ngày cố định tại thời điểm tạo).
+4. (Tuỳ chọn) Biến môi trường `LIBRARY_VERCEL_DEMO=1` để mỗi instance tự sinh lại dữ liệu demo với ngày mượn tính theo hôm nay, thay vì chép `data/library.db` (ngày cố định lúc tạo). Bộ demo sinh ra giống hệt nhau trên mọi instance (kể cả salt mật khẩu) nên phiên đăng nhập dùng chung được.
 
 **Giới hạn phải biết trước khi gửi link:**
 - Vercel chạy serverless, không có ổ đĩa bền vững. App chép CSDL vào `/tmp` khi function khởi động; mọi thay đổi (thêm sách, lập phiếu, đổi mật khẩu) **chỉ tồn tại trong instance đó và mất khi Vercel khởi động lại** (thường sau vài phút không dùng). Đây là bản để xem giao diện và thao tác thử, không phải để lưu dữ liệu thật.

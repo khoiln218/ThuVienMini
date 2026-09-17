@@ -284,10 +284,12 @@ def test_TC35_not_found_page(client):
 def test_TC36_seed_demo(tmp_path, monkeypatch):
     import seed as seed_module
     db=tmp_path/'demo.db'
-    assert seed_module.main(['--demo','--db',str(db)])==0
-    assert seed_module.main(['--demo','--db',str(db)])==1          # không ghi đè khi đã có
-    assert seed_module.main(['--demo','--db',str(db),'--force'])==0
+    assert seed_module.main(['--db',str(db)])==0
+    assert seed_module.main(['--db',str(db)])==0          # đã có dữ liệu → giữ nguyên
     monkeypatch.setenv('LIBRARY_DB',str(db))
+    first=query('SELECT password_hash FROM users WHERE username="admin"')[0]['password_hash']
+    assert seed_module.main(['--db',str(db),'--force'])==0
+    assert query('SELECT password_hash FROM users WHERE username="admin"')[0]['password_hash']==first   # demo xác định cả salt
     counts={t:query(f'SELECT COUNT(*) AS n FROM {t}')[0]['n'] for t in ('users','books','readers','loans')}
     assert counts['books']>=60 and counts['readers']==60 and counts['loans']>200
     assert query('SELECT COUNT(*) AS n FROM loans WHERE returned_on IS NULL AND due_on<date("now")')[0]['n']>0

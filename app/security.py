@@ -5,8 +5,10 @@ import secrets
 import time
 from pathlib import Path
 
-def hash_password(password):
-    salt = secrets.token_hex(16)
+def hash_password(password, salt=None):
+    """PBKDF2-HMAC-SHA256 với salt ngẫu nhiên. `salt` chỉ truyền khi cần kết quả lặp lại (dữ liệu demo sinh trên
+    nhiều instance phải giống hệt nhau); tài khoản thật luôn để None."""
+    salt = salt or secrets.token_hex(16)
     digest = hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 260000).hex()
     return f'{salt}${digest}'
 

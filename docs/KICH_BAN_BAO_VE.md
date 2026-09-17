@@ -2,7 +2,7 @@
 
 ## Chuẩn bị
 
-Chạy ứng dụng trước buổi báo cáo (`start.bat` hoặc `./start.sh`). Mở sẵn báo cáo PDF và trình duyệt tại localhost. Đảm bảo Python và dependency đã cài để không phụ thuộc Internet tại phòng bảo vệ. CSDL nộp kèm là bộ demo lớn (63 sách, 60 độc giả, ~260 phiếu); muốn ngày mượn tính lại theo hôm nay thì chạy `python seed.py --demo --force` rồi chép `data/demo.db` đè `data/library.db` khi server đã dừng. Có thể mở thêm link Vercel làm phương án dự phòng nếu máy trục trặc (nhớ rằng dữ liệu trên đó không lưu bền). Đây là đề tài **nhóm 1**, có đủ bốn thành viên trên bìa.
+Chạy ứng dụng trước buổi báo cáo (`start.bat` hoặc `./start.sh`). Mở sẵn báo cáo PDF và trình duyệt tại localhost. Đảm bảo Python và dependency đã cài để không phụ thuộc Internet tại phòng bảo vệ. CSDL nộp kèm là bộ demo (63 sách, 60 độc giả, ~260 phiếu); muốn ngày mượn tính lại theo hôm nay thì dừng server và chạy `python seed.py --force`. Có thể mở thêm link Vercel làm phương án dự phòng nếu máy trục trặc (nhớ rằng dữ liệu trên đó không lưu bền). Đây là đề tài **nhóm 1**, có đủ bốn thành viên trên bìa.
 
 ## Phân chia trình bày đề xuất
 
@@ -110,4 +110,4 @@ Vercel là serverless, đĩa chỉ đọc; app chép `library.db` ra `/tmp` củ
 - Bốn tên, mã sinh viên và lớp đúng danh sách nhóm.
 - Nếu trường yêu cầu tên giảng viên, khoa hoặc mẫu bìa riêng, bổ sung thông tin thật vào DOCX. Không điền giả.
 - Nhóm đọc và chạy ít nhất một vòng demo, hiểu quy tắc và giới hạn đã ghi.
-- Gửi cả source, database mẫu, báo cáo và test results. Không gửi `.venv`, `node_modules`, `data/backups`, `data/demo.db`.
+- Gửi cả source, database mẫu, báo cáo và test results. Không gửi `.venv`, `node_modules`, `data/backups`.

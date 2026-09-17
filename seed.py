@@ -1,14 +1,14 @@
-"""Khởi tạo dữ liệu.
+"""Khởi tạo dữ liệu demo cho data/library.db (hoặc $LIBRARY_DB).
 
-    python seed.py                  # dữ liệu mẫu nhỏ vào data/library.db (hoặc $LIBRARY_DB); không xóa hay ghi đè dữ liệu hiện có
-    python seed.py --demo           # CSDL demo lớn riêng tại data/demo.db để trình diễn phân trang, thống kê, lọc quá hạn
-    python seed.py --demo --force   # tạo lại demo từ đầu;  --db để đổi đường dẫn, --seed để đổi bộ dữ liệu
+    python seed.py            # tạo bộ demo nếu CSDL chưa có tài khoản; đã có thì giữ nguyên
+    python seed.py --force    # xóa và sinh lại (ngày mượn tính lại theo hôm nay)
+    python seed.py --db x.db  # đường dẫn khác;  --seed N đổi bộ dữ liệu
 
-Chạy server với CSDL demo:  LIBRARY_DB=data/demo.db python -m uvicorn app.main:app --port 8001
-(Windows PowerShell: $env:LIBRARY_DB="data\\demo.db")
+Bộ demo: 4 tài khoản, 63 đầu sách, 60 độc giả, ~260 phiếu trong 180 ngày. Dữ liệu hư cấu, sinh bằng hạt giống cố định
+(kể cả salt mật khẩu) nên mọi lần sinh đều giống hệt nhau.
+Tài khoản: admin/Admin@123, thuthu/ThuThu@123, thuthu2/ThuThu@123, cu_nhan_vien/ThuThu@123 (đã ngừng).
 
-Dữ liệu hư cấu. Demo lớn sinh ngẫu nhiên với hạt giống cố định nên mỗi lần chạy cho kết quả giống nhau.
-Tài khoản: admin/Admin@123, thuthu/ThuThu@123; bản demo thêm thuthu2/ThuThu@123 và cu_nhan_vien/ThuThu@123 (đã ngừng).
+Hàm seed() bên dưới là bộ mẫu nhỏ (8 sách, 4 độc giả, 5 phiếu) chỉ dùng cho bộ test tự động.
 """
 import argparse
 import os
@@ -29,7 +29,7 @@ def ean13(body12: str) -> str:
 
 
 def seed():
-    """Dữ liệu mẫu nhỏ cho bản nộp và test; chỉ tạo khi bảng users còn trống."""
+    """Bộ mẫu nhỏ dùng cho test tự động (tests/conftest.py); chỉ tạo khi bảng users còn trống."""
     initialize()
     with transaction() as db:
         if db.execute('SELECT COUNT(*) FROM users').fetchone()[0]:
@@ -49,7 +49,7 @@ def seed():
     print('Demo ready: 2 users, 8 books, 4 readers, 5 loans. Fictional data only.')
 
 
-# ======================= CSDL demo lớn (--demo) =======================
+# ======================= Bộ demo (python seed.py) =======================
 
 TITLES = {
     'Văn học': ['Dế Mèn phiêu lưu ký', 'Tôi thấy hoa vàng trên cỏ xanh', 'Số đỏ', 'Tắt đèn', 'Chí Phèo', 'Vợ nhặt',
@@ -78,7 +78,7 @@ TEN = ['An', 'Bình', 'Chi', 'Dũng', 'Hà', 'Hiếu', 'Hương', 'Khoa', 'Lan',
 
 
 def seed_demo(db_path: Path, today: date, seed: int = 2026):
-    """Tạo CSDL demo lớn tại db_path. Trả về (số bản ghi từng bảng, thống kê phiếu)."""
+    """Tạo bộ demo tại db_path (CSDL phải chưa có tài khoản). Trả về (số bản ghi từng bảng, thống kê phiếu)."""
     os.environ['LIBRARY_DB'] = str(db_path)
     rng = random.Random(seed)
     initialize()
@@ -89,8 +89,11 @@ def seed_demo(db_path: Path, today: date, seed: int = 2026):
         # ---- Tài khoản ----
         users = [('admin', 'Admin@123', 'admin', 1), ('thuthu', 'ThuThu@123', 'librarian', 1),
                  ('thuthu2', 'ThuThu@123', 'librarian', 1), ('cu_nhan_vien', 'ThuThu@123', 'librarian', 0)]
+        # Salt lấy từ rng để bộ demo giống hệt nhau ở mọi nơi sinh ra nó (nhiều instance serverless cùng một bản deploy
+        # phải cho cùng password_hash, nếu không token phiên của instance này bị instance khác từ chối)
+        demo_salt = lambda: ''.join(rng.choice('0123456789abcdef') for _ in range(32))
         db.executemany('INSERT INTO users(username,password_hash,role,active) VALUES(?,?,?,?)',
-                       [(u, hash_password(p), r, a) for u, p, r, a in users])
+                       [(u, hash_password(p, demo_salt()), r, a) for u, p, r, a in users])
         staff_ids = [1, 2, 3]
 
         # ---- Sách ----
@@ -168,25 +171,25 @@ def seed_demo(db_path: Path, today: date, seed: int = 2026):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--demo', action='store_true', help='tạo CSDL demo lớn thay vì dữ liệu mẫu nhỏ')
-    parser.add_argument('--db', default=None, help='đường dẫn CSDL demo (mặc định data/demo.db)')
-    parser.add_argument('--force', action='store_true', help='xóa CSDL demo cũ nếu đã tồn tại')
-    parser.add_argument('--seed', type=int, default=2026, help='hạt giống ngẫu nhiên cho demo')
+    parser.add_argument('--db', default=None, help='đường dẫn CSDL (mặc định $LIBRARY_DB hoặc data/library.db)')
+    parser.add_argument('--force', action='store_true', help='xóa CSDL cũ và sinh lại')
+    parser.add_argument('--seed', type=int, default=2026, help='hạt giống ngẫu nhiên')
     args = parser.parse_args(argv)
-    if not args.demo:
-        seed()
-        return 0
-    db_path = Path(args.db or ROOT / 'data/demo.db')
+    db_path = Path(args.db or os.environ.get('LIBRARY_DB') or ROOT / 'data/library.db')
     if db_path.exists():
         if not args.force:
-            print(f'{db_path} đã tồn tại; thêm --force để tạo lại.', file=sys.stderr)
-            return 1
-        db_path.unlink()
+            os.environ['LIBRARY_DB'] = str(db_path)
+            initialize()
+            with transaction() as db:
+                if db.execute('SELECT COUNT(*) FROM users').fetchone()[0]:
+                    print(f'{db_path} đã có dữ liệu, giữ nguyên (dùng --force để sinh lại).')
+                    return 0
+        else:
+            db_path.unlink()
     counts, stats = seed_demo(db_path, date.today(), args.seed)
     print(f"Đã tạo {db_path}: {counts['users']} tài khoản, {counts['books']} đầu sách, {counts['readers']} độc giả, {counts['loans']} phiếu "
           f"({stats['open']} đang mượn trong hạn, {stats['overdue']} quá hạn, {stats['returned']} đã trả trong đó {stats['late_returned']} trả muộn, "
           f"{stats['extended']} đã gia hạn). Dữ liệu hư cấu.")
-    print(f'Chạy: LIBRARY_DB={db_path} python -m uvicorn app.main:app --port 8001')
     return 0
 
 

@@ -7,8 +7,6 @@ __pycache__
 tests
 docs
 data/backups
-data/demo.db
-data/dev.db
 data/*.db-wal
 data/*.db-shm
 package.json

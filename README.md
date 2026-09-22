@@ -1,4 +1,4 @@
-# BTL nhóm 1 — Quản lý thư viện mini
+# BTL nhóm 1 — Quản lý thư viện
 
 Web application chạy tại máy, không có dịch vụ trả phí. Python FastAPI + SQLite + HTML/CSS/JavaScript thuần. Hoàn thành các chức năng chính: quản lý sách, quản lý độc giả, mượn và trả sách. Có đăng nhập, tìm kiếm, lọc quá hạn và thống kê.
 
@@ -235,11 +235,10 @@ Dù chạy ở đâu cũng phải đổi mật khẩu demo ngay sau khi triển 
 
 ## Phạm vi triển khai
 
-Bản nộp phù hợp thư viện mini và trình diễn tại máy. Đã có quản lý tài khoản, đổi mật khẩu, gia hạn, xuất CSV, phân trang, sao lưu tự động và chống dò mật khẩu cơ bản. Chưa đo tải lớn, chưa có phục hồi dữ liệu bằng giao diện, quản lý bản sách theo barcode, phạt tiền/đặt trước hoặc cấu hình HTTPS. Không tự công khai máy chủ lên Internet; nếu dùng trong mạng LAN cần đặt reverse proxy HTTPS phía trước. Bản Vercel chỉ là demo không lưu dữ liệu (xem mục Triển khai). Khi triển khai thật cần bổ sung các phần này và đổi tài khoản demo.
+Bản nộp phù hợp thư viện nhỏ và trình diễn tại máy. Đã có quản lý tài khoản, đổi mật khẩu, gia hạn, xuất CSV, phân trang, sao lưu tự động và chống dò mật khẩu cơ bản. Chưa đo tải lớn, chưa có phục hồi dữ liệu bằng giao diện, quản lý bản sách theo barcode, phạt tiền/đặt trước hoặc cấu hình HTTPS. Không tự công khai máy chủ lên Internet; nếu dùng trong mạng LAN cần đặt reverse proxy HTTPS phía trước. Bản Vercel chỉ là demo không lưu dữ liệu (xem mục Triển khai). Khi triển khai thật cần bổ sung các phần này và đổi tài khoản demo.
 
 ## Tài liệu căn cứ
 
-- Đề gốc: https://docs.google.com/document/d/1Z4gQx6iHjog6jNRzuYSzWolWmAVAnrvO/edit
 - FastAPI TestClient: https://fastapi.tiangolo.com/tutorial/testing/
 - SQLite transactions: https://www.sqlite.org/lang_transaction.html
-- Các quy định về 5 bản / 1–30 ngày là giả định của bài triển khai, không phải yêu cầu được trích nguyên văn từ đề gốc.
+- Các quy định về 5 bản / 1–30 ngày là giả định của bài triển khai, không phải yêu cầu được trích nguyên văn từ đề bài.

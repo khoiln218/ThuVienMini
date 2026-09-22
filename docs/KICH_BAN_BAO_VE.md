@@ -87,7 +87,7 @@ Mật khẩu lưu PBKDF2-HMAC-SHA256 260.000 vòng với salt ngẫu nhiên, kh�
 
 ### 14. Chức năng chưa có là gì?
 
-Chưa quản lý mã riêng từng bản vật lý (chỉ có mã vạch theo đầu sách), phạt tiền, đặt trước, khôi phục xóa mềm hay phục hồi sao lưu bằng giao diện, HTTPS tự cấu hình. Chưa xác nhận tải lớn hay hoạt động 24/7; bản Vercel chỉ là demo không lưu dữ liệu bền. Bản hiện tại hoàn thành các luồng chính cộng gia hạn, quản lý tài khoản, xuất CSV, sao lưu và phân trang ở quy mô thư viện mini.
+Chưa quản lý mã riêng từng bản vật lý (chỉ có mã vạch theo đầu sách), phạt tiền, đặt trước, khôi phục xóa mềm hay phục hồi sao lưu bằng giao diện, HTTPS tự cấu hình. Chưa xác nhận tải lớn hay hoạt động 24/7; bản Vercel chỉ là demo không lưu dữ liệu bền. Bản hiện tại hoàn thành các luồng chính cộng gia hạn, quản lý tài khoản, xuất CSV, sao lưu và phân trang ở quy mô thư viện nhỏ.
 
 ### 15. Giai đoạn phân tích khác thiết kế ra sao?
 
@@ -108,6 +108,7 @@ Vercel là serverless, đĩa chỉ đọc; app chép `library.db` ra `/tmp` củ
 ## Các điểm cần kiểm tra trước khi nộp
 
 - Bốn tên, mã sinh viên và lớp đúng danh sách nhóm.
-- Nếu trường yêu cầu tên giảng viên, khoa hoặc mẫu bìa riêng, bổ sung thông tin thật vào DOCX. Không điền giả.
+- Bìa và bố cục theo mẫu Học viện: bìa BÁO CÁO ĐỒ ÁN MÔN HỌC (GVHD Nguyễn Thị Bích Nguyên, trưởng nhóm Lê Ngọc Khôi, TP.HCM tháng 9/2026), sau đó MỤC LỤC, DANH SÁCH HÌNH BẢNG, DANH MỤC TỪ VIẾT TẮT, Chương I–VI và TÀI LIỆU THAM KHẢO.
+- Sửa nội dung ở `docs/Bao_cao_Nhom_1.md` rồi chạy `python3 docs/build_docx.py` để dựng lại DOCX; mở bằng Word, bấm Ctrl+A rồi F9 để cập nhật số trang mục lục trước khi xuất PDF.
 - Nhóm đọc và chạy ít nhất một vòng demo, hiểu quy tắc và giới hạn đã ghi.
 - Gửi cả source, database mẫu, báo cáo và test results. Không gửi `.venv`, `node_modules`, `data/backups`.

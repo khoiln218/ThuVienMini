@@ -34,7 +34,7 @@ export async function render() {
           (l) => html`
             <div class="list-item">
               <div><b>${l.title}</b><small>${l.name} · Phiếu #${l.id} · Hạn ${l.due_on}</small></div>
-              <div>${badge(l)}<br /><button class="action" data-return="${l.id}">Trả sách</button></div>
+              <div class="list-stack">${badge(l)}<button class="action" data-return="${l.id}">Trả sách</button></div>
             </div>
           `,
         ),

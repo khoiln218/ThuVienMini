@@ -3,8 +3,13 @@
   --muted: #6e7b75;
   --green: #1c6451;
   --line: #dfe6df;
+  /* Viền cho nút phụ: đậm hơn --line để khối nút hiện rõ cạnh nút chính tô đặc. */
+  --line-strong: #9db8ab;
   --paper: #f5f7f2;
   --gold: #e8bd6b;
+  /* Chiều cao chuẩn của điều khiển: 10px padding x2 + line-height 22.5 + 2 viền. */
+  --control-h: 44.5px;
+  --control-h-sm: 33.5px;
 }
 * {
   box-sizing: border-box;
@@ -28,7 +33,7 @@ select {
 }
 button {
   cursor: pointer;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 7px;
   padding: 10px 16px;
   color: var(--ink);
@@ -49,7 +54,10 @@ button:disabled {
 input,
 select {
   width: 100%;
-  padding: 11px 12px;
+  /* Padding dọc và line-height khớp với button để mọi điều khiển cao bằng nhau. */
+  padding: 10px 12px;
+  line-height: 1.5;
+  min-height: var(--control-h);
   border: 1px solid #ccd7cf;
   border-radius: 6px;
   color: var(--ink);
@@ -305,6 +313,17 @@ header .eyebrow {
 .list-item small {
   display: block;
 }
+/* Nhãn trạng thái xếp trên nút thao tác, cách nhau 2px. */
+.list-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+/* margin của .action dành cho nhóm nút nằm ngang, ở đây bỏ để hai mép phải thẳng hàng. */
+.list-stack .action {
+  margin-right: 0;
+}
 .badge {
   display: inline-block;
   border-radius: 5px;
@@ -373,6 +392,8 @@ td small {
   padding: 6px 10px;
   font-size: 12px;
   margin-right: 4px;
+  /* Trong bảng giữ viền nhạt để danh sách không bị rối. */
+  border-color: var(--line);
 }
 .danger {
   color: #a33b30;
@@ -532,7 +553,7 @@ dialog::backdrop {
 a.button {
   display: inline-block;
   padding: 10px 16px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 7px;
   background: white;
   color: var(--ink);
@@ -546,6 +567,11 @@ a.button:hover {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-shrink: 0;
+}
+/* Trong nhóm nút, khoảng cách do gap lo nên bỏ margin riêng của a.button. */
+.toolbar-actions a.button {
+  margin-right: 0;
 }
 .badge.info {
   background: #e6eef8;
@@ -576,11 +602,14 @@ a.button:hover {
 }
 .pager .filter select {
   width: auto;
-  padding: 5px 8px;
+  padding: 6px 8px;
   font-size: 13px;
+  /* Bằng nút Trước/Sau trong cùng thanh phân trang. */
+  min-height: var(--control-h-sm);
 }
 .pager button {
   padding: 6px 12px;
+  min-height: var(--control-h-sm);
   font-size: 13px;
 }
 .panel-link {

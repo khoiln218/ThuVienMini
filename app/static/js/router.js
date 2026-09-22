@@ -39,7 +39,7 @@ export async function navigate(next, param, replace = false) {
   const path = next === 'dashboard' ? '/' : `/${next}${filter}`;
   if (location.pathname !== path) history[replace ? 'replaceState' : 'pushState'](null, '', path);
 
-  document.title = `${ROUTES[next]} · Thư viện mini`;
+  document.title = `${ROUTES[next]} · Thư viện`;
   document.querySelectorAll('.page').forEach((el) => {
     /** @type {HTMLElement} */ (el).hidden = el.id !== next;
   });

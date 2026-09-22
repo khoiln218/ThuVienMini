@@ -24,7 +24,7 @@ async def lifespan(app):
         backup()  # sao lưu tự động mỗi lần khởi động, giữ 10 bản gần nhất (không có chỗ lưu trên serverless)
     yield
 
-app = FastAPI(title='Thư viện mini • Nhóm 1', lifespan=lifespan)
+app = FastAPI(title='Thư viện • Nhóm 1', lifespan=lifespan)
 STATIC = Path(__file__).parent / 'static'
 app.mount('/static', StaticFiles(directory=STATIC), name='static')
 

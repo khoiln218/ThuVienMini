@@ -55,7 +55,7 @@ def test_UI01_login_and_dashboard(signed_in):
     expect(page.locator('#user-label')).to_contain_text('admin')
     expect(page.locator('#stats .stat')).to_have_count(4)
     expect(page.locator('#overdue-list .list-item')).to_have_count(1)
-    expect(page).to_have_title('Tổng quan thư viện · Thư viện mini')
+    expect(page).to_have_title('Tổng quan thư viện · Thư viện')
 
 
 def test_UI02_wrong_password_shows_error(page, server):

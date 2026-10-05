@@ -10,10 +10,12 @@ Chạy ứng dụng trước buổi báo cáo (`start.bat` hoặc `./start.sh`).
 
 | Thành viên | Nội dung trình bày | Thời lượng gợi ý |
 |---|---|---|
-| Phạm Tuấn Anh | Bài toán, phạm vi, yêu cầu, Use Case | 2 phút |
-| Phạm Phước Hòa | Lớp phân tích, CSDL, quy tắc dữ liệu | 2 phút |
-| Lê Ngọc Khôi | Kiến trúc, demo chức năng chính và phần bổ sung | 4 phút |
-| Lê Bá Quảng | Kiểm thử, kết quả, hạn chế | 2 phút |
+| Phạm Tuấn Anh | Bài toán, phạm vi, quy trình, yêu cầu, Use Case (Chương I, II, III.I) | 3 phút |
+| Phạm Phước Hòa | Sơ đồ hoạt động, ERD, CSDL, giao diện, xử lý (Chương III.II–V) | 3 phút |
+| Lê Ngọc Khôi | Demo chức năng chính (Chương IV) | 3 phút |
+| Lê Bá Quảng | Cài đặt, thử nghiệm, kết luận, hạn chế (Chương V, VI) | 3 phút |
+
+Lời thoại chi tiết theo từng mốc thời gian: `KICH_BAN_TRINH_BAY.md`. Phần "Demo bắt buộc" dưới đây là bản đầy đủ dùng khi có thêm thời gian hoặc khi giảng viên yêu cầu xem thêm.
 
 ## Demo bắt buộc theo thứ tự
 
@@ -108,7 +110,7 @@ Vercel là serverless, đĩa chỉ đọc; app chép `library.db` ra `/tmp` củ
 ## Các điểm cần kiểm tra trước khi nộp
 
 - Bốn tên, mã sinh viên và lớp đúng danh sách nhóm.
-- Bìa và bố cục theo mẫu Học viện: bìa BÁO CÁO ĐỒ ÁN MÔN HỌC (GVHD Nguyễn Thị Bích Nguyên, trưởng nhóm Lê Ngọc Khôi, TP.HCM tháng 9/2026), sau đó MỤC LỤC, DANH SÁCH HÌNH BẢNG, DANH MỤC TỪ VIẾT TẮT, Chương I–VI và TÀI LIỆU THAM KHẢO.
-- Sửa nội dung ở `docs/Bao_cao_Nhom_1.md` rồi chạy `python3 docs/build_docx.py` để dựng lại DOCX; mở bằng Word, bấm Ctrl+A rồi F9 để cập nhật số trang mục lục trước khi xuất PDF.
+- Bìa và bố cục theo mẫu Học viện: bìa BÁO CÁO ĐỒ ÁN MÔN HỌC (GVHD Nguyễn Thị Bích Nguyên, trưởng nhóm Lê Ngọc Khôi, TP.HCM tháng 10/2026), sau đó MỤC LỤC, DANH SÁCH HÌNH BẢNG, DANH MỤC TỪ VIẾT TẮT, Chương I–VI và TÀI LIỆU THAM KHẢO.
+- Nội dung gốc là `docs/Bao_cao_Nhom_1.md`; DOCX/PDF được dựng lại từ file này. Nếu sửa trực tiếp trong Word, bấm Ctrl+A rồi F9 để cập nhật số trang mục lục trước khi xuất PDF.
 - Nhóm đọc và chạy ít nhất một vòng demo, hiểu quy tắc và giới hạn đã ghi.
 - Gửi cả source, database mẫu, báo cáo và test results. Không gửi `.venv`, `node_modules`, `data/backups`.

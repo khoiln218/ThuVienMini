@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Thư viện · Nhóm 1</title>
     <link rel="icon" type="image/svg+xml" href="/static/logo.svg" />
-    <link rel="stylesheet" href="/static/style.css?v=9" />
-    <script type="module" src="/static/js/main.js?v=13"></script>
+    <link rel="stylesheet" href="/static/style.css?v=10" />
+    <script type="module" src="/static/js/main.js?v=14"></script>
   </head>
   <body>
     <!-- Ẩn lúc tải để không nháy màn hình đăng nhập khi F5 mà phiên vẫn còn; main.js bật đúng màn hình sau /api/me -->
@@ -87,5 +87,7 @@
         </div>
       </form>
     </dialog>
+    <!-- Phiếu mượn để in: chỉ hiện khi in (style.css @media print), pages/loans.js printLoan() điền nội dung -->
+    <section id="print-area"></section>
   </body>
 </html>

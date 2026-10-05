@@ -20,14 +20,14 @@ Chạy ứng dụng trước buổi báo cáo (`start.bat` hoặc `./start.sh`).
 1. Đăng nhập `admin / Admin@123`. Chỉ ra tổng quan, nhưng dành phần lớn thời gian cho quản lý và mượn trả.
 2. **Sách:** thêm mã `BV001`, tên `Sách bảo vệ`, tác giả `Nhóm 1`, thể loại `Tin học`, tổng bản `1`; thêm tiếp `BV002` tổng bản `2`. Tìm `BV001`. Sửa tên thành `Sách bảo vệ nhóm 1`. Thử thêm lại mã `BV001` để chứng minh trùng mã bị chặn.
 3. **Độc giả:** thêm `BV001`, họ tên `Độc giả demo`, điện thoại tùy chọn. Tìm lại và sửa tên thành `Độc giả bảo vệ`.
-4. **Mượn:** Lập phiếu mượn cho độc giả vừa tạo, đánh dấu cả `BV001` và `BV002` (dùng ô lọc), 14 ngày. Chỉ ra thông báo "Đã lập phiếu mượn #n gồm 2 cuốn", phiếu có hai cuốn và số có sẵn của BV001 giảm từ 1 về 0. Sách hết bản sẽ không còn trong danh sách chọn khi lập phiếu mới.
+4. **Mượn:** Lập phiếu mượn cho độc giả vừa tạo, đánh dấu cả `BV001` và `BV002` (dùng ô lọc), 14 ngày, để chọn ô "In phiếu ngay sau khi lập". Chỉ ra thông báo "Đã lập phiếu mượn #n gồm 2 cuốn", hộp thoại in mở ra với phiếu mượn có chỗ ký (chọn Lưu PDF hoặc Hủy), phiếu có hai cuốn và số có sẵn của BV001 giảm từ 1 về 0. Sách hết bản sẽ không còn trong danh sách chọn khi lập phiếu mới.
 5. **Ràng buộc:** vào Kho sách, bấm `Lưu trữ` cho sách đang mượn. Hệ thống báo "Còn sách chưa trả, không thể lưu trữ" và giữ nguyên sách.
 6. **Trả:** mở Mượn & trả, bấm Trả sách cho phiếu vừa lập, bỏ chọn BV002 rồi xác nhận: thông báo "phiếu còn 1 cuốn chưa trả", BV001 có sẵn trở lại 1. Trả tiếp BV002: "phiếu đã trả đủ", phiếu chuyển Đã trả.
 7. **Lưu trữ:** sau khi trả, bấm Lưu trữ cho sách và độc giả demo. Bản ghi rời danh sách hoạt động nhưng phiếu trong lịch sử vẫn giữ tên sách và độc giả.
 8. **Gia hạn:** ở Mượn & trả, lọc "Đang mượn trong hạn", bấm Gia hạn một phiếu (7 ngày), thấy hạn lùi và nhãn Đã gia hạn; nút Gia hạn biến mất vì chỉ được một lần. Phiếu quá hạn không có nút này.
 9. **Tìm kiếm và phân trang:** ở Kho sách, tìm theo tên hoặc ISBN. Chọn "5 dòng" ở thanh phân trang, bấm Sau. Bấm "Tải danh sách (Excel)" và mở file bằng Excel nếu có.
 10. **Tài khoản (admin):** trang Tài khoản → Thêm tài khoản `demo_bv` vai trò thủ thư, có họ tên và email. Ở tab ẩn danh đăng nhập bằng tài khoản đó, rồi quay lại bấm Ngừng: tab kia bị đăng xuất ngay. Bấm Sao lưu dữ liệu ở Tổng quan, chỉ file trong `data/backups/`.
-11. **Phần bổ sung:** gõ URL `/loans/overdue` để thấy bộ lọc theo đường dẫn; gõ `/abc` để thấy trang 404. Đăng nhập `thuthu / ThuThu@123` để chỉ ra thủ thư không có nút Lưu trữ, menu Tài khoản và nút Sao lưu. Trình bày kết quả pytest thật (79 lần chạy, gồm 9 ca giao diện Playwright), không chạy toàn bộ test nếu thời gian bảo vệ ngắn.
+11. **Phần bổ sung:** gõ URL `/loans/overdue` để thấy bộ lọc theo đường dẫn; gõ `/abc` để thấy trang 404. Đăng nhập `thuthu / ThuThu@123` để chỉ ra thủ thư không có nút Lưu trữ, menu Tài khoản và nút Sao lưu. Trình bày kết quả pytest thật (80 lần chạy, gồm 10 ca giao diện Playwright), không chạy toàn bộ test nếu thời gian bảo vệ ngắn.
 
 Nếu cần làm lại demo trong cùng CSDL, dùng mã BV002 vì mã đã lưu trữ vẫn duy nhất. Không đổi ngày máy hoặc sửa CSDL trực tiếp chỉ để tạo kết quả demo.
 
@@ -61,9 +61,9 @@ Context manager transaction rollback khi có exception và luôn đóng kết n�
 
 Ngày hôm nay lớn hơn due_on và returned_on còn rỗng thì phiếu đang quá hạn. Ngày đến hạn chưa quá hạn. Khi đã trả, độ trễ tính đến ngày trả và không tăng nữa. Các biên trước hạn, đúng hạn và sau hạn một ngày đều có unit test.
 
-### 8. Báo cáo 79 lần chạy đạt có ý nghĩa gì?
+### 8. Báo cáo 80 lần chạy đạt có ý nghĩa gì?
 
-Bản cuối có 79 lần chạy: 43 ca chức năng API, 20 ca biên, 5 unit test, 2 ca tích hợp và 9 ca giao diện Playwright trên Chromium thật. Một test parametrized tạo nhiều lần chạy. Đây không phải bằng chứng hệ thống không còn lỗi và không đại diện cho thử tải hay kiểm toán bảo mật.
+Bản cuối có 80 lần chạy: 43 ca chức năng API, 20 ca biên, 5 unit test, 2 ca tích hợp và 10 ca giao diện Playwright trên Chromium thật. Một test parametrized tạo nhiều lần chạy. Đây không phải bằng chứng hệ thống không còn lỗi và không đại diện cho thử tải hay kiểm toán bảo mật.
 
 ### 9. Phân biệt kiểm thử đơn vị và API?
 

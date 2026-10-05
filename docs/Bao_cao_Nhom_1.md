@@ -91,6 +91,7 @@ TP.HCM, tháng 10/2026
     - 19. UC19 Sửa tài khoản nhân viên
     - 20. UC20 Ngừng / kích hoạt tài khoản
     - 21. UC21 Sao lưu dữ liệu
+    - 22. UC22 In phiếu mượn
   - II. Sơ đồ hoạt động
     - 1. Hoạt động đăng nhập
     - 2. Hoạt động đổi mật khẩu
@@ -108,6 +109,7 @@ TP.HCM, tháng 10/2026
     - 14. Hoạt động sửa tài khoản
     - 15. Hoạt động ngừng, kích hoạt tài khoản
     - 16. Hoạt động sao lưu dữ liệu
+    - 17. Hoạt động in phiếu mượn
   - III. Thiết kế cơ sở dữ liệu
     - 1. Mô hình ERD
     - 2. Lược đồ quan hệ
@@ -121,22 +123,25 @@ TP.HCM, tháng 10/2026
     - 5. Giao diện Trả sách
     - 6. Giao diện Gia hạn phiếu
     - 7. Giao diện Quản lý tài khoản
+    - 8. Mẫu phiếu mượn in
   - V. Thiết kế xử lý
     - 1. Xử lý lập phiếu mượn
     - 2. Xử lý trả sách
     - 3. Xử lý thêm và sửa sách
     - 4. Xử lý giao dịch và tính nhất quán
-    - 5. Xử lý phiên đăng nhập và bảo vệ đầu vào
+    - 5. Xử lý in phiếu mượn
+    - 6. Xử lý phiên đăng nhập và bảo vệ đầu vào
 - CHƯƠNG IV. PHÁT TRIỂN/THỰC THI
   - I. Màn hình Đăng nhập (UC01–UC03)
   - II. Màn hình Tổng quan (UC16, UC21)
   - III. Màn hình Kho sách (UC04–UC07)
   - IV. Màn hình Độc giả (UC08–UC11)
   - V. Màn hình Lập phiếu mượn (UC12)
-  - VI. Màn hình Trả sách (UC13, UC15)
-  - VII. Màn hình Gia hạn và phiếu quá hạn (UC14, UC15)
-  - VIII. Màn hình Tài khoản (UC18–UC20)
-  - IX. Danh mục API
+  - VI. Phiếu mượn in (UC22)
+  - VII. Màn hình Trả sách (UC13, UC15)
+  - VIII. Màn hình Gia hạn và phiếu quá hạn (UC14, UC15)
+  - IX. Màn hình Tài khoản (UC18–UC20)
+  - X. Danh mục API
 - CHƯƠNG V. TRIỂN KHAI
   - I. Cài đặt
   - II. Thử nghiệm
@@ -179,36 +184,38 @@ TP.HCM, tháng 10/2026
 | Hình 18 | Sơ đồ hoạt động UC19 Sửa tài khoản nhân viên |
 | Hình 19 | Sơ đồ hoạt động UC20 Ngừng / kích hoạt tài khoản |
 | Hình 20 | Sơ đồ hoạt động UC21 Sao lưu dữ liệu |
-| Hình 21 | Mô hình ERD mức khái niệm (ký pháp Chen) |
-| Hình 22 | Lược đồ quan hệ sau khi chuyển từ ERD |
-| Hình 23 | Sơ đồ lớp phân tích |
-| Hình 24 | Sơ đồ lớp thiết kế: gói chức năng, DTO và lớp xử lý nghiệp vụ |
-| Hình 25 | Wireframe màn hình Đăng nhập |
-| Hình 26 | Wireframe màn hình Kho sách và hộp thoại thêm, sửa |
-| Hình 27 | Wireframe màn hình Độc giả |
-| Hình 28 | Wireframe hộp thoại Lập phiếu mượn |
-| Hình 29 | Wireframe màn hình Mượn & trả và hộp thoại nhận trả |
-| Hình 30 | Wireframe hộp thoại Gia hạn phiếu |
-| Hình 31 | Wireframe màn hình Tài khoản |
-| Hình 32 | Sơ đồ tuần tự nghiệp vụ UC12 Lập phiếu mượn |
-| Hình 33 | Ánh xạ UC12 tới route, service và SQLite |
-| Hình 34 | Sơ đồ tuần tự nghiệp vụ UC13 Trả sách |
-| Hình 35 | Ánh xạ UC13 tới route, service và SQLite |
-| Hình 36 | Sơ đồ tuần tự UC04 Thêm sách |
-| Hình 37 | Màn hình Đăng nhập |
-| Hình 38 | Màn hình Tổng quan với nút Sao lưu dữ liệu |
-| Hình 39 | Màn hình Kho sách |
-| Hình 40 | Hộp thoại thêm và sửa sách |
-| Hình 41 | Màn hình Độc giả |
-| Hình 42 | Hộp thoại lập phiếu mượn nhiều cuốn |
-| Hình 43 | Danh sách phiếu đang mượn ngay sau khi lập phiếu |
-| Hình 44 | Hộp thoại nhận trả sách |
-| Hình 45 | Kết quả sau khi trả một phần phiếu |
-| Hình 46 | Lịch sử phiếu mượn và trả |
-| Hình 47 | Hộp thoại gia hạn phiếu |
-| Hình 48 | Danh sách phiếu quá hạn |
-| Hình 49 | Màn hình Tài khoản nhân viên |
-| Hình 50 | Hộp thoại sửa tài khoản nhân viên |
+| Hình 21 | Sơ đồ hoạt động UC22 In phiếu mượn |
+| Hình 22 | Mô hình ERD mức khái niệm (ký pháp Chen) |
+| Hình 23 | Lược đồ quan hệ sau khi chuyển từ ERD |
+| Hình 24 | Sơ đồ lớp phân tích |
+| Hình 25 | Sơ đồ lớp thiết kế: gói chức năng, DTO và lớp xử lý nghiệp vụ |
+| Hình 26 | Wireframe màn hình Đăng nhập |
+| Hình 27 | Wireframe màn hình Kho sách và hộp thoại thêm, sửa |
+| Hình 28 | Wireframe màn hình Độc giả |
+| Hình 29 | Wireframe hộp thoại Lập phiếu mượn |
+| Hình 30 | Wireframe màn hình Mượn & trả và hộp thoại nhận trả |
+| Hình 31 | Wireframe hộp thoại Gia hạn phiếu |
+| Hình 32 | Wireframe màn hình Tài khoản |
+| Hình 33 | Sơ đồ tuần tự nghiệp vụ UC12 Lập phiếu mượn |
+| Hình 34 | Ánh xạ UC12 tới route, service và SQLite |
+| Hình 35 | Sơ đồ tuần tự nghiệp vụ UC13 Trả sách |
+| Hình 36 | Ánh xạ UC13 tới route, service và SQLite |
+| Hình 37 | Sơ đồ tuần tự UC04 Thêm sách |
+| Hình 38 | Màn hình Đăng nhập |
+| Hình 39 | Màn hình Tổng quan với nút Sao lưu dữ liệu |
+| Hình 40 | Màn hình Kho sách |
+| Hình 41 | Hộp thoại thêm và sửa sách |
+| Hình 42 | Màn hình Độc giả |
+| Hình 43 | Hộp thoại lập phiếu mượn nhiều cuốn |
+| Hình 44 | Danh sách phiếu đang mượn ngay sau khi lập phiếu |
+| Hình 45 | Phiếu mượn khi in (xem trước bản in) |
+| Hình 46 | Hộp thoại nhận trả sách |
+| Hình 47 | Kết quả sau khi trả một phần phiếu |
+| Hình 48 | Lịch sử phiếu mượn và trả |
+| Hình 49 | Hộp thoại gia hạn phiếu |
+| Hình 50 | Danh sách phiếu quá hạn |
+| Hình 51 | Màn hình Tài khoản nhân viên |
+| Hình 52 | Hộp thoại sửa tài khoản nhân viên |
 
 ## Danh sách bảng
 
@@ -219,7 +226,7 @@ TP.HCM, tháng 10/2026
 | Bảng 3 | Yêu cầu thu thập từ thư viện |
 | Bảng 4 | Chức năng của đối tượng Thủ thư |
 | Bảng 5 | Chức năng riêng của đối tượng Quản trị viên |
-| Bảng 6 | Danh mục yêu cầu chức năng FR01–FR21 |
+| Bảng 6 | Danh mục yêu cầu chức năng FR01–FR22 |
 | Bảng 7 | Quy tắc nghiệp vụ BR01–BR10 |
 | Bảng 8 | Yêu cầu phi chức năng và cách đáp ứng |
 | Bảng 9 | Danh sách use case |
@@ -244,20 +251,21 @@ TP.HCM, tháng 10/2026
 | Bảng 28 | Đặc tả UC19 Sửa tài khoản nhân viên |
 | Bảng 29 | Đặc tả UC20 Ngừng / kích hoạt tài khoản |
 | Bảng 30 | Đặc tả UC21 Sao lưu dữ liệu |
-| Bảng 31 | Các mối liên kết trong ERD |
-| Bảng 32 | Thực thể nghiệp vụ và trách nhiệm |
-| Bảng 33 | Từ điển dữ liệu bảng users |
-| Bảng 34 | Từ điển dữ liệu bảng books và readers |
-| Bảng 35 | Từ điển dữ liệu bảng loans (phiếu mượn) |
-| Bảng 36 | Từ điển dữ liệu bảng loan_items (chi tiết phiếu mượn) |
-| Bảng 37 | Danh mục API |
-| Bảng 38 | Tình trạng cài đặt các chức năng |
-| Bảng 39 | Tài khoản dùng để thử nghiệm |
-| Bảng 40 | Test case TC01–TC11 |
-| Bảng 41 | Test case TC12–TC22 |
-| Bảng 42 | Test case bổ sung và giao diện |
-| Bảng 43 | Dữ liệu biên và unit test |
-| Bảng 44 | Phân chia nội dung trình bày |
+| Bảng 31 | Đặc tả UC22 In phiếu mượn |
+| Bảng 32 | Các mối liên kết trong ERD |
+| Bảng 33 | Thực thể nghiệp vụ và trách nhiệm |
+| Bảng 34 | Từ điển dữ liệu bảng users |
+| Bảng 35 | Từ điển dữ liệu bảng books và readers |
+| Bảng 36 | Từ điển dữ liệu bảng loans (phiếu mượn) |
+| Bảng 37 | Từ điển dữ liệu bảng loan_items (chi tiết phiếu mượn) |
+| Bảng 38 | Danh mục API |
+| Bảng 39 | Tình trạng cài đặt các chức năng |
+| Bảng 40 | Tài khoản dùng để thử nghiệm |
+| Bảng 41 | Test case TC01–TC11 |
+| Bảng 42 | Test case TC12–TC22 |
+| Bảng 43 | Test case bổ sung và giao diện |
+| Bảng 44 | Dữ liệu biên và unit test |
+| Bảng 45 | Phân chia nội dung trình bày |
 
 # DANH MỤC TỪ VIẾT TẮT
 
@@ -301,7 +309,7 @@ Tiêu chí hoàn thành: người dùng thực hiện được một vòng khép
 
 Phần mềm phục vụ một thư viện quy mô nhỏ (vài trăm đầu sách, vài trăm độc giả), dùng một cơ sở dữ liệu đặt tại máy chủ của thư viện. Nhân viên thư viện thao tác trên trình duyệt web, giao diện tiếng Việt; máy chủ chạy được trên Windows, macOS hoặc Linux mà không cần dịch vụ trả phí.
 
-**Trong phạm vi.** Quản lý danh mục sách (đầu sách và số bản), quản lý hồ sơ độc giả, lập phiếu mượn, nhận trả sách, gia hạn phiếu, theo dõi phiếu quá hạn, xem tổng quan tình hình thư viện, tải danh sách về máy để mở bằng Excel, quản lý tài khoản nhân viên và sao lưu dữ liệu.
+**Trong phạm vi.** Quản lý danh mục sách (đầu sách và số bản), quản lý hồ sơ độc giả, lập và in phiếu mượn, nhận trả sách, gia hạn phiếu, theo dõi phiếu quá hạn, xem tổng quan tình hình thư viện, tải danh sách về máy để mở bằng Excel, quản lý tài khoản nhân viên và sao lưu dữ liệu.
 
 **Ngoài phạm vi.** Thu tiền phạt trả muộn, gửi nhắc hạn qua SMS/email, thẻ từ, đặt trước sách, quản lý riêng từng bản vật lý bằng mã riêng và cổng tra cứu cho độc giả tự đăng nhập. Dữ liệu độc giả trong bản demo là giả lập. Bản demo trên Vercel chỉ để xem và thao tác thử, không lưu dữ liệu lâu dài.
 
@@ -315,7 +323,7 @@ Bảng 1. Đối tượng sử dụng và nhu cầu
 
 | Đối tượng | Vai trò và nhu cầu |
 | --- | --- |
-| Thủ thư | Nhân viên phục vụ tại quầy. Đăng nhập, đổi mật khẩu; thêm, sửa, tìm kiếm sách và độc giả; lập phiếu mượn; nhận trả sách; gia hạn phiếu; theo dõi phiếu quá hạn; xem tổng quan; tải danh sách về máy. |
+| Thủ thư | Nhân viên phục vụ tại quầy. Đăng nhập, đổi mật khẩu; thêm, sửa, tìm kiếm sách và độc giả; lập và in phiếu mượn; nhận trả sách; gia hạn phiếu; theo dõi phiếu quá hạn; xem tổng quan; tải danh sách về máy. |
 | Quản trị viên | Người phụ trách thư viện. Có mọi quyền của thủ thư, thêm vào đó được lưu trữ sách và độc giả, quản lý tài khoản nhân viên (thêm, sửa, ngừng, kích hoạt) và sao lưu dữ liệu. |
 
 ### 4. Nền tảng kỹ thuật
@@ -330,7 +338,7 @@ Phần này trình bày nghiệp vụ thư viện mà phần mềm mô phỏng, 
 
 **Các đối tượng nghiệp vụ.** Thư viện quản lý *đầu sách*: mỗi đầu sách có mã sách nội bộ, tên sách, tác giả, thể loại, mã ISBN in trên bìa (nếu có) và *tổng số bản* thư viện sở hữu. Các bản của cùng một đầu sách được coi là giống nhau; số bản *có sẵn* trên giá bằng tổng số bản trừ số bản đang nằm trong các phiếu chưa trả. *Độc giả* là người được thư viện cấp mã để mượn sách, có họ tên và số điện thoại liên hệ. *Nhân viên* (thủ thư, quản trị viên) là người dùng phần mềm, mỗi người một tài khoản ghi họ tên, email, điện thoại và vai trò.
 
-**Phiếu mượn.** Mỗi lần độc giả đến quầy mượn sách, thủ thư lập đúng một phiếu mượn. Phiếu ghi số phiếu, độc giả, người lập, ngày mượn, hạn trả và danh sách các cuốn được mượn trong lần đó (phần *chi tiết phiếu*). Hạn trả áp dụng chung cho cả phiếu. Thư viện giới hạn mỗi độc giả giữ tối đa 5 cuốn cùng lúc, nên một phiếu có từ 1 đến 5 cuốn và mỗi đầu sách chỉ xuất hiện một lần trên phiếu.
+**Phiếu mượn.** Mỗi lần độc giả đến quầy mượn sách, thủ thư lập đúng một phiếu mượn. Phiếu ghi số phiếu, độc giả, người lập, ngày mượn, hạn trả và danh sách các cuốn được mượn trong lần đó (phần *chi tiết phiếu*). Hạn trả áp dụng chung cho cả phiếu. Phiếu được in ra giấy để độc giả và thủ thư cùng ký, độc giả giữ một bản làm bằng chứng đã mượn. Thư viện giới hạn mỗi độc giả giữ tối đa 5 cuốn cùng lúc, nên một phiếu có từ 1 đến 5 cuốn và mỗi đầu sách chỉ xuất hiện một lần trên phiếu.
 
 **Trả sách.** Độc giả có thể trả tất cả các cuốn một lần hoặc trả dần từng cuốn. Mỗi cuốn được nhận lại ghi ngày trả và người nhận trên dòng chi tiết tương ứng. Phiếu vẫn "đang mượn" cho tới khi mọi cuốn đã trả; khi trả đủ, phiếu chuyển sang "đã trả" và được giữ lại làm lịch sử.
 
@@ -402,7 +410,8 @@ Bảng 3. Yêu cầu thu thập từ thư viện
 | YC19 | Người phụ trách sửa được thông tin, vai trò hoặc đặt lại mật khẩu cho nhân viên. |
 | YC20 | Nhân viên nghỉ việc thì bị ngừng tài khoản, không đăng nhập được nữa. |
 | YC21 | Dữ liệu được sao lưu định kỳ để phòng hỏng máy. |
-| YC22 | Phần mềm dùng tiếng Việt, dễ thao tác, chạy trên máy tính thông thường của thư viện, không tốn phí. |
+| YC22 | Phiếu mượn in ra giấy được, có tên các cuốn sách, hạn trả và chỗ để độc giả, thủ thư ký. |
+| YC23 | Phần mềm dùng tiếng Việt, dễ thao tác, chạy trên máy tính thông thường của thư viện, không tốn phí. |
 
 ## II. Quy trình mượn sách
 
@@ -416,7 +425,7 @@ Bảng 3. Yêu cầu thu thập từ thư viện
 
 ### 3. Kết quả
 
-Đủ điều kiện thì phiếu được lập với ngày mượn là hôm nay và hạn trả bằng hôm nay cộng số ngày mượn; phần mềm hiển thị thông báo "Đã lập phiếu mượn #n gồm k cuốn" và số bản có sẵn của từng đầu sách giảm một. Chỉ cần một điều kiện không đạt thì không có phiếu nào được lập, phần mềm hiển thị lý do cụ thể (ví dụ độc giả đang giữ 4 cuốn nên chỉ được mượn thêm 1). Khi hai thủ thư cùng cho mượn bản cuối cùng, chỉ yêu cầu đến trước thành công.
+Đủ điều kiện thì phiếu được lập với ngày mượn là hôm nay và hạn trả bằng hôm nay cộng số ngày mượn; phần mềm hiển thị thông báo "Đã lập phiếu mượn #n gồm k cuốn" và số bản có sẵn của từng đầu sách giảm một; nếu thủ thư để chọn "In phiếu ngay sau khi lập", hộp thoại in mở ra để in phiếu cho độc giả ký. Chỉ cần một điều kiện không đạt thì không có phiếu nào được lập, phần mềm hiển thị lý do cụ thể (ví dụ độc giả đang giữ 4 cuốn nên chỉ được mượn thêm 1). Khi hai thủ thư cùng cho mượn bản cuối cùng, chỉ yêu cầu đến trước thành công.
 
 ## III. Quy trình trả sách và gia hạn
 
@@ -458,7 +467,8 @@ Bảng 4. Chức năng của đối tượng Thủ thư
 | 12 | Gia hạn phiếu | Lưu trữ | Phiếu còn cuốn chưa trả, chưa quá hạn, chưa gia hạn; thêm 1–30 ngày tính từ hạn trả hiện tại | Hộp thoại Gia hạn | Tối đa một lần cho mỗi phiếu |
 | 13 | Tra cứu phiếu mượn | Tra cứu | Lọc theo trạng thái: tất cả, đang mượn trong hạn, quá hạn, đã trả; số ngày trễ = ngày hiện tại − hạn trả | Màn hình Mượn & trả | Ngày đến hạn vẫn tính là trong hạn |
 | 14 | Xem tổng quan thư viện | Thống kê | Số đầu sách, tổng bản, bản có sẵn, số độc giả, bản đang mượn, phiếu đã trả, phiếu quá hạn, 5 sách được mượn nhiều nhất | Màn hình Tổng quan | Số liệu tính tại thời điểm xem |
-| 15 | Tải danh sách về máy | Kết xuất | Tải toàn bộ danh sách sách, độc giả hoặc phiếu mượn | Nút "Tải danh sách (Excel)" | Mở trực tiếp bằng Excel, đúng tiếng Việt |
+| 15 | In phiếu mượn | Kết xuất | In phiếu gồm số phiếu, độc giả, ngày mượn, hạn trả, người lập, danh sách sách, tổng số cuốn và chỗ ký | Phiếu mượn in (khổ A4/A5) | In ngay sau khi lập hoặc in lại bất kỳ lúc nào |
+| 16 | Tải danh sách về máy | Kết xuất | Tải toàn bộ danh sách sách, độc giả hoặc phiếu mượn | Nút "Tải danh sách (Excel)" | Mở trực tiếp bằng Excel, đúng tiếng Việt |
 
 ### 2. Chức năng riêng của đối tượng Quản trị viên
 
@@ -479,7 +489,7 @@ Thủ thư không thấy các nút trên; nếu cố gọi trực tiếp tới m
 
 Mỗi yêu cầu chức năng tương ứng đúng một use case ở Chương III và một hoặc nhiều yêu cầu thu thập ở Bảng 3.
 
-Bảng 6. Danh mục yêu cầu chức năng FR01–FR21
+Bảng 6. Danh mục yêu cầu chức năng FR01–FR22
 
 | Mã | Yêu cầu | Nguồn |
 | --- | --- | --- |
@@ -504,8 +514,9 @@ Bảng 6. Danh mục yêu cầu chức năng FR01–FR21
 | FR19 | Hệ thống cho phép quản trị viên sửa thông tin, vai trò và đặt lại mật khẩu cho tài khoản nhân viên. | YC19 |
 | FR20 | Hệ thống cho phép quản trị viên ngừng hoặc kích hoạt lại tài khoản; tài khoản bị ngừng không đăng nhập được. | YC20 |
 | FR21 | Hệ thống cho phép quản trị viên sao lưu dữ liệu và tự sao lưu mỗi lần khởi động. | YC21 |
+| FR22 | Hệ thống cho phép thủ thư in phiếu mượn ngay sau khi lập hoặc in lại từ danh sách phiếu. | YC22 |
 
-FR04–FR15 là các chức năng cốt lõi của đề tài (quản lý sách, độc giả, mượn trả). FR01–FR03 và FR18–FR20 bảo đảm truy cập an toàn; FR16, FR17, FR21 hỗ trợ theo dõi và bảo toàn dữ liệu. Phân quyền được áp dụng ở mọi yêu cầu: các thao tác của quản trị viên bị từ chối với thủ thư kể cả khi gọi thẳng tới máy chủ.
+FR04–FR15 là các chức năng cốt lõi của đề tài (quản lý sách, độc giả, mượn trả). FR01–FR03 và FR18–FR20 bảo đảm truy cập an toàn; FR16, FR17, FR21, FR22 hỗ trợ theo dõi và bảo toàn dữ liệu. Phân quyền được áp dụng ở mọi yêu cầu: các thao tác của quản trị viên bị từ chối với thủ thư kể cả khi gọi thẳng tới máy chủ.
 
 ### 4. Quy tắc nghiệp vụ
 
@@ -584,6 +595,7 @@ Bảng 9. Danh sách use case
 | UC19 | Sửa tài khoản nhân viên | Quản trị viên | FR19 |
 | UC20 | Ngừng / kích hoạt tài khoản | Quản trị viên | FR20 |
 | UC21 | Sao lưu dữ liệu | Quản trị viên | FR21 |
+| UC22 | In phiếu mượn | Thủ thư | FR22 |
 
 "Thủ thư" trong cột tác nhân bao gồm cả quản trị viên do quan hệ kế thừa.
 
@@ -938,6 +950,23 @@ Bảng 30. Đặc tả UC21 Sao lưu dữ liệu
 
 Đối chiếu: TC26, TC30.
 
+### 22. UC22 In phiếu mượn
+
+Bảng 31. Đặc tả UC22 In phiếu mượn
+
+| Thuộc tính | Mô tả |
+| --- | --- |
+| Tác nhân | Thủ thư |
+| Mô tả | In phiếu mượn ra giấy để độc giả và thủ thư ký nhận. Mở rộng («extend») UC12: có thể in ngay sau khi lập phiếu. |
+| Tiền điều kiện | Đã đăng nhập; phiếu vừa được lập (UC12) hoặc đã tìm thấy trong danh sách phiếu (UC15). |
+| Hậu điều kiện | Hộp thoại in của trình duyệt mở với đúng một trang phiếu; dữ liệu không thay đổi. |
+
+**Luồng sự kiện chính.** (1) Thủ thư bấm "In phiếu" trên dòng phiếu. (2) Hệ thống đọc phiếu: số phiếu, độc giả và điện thoại, ngày mượn, hạn trả (ghi chú nếu đã gia hạn), người lập, danh sách cuốn kèm mã sách, tác giả, ngày trả (nếu đã trả). (3) Hệ thống dựng phiếu in gồm tiêu đề "PHIẾU MƯỢN SÁCH", bảng sách, tổng số cuốn, lời nhắc trả đúng hạn, hai ô ký và thời điểm in. (4) Hệ thống mở hộp thoại in; chỉ phiếu được in, các phần khác của giao diện bị ẩn. (5) Thủ thư chọn máy in hoặc lưu PDF.
+
+**Luồng thay thế.** A1. Trong hộp thoại Lập phiếu mượn, ô "In phiếu ngay sau khi lập" được chọn sẵn: lập phiếu thành công thì hệ thống tự thực hiện bước (2)–(4). A2. In lại phiếu đã trả một phần hoặc trả đủ: cột Ngày trả ghi ngày đã nhận từng cuốn. **Ngoại lệ.** E1. Phiếu không tồn tại: báo "Không tìm thấy phiếu mượn". E2. Thủ thư hủy hộp thoại in: không có gì thay đổi.
+
+Đối chiếu: TC40, UI10.
+
 ## II. Sơ đồ hoạt động
 
 Mỗi sơ đồ chia hai làn: người dùng (thủ thư hoặc quản trị viên) và hệ thống. Mọi luồng, kể cả nhánh bị từ chối, đều kết thúc bằng một bước hệ thống hiển thị kết quả để người dùng biết thao tác đã thành công hay vì sao bị từ chối. Các use case chỉ gồm một bước hiển thị (UC02 Đăng xuất, UC10 Tìm kiếm độc giả tương tự UC06, UC15–UC17) không vẽ riêng.
@@ -1014,15 +1043,21 @@ Kết quả hiển thị khác nhau tùy phiếu đã trả đủ hay còn thi�
 
 ![Hình 20. Sơ đồ hoạt động UC21 Sao lưu dữ liệu](uml/act16_sao_luu.png)
 
+### 17. Hoạt động in phiếu mượn
+
+![Hình 21. Sơ đồ hoạt động UC22 In phiếu mượn](uml/act17_in_phieu.png)
+
+Hai lối vào (in ngay khi lập, in lại từ danh sách) cùng dẫn tới một bước dựng phiếu, nên phiếu in ra luôn cùng một mẫu.
+
 ## III. Thiết kế cơ sở dữ liệu
 
 ### 1. Mô hình ERD
 
-![Hình 21. Mô hình ERD mức khái niệm (ký pháp Chen)](uml/07_er.png)
+![Hình 22. Mô hình ERD mức khái niệm (ký pháp Chen)](uml/07_er.png)
 
 Mô hình có năm tập thực thể. NGƯỜI DÙNG, ĐỘC GIẢ, SÁCH, PHIẾU MƯỢN là thực thể mạnh, mỗi thực thể có khóa riêng (gạch chân). CHI TIẾT PHIẾU MƯỢN là thực thể yếu: một dòng chi tiết chỉ tồn tại trong một phiếu và được định danh qua phiếu đó cùng cuốn sách (liên kết định danh CÓ, viền đôi). SoBanCoSan của SÁCH là thuộc tính dẫn xuất (nét đứt), tính bằng TongSoBan trừ số chi tiết chưa có NgayTra.
 
-Bảng 31. Các mối liên kết trong ERD
+Bảng 32. Các mối liên kết trong ERD
 
 | Liên kết | Thực thể tham gia | Bản số | Ý nghĩa |
 | --- | --- | --- | --- |
@@ -1036,7 +1071,7 @@ Liên kết giữa PHIẾU MƯỢN và SÁCH về bản chất là nhiều – n
 
 ### 2. Lược đồ quan hệ
 
-![Hình 22. Lược đồ quan hệ sau khi chuyển từ ERD](uml/12_relational.png)
+![Hình 23. Lược đồ quan hệ sau khi chuyển từ ERD](uml/12_relational.png)
 
 Áp dụng quy tắc chuyển đổi: mỗi thực thể mạnh thành một bảng với khóa chính là cột id số nguyên tự tăng, mã nghiệp vụ (MaSach, MaDocGia, TenDangNhap) thành cột UNIQUE; liên kết 1–N MƯỢN và LẬP thành khóa ngoại reader_id, created_by trong loans; thực thể yếu thành bảng loan_items có khóa ngoại loan_id tới chủ và book_id tới SÁCH, cặp (loan_id, book_id) duy nhất; liên kết NHẬN TRẢ thành khóa ngoại returned_by cho phép rỗng. Thuộc tính dẫn xuất SoBanCoSan và trạng thái phiếu không lưu thành cột.
 
@@ -1052,7 +1087,7 @@ Lược đồ dạng văn bản:
 
 ### 3. Sơ đồ lớp
 
-Bảng 32. Thực thể nghiệp vụ và trách nhiệm
+Bảng 33. Thực thể nghiệp vụ và trách nhiệm
 
 | Lớp | Trách nhiệm nghiệp vụ |
 | --- | --- |
@@ -1062,17 +1097,17 @@ Bảng 32. Thực thể nghiệp vụ và trách nhiệm
 | Chi tiết phiếu mượn | Một cuốn trên phiếu; ghi ngày trả và người nhận khi độc giả mang trả. |
 | Người dùng | Tài khoản nhân viên với họ tên, email, điện thoại, vai trò và trạng thái; lập phiếu, nhận trả sách. |
 
-![Hình 23. Sơ đồ lớp phân tích](uml/02_analysis_class.png)
+![Hình 24. Sơ đồ lớp phân tích](uml/02_analysis_class.png)
 
 Phiếu mượn và chi tiết là quan hệ hợp thành: chi tiết không tồn tại ngoài phiếu, mỗi phiếu có 1 đến 5 chi tiết. Phiên đăng nhập là chi tiết kỹ thuật (token ký trong cookie), không phải thực thể nghiệp vụ nên không xuất hiện ở đây.
 
-![Hình 24. Sơ đồ lớp thiết kế: gói chức năng, DTO và lớp xử lý nghiệp vụ](uml/06_design_class.png)
+![Hình 25. Sơ đồ lớp thiết kế: gói chức năng, DTO và lớp xử lý nghiệp vụ](uml/06_design_class.png)
 
 Lớp trình bày gồm khung HTML chung, khung riêng của từng màn hình và các ES module đảm nhiệm gắn sự kiện, định tuyến, gọi API, sinh HTML an toàn, giữ trạng thái và điền dữ liệu. Lớp máy chủ có bốn phần: phần tiếp nhận HTTP dùng DTO Pydantic (Borrow nhận danh sách book_ids 1–5 phần tử, Return nhận danh sách item_ids) để kiểm tra đầu vào và kiểm tra phiên; phần an toàn thông tin; lớp LoanService nắm lập phiếu, nhận trả, gia hạn; phần dữ liệu cung cấp kết nối, giao dịch, chuyển đổi CSDL cũ và sao lưu. Các hộp «module» là gói chức năng, không phải class được cài đặt.
 
 ### 4. Cấu trúc các bảng
 
-Bảng 33. Từ điển dữ liệu bảng users
+Bảng 34. Từ điển dữ liệu bảng users
 
 | Cột | Kiểu / ràng buộc | Ý nghĩa |
 | --- | --- | --- |
@@ -1085,7 +1120,7 @@ Bảng 33. Từ điển dữ liệu bảng users
 | role | TEXT CHECK admin/librarian | Vai trò: quản trị viên / thủ thư |
 | active | INTEGER CHECK 0/1 | 0 = đã ngừng, không đăng nhập được |
 
-Bảng 34. Từ điển dữ liệu bảng books và readers
+Bảng 35. Từ điển dữ liệu bảng books và readers
 
 | Cột | Kiểu / ràng buộc | Ý nghĩa |
 | --- | --- | --- |
@@ -1103,7 +1138,7 @@ Bảng 34. Từ điển dữ liệu bảng books và readers
 | readers.phone | TEXT NOT NULL DEFAULT rỗng | Điện thoại, 0–20 ký tự |
 | readers.active | INTEGER CHECK 0/1 | 1 = đang sử dụng, 0 = đã lưu trữ |
 
-Bảng 35. Từ điển dữ liệu bảng loans (phiếu mượn)
+Bảng 36. Từ điển dữ liệu bảng loans (phiếu mượn)
 
 | Cột | Kiểu / ràng buộc | Ý nghĩa |
 | --- | --- | --- |
@@ -1114,7 +1149,7 @@ Bảng 35. Từ điển dữ liệu bảng loans (phiếu mượn)
 | due_on | TEXT NOT NULL, CHECK ≥ borrowed_on | Hạn trả chung cho cả phiếu |
 | extensions | INTEGER CHECK 0..1 | Số lần đã gia hạn |
 
-Bảng 36. Từ điển dữ liệu bảng loan_items (chi tiết phiếu mượn)
+Bảng 37. Từ điển dữ liệu bảng loan_items (chi tiết phiếu mượn)
 
 | Cột | Kiểu / ràng buộc | Ý nghĩa |
 | --- | --- | --- |
@@ -1133,69 +1168,73 @@ Toàn bộ ứng dụng dùng chung một khung màn hình: cột điều hướ
 
 ### 1. Giao diện Đăng nhập
 
-![Hình 25. Wireframe màn hình Đăng nhập](images/wireframe_uc01_dang_nhap.png)
+![Hình 26. Wireframe màn hình Đăng nhập](images/wireframe_uc01_dang_nhap.png)
 
 Màn hình chia hai phần: khối nhận diện bên trái và biểu mẫu bên phải, không có cột điều hướng vì người dùng chưa có phiên. Vùng thông báo lỗi đặt ngay dưới nút, dùng chung một câu cho mọi trường hợp sai.
 
 ### 2. Giao diện Quản lý sách
 
-![Hình 26. Wireframe màn hình Kho sách và hộp thoại thêm, sửa](images/wireframe_uc02_quan_ly_sach.png)
+![Hình 27. Wireframe màn hình Kho sách và hộp thoại thêm, sửa](images/wireframe_uc02_quan_ly_sach.png)
 
 Ô tìm kiếm bên trái, nút "Tải danh sách (Excel)" ở giữa, nút thêm mới ngoài cùng bên phải. Hai cột Tổng bản và Có sẵn đặt cạnh nhau để đối chiếu. Mỗi dòng có nút Sửa; nút Lưu trữ chỉ hiện với quản trị viên. Thêm và sửa dùng chung một hộp thoại với nhãn ghi rõ trường bắt buộc và khoảng giá trị.
 
 ### 3. Giao diện Quản lý độc giả
 
-![Hình 27. Wireframe màn hình Độc giả](images/wireframe_uc03_quan_ly_doc_gia.png)
+![Hình 28. Wireframe màn hình Độc giả](images/wireframe_uc03_quan_ly_doc_gia.png)
 
 Dùng lại nguyên mẫu danh sách của Kho sách để người dùng chỉ phải học một bố cục; khác biệt nằm ở bộ cột và phạm vi tìm kiếm.
 
 ### 4. Giao diện Lập phiếu mượn
 
-![Hình 28. Wireframe hộp thoại Lập phiếu mượn](images/wireframe_uc04_muon_sach.png)
+![Hình 29. Wireframe hộp thoại Lập phiếu mượn](images/wireframe_uc04_muon_sach.png)
 
 Hộp thoại có ba phần: chọn độc giả, danh sách ô đánh dấu các sách còn bản (có ô lọc và bộ đếm số cuốn đã chọn), số ngày mượn. Một lần bấm "Lập phiếu" tạo một phiếu cho tất cả các cuốn đã chọn. Vùng lỗi phía dưới dành cho các trường hợp bị từ chối như vượt 5 cuốn hoặc sách hết bản.
 
 ### 5. Giao diện Trả sách
 
-![Hình 29. Wireframe màn hình Mượn & trả và hộp thoại nhận trả](images/wireframe_uc05_tra_sach.png)
+![Hình 30. Wireframe màn hình Mượn & trả và hộp thoại nhận trả](images/wireframe_uc05_tra_sach.png)
 
 Mỗi phiếu hiển thị danh sách các cuốn trong phiếu. Bấm Trả sách mở hộp thoại liệt kê các cuốn chưa trả, mặc định chọn tất cả; thủ thư bỏ chọn cuốn chưa nhận được. Hộp thoại thay cho hộp xác nhận "có/không" của bản trước, vì trả sách giờ cần chọn cuốn.
 
 ### 6. Giao diện Gia hạn phiếu
 
-![Hình 30. Wireframe hộp thoại Gia hạn phiếu](images/wireframe_uc06_gia_han_phieu.png)
+![Hình 31. Wireframe hộp thoại Gia hạn phiếu](images/wireframe_uc06_gia_han_phieu.png)
 
 Hộp thoại gia hạn chỉ có một trường số ngày, mặc định 7, hợp lệ 1–30, kèm dòng nhắc điều kiện gia hạn. Phiếu không đủ điều kiện thì không hiện nút Gia hạn.
 
 ### 7. Giao diện Quản lý tài khoản
 
-![Hình 31. Wireframe màn hình Tài khoản](images/wireframe_uc07_quan_ly_tai_khoan.png)
+![Hình 32. Wireframe màn hình Tài khoản](images/wireframe_uc07_quan_ly_tai_khoan.png)
 
 Bảng tài khoản có thêm cột Họ và tên, Email/Điện thoại bên cạnh vai trò và trạng thái. Nút Sửa và Ngừng/Kích hoạt nằm cùng hàng với từng tài khoản. Nút Sao lưu dữ liệu đặt ở Tổng quan, tách khỏi nhóm thao tác tài khoản.
+
+### 8. Mẫu phiếu mượn in
+
+Phiếu in trên khổ A4 hoặc A5 theo thứ tự từ trên xuống: tên thư viện và số phiếu ở hai góc; tiêu đề "PHIẾU MƯỢN SÁCH" căn giữa; khối thông tin hai cột (độc giả, điện thoại, ngày mượn, hạn trả in đậm, người lập); bảng sách có kẻ ô gồm STT, mã sách, tên sách, tác giả, ngày trả (để trống, thủ thư ghi tay khi nhận lại hoặc in sẵn nếu in lại); dòng tổng số cuốn và lời nhắc; hai ô ký Độc giả và Thủ thư; thời điểm in ở cuối. Phiếu dùng chữ đen trên nền trắng, không màu, để in được trên máy in đen trắng. Trên màn hình, mỗi dòng phiếu có thêm nút "In phiếu"; hộp thoại Lập phiếu mượn có thêm ô "In phiếu ngay sau khi lập".
 
 ## V. Thiết kế xử lý
 
 ### 1. Xử lý lập phiếu mượn
 
-![Hình 32. Sơ đồ tuần tự nghiệp vụ UC12 Lập phiếu mượn](uml/03_seq_borrow.png)
+![Hình 33. Sơ đồ tuần tự nghiệp vụ UC12 Lập phiếu mượn](uml/03_seq_borrow.png)
 
 Kiểm tra giới hạn 5 cuốn và số bản còn của từng cuốn diễn ra trước khi lưu. Nhánh không hợp lệ trả lý do từ chối ở bước 7', bỏ qua bước lưu. Số bản trên màn hình có thể đã cũ khi hai thủ thư cùng thao tác, vì vậy hệ thống luôn kiểm tra lại tại nơi xử lý nghiệp vụ.
 
-![Hình 33. Ánh xạ UC12 tới route, service và SQLite](uml/10_design_borrow.png)
+![Hình 34. Ánh xạ UC12 tới route, service và SQLite](uml/10_design_borrow.png)
 
 Phần tiếp nhận HTTP kiểm tra phiên và DTO Borrow (1–5 sách) trước khi chuyển sang LoanService.borrow. Các bước đếm và hai lệnh INSERT (một vào loans, k vào loan_items) nằm trong cùng giao dịch BEGIN IMMEDIATE; điều kiện không đạt thì rollback nên không có phiếu rỗng hay phiếu thiếu cuốn. Giao diện hiển thị nguyên văn message trả về.
 
 ### 2. Xử lý trả sách
 
-![Hình 34. Sơ đồ tuần tự nghiệp vụ UC13 Trả sách](uml/04_seq_return.png)
+![Hình 35. Sơ đồ tuần tự nghiệp vụ UC13 Trả sách](uml/04_seq_return.png)
 
-![Hình 35. Ánh xạ UC13 tới route, service và SQLite](uml/11_design_return.png)
+![Hình 36. Ánh xạ UC13 tới route, service và SQLite](uml/11_design_return.png)
 
 Giao diện đọc chi tiết phiếu qua GET /api/loans/{id} để dựng hộp thoại, rồi gửi POST /api/loans/{id}/return với danh sách item_ids. Không gửi danh sách thì hệ thống nhận trả toàn bộ cuốn còn lại. LoanService.return_books đọc các dòng chưa trả trong giao dịch, từ chối nếu có cuốn đã trả hoặc không thuộc phiếu, rồi cập nhật returned_on, returned_by cho từng dòng. Kết quả gồm số cuốn vừa nhận, số cuốn còn lại và số ngày trễ.
 
 ### 3. Xử lý thêm và sửa sách
 
-![Hình 36. Sơ đồ tuần tự UC04 Thêm sách](uml/05_seq_book.png)
+![Hình 37. Sơ đồ tuần tự UC04 Thêm sách](uml/05_seq_book.png)
 
 Giao diện thu nhận dữ liệu, lớp xử lý kiểm tra đầu vào, CSDL bảo đảm mã duy nhất. Khi sửa, lớp xử lý kiểm tra thêm tổng số bản mới không thấp hơn số dòng loan_items chưa trả của đầu sách.
 
@@ -1205,7 +1244,11 @@ Giao diện thu nhận dữ liệu, lớp xử lý kiểm tra đầu vào, CSDL 
 
 **Trả, gia hạn và lưu trữ.** Trả: đọc các dòng chưa trả của phiếu trong giao dịch, từ chối nếu có dòng không hợp lệ, cập nhật rồi commit. Gia hạn: từ chối nếu phiếu không còn dòng chưa trả, đã quá hạn hoặc extensions ≥ 1, rồi cập nhật due_on và extensions cùng một lệnh. Lưu trữ và sửa tổng bản cũng kiểm tra dòng chưa trả trong cùng giao dịch ghi.
 
-### 5. Xử lý phiên đăng nhập và bảo vệ đầu vào
+### 5. Xử lý in phiếu mượn
+
+In phiếu không cần API riêng: giao diện gọi GET /api/loans/{id} (kết quả đã gồm điện thoại độc giả, họ tên người lập và tác giả từng cuốn), dựng phiếu vào vùng #print-area rồi gọi window.print(). Quy tắc CSS @media print ẩn mọi phần khác của trang và chỉ hiện vùng phiếu, nên không cần mở cửa sổ mới (tránh bị trình duyệt chặn popup) và người dùng có thể chọn "Lưu dưới dạng PDF". Khi in ngay sau khi lập phiếu, lệnh in được hoãn tới khi hộp thoại lập phiếu đã đóng để bản in không lẫn hộp thoại.
+
+### 6. Xử lý phiên đăng nhập và bảo vệ đầu vào
 
 **Vòng đời phiên.** Đăng nhập thành công tạo token dạng user_id.hạn.dấu_vết.chữ_ký: hạn sau 8 giờ, dấu vết là 16 ký tự SHA-256 của password_hash, chữ ký HMAC-SHA256 bằng khóa LIBRARY_SECRET. Cookie session đặt HttpOnly, SameSite=strict. Mỗi yêu cầu, server kiểm tra chữ ký, hạn, tài khoản còn hoạt động và dấu vết mật khẩu còn khớp; vì vậy đổi/đặt lại mật khẩu hoặc ngừng tài khoản làm token cũ mất hiệu lực ngay.
 
@@ -1219,79 +1262,85 @@ Phần này trình bày các màn hình của ứng dụng theo nhóm use case �
 
 ## I. Màn hình Đăng nhập (UC01–UC03)
 
-![Hình 37. Màn hình Đăng nhập](images/manhinh_uc01_dang_nhap.png)
+![Hình 38. Màn hình Đăng nhập](images/manhinh_uc01_dang_nhap.png)
 
 Đây là màn hình duy nhất truy cập được khi chưa có phiên. Sai thông tin thì nhận cùng một thông báo lỗi; sau 5 lần sai trong 15 phút, hệ thống khóa tạm 15 phút. Đăng nhập thành công thì chuyển tới màn hình tương ứng địa chỉ đang mở; góc trái dưới hiển thị họ tên, vai trò cùng hai nút Mật khẩu (UC03) và Đăng xuất (UC02).
 
 ## II. Màn hình Tổng quan (UC16, UC21)
 
-![Hình 38. Màn hình Tổng quan với nút Sao lưu dữ liệu](images/manhinh_uc07_tong_quan_sao_luu.png)
+![Hình 39. Màn hình Tổng quan với nút Sao lưu dữ liệu](images/manhinh_uc07_tong_quan_sao_luu.png)
 
 Bốn ô số liệu cho biết số đầu sách và tổng bản, số bản có sẵn và số độc giả, số bản đang cho mượn và số phiếu đã trả, số phiếu quá hạn. Bên dưới là các phiếu quá hạn (liệt kê tên các cuốn chưa trả, có nút Trả sách) và năm đầu sách được mượn nhiều nhất. Nút Sao lưu dữ liệu chỉ hiện với quản trị viên; bấm xong, dòng thông báo hiển thị tên tệp sao lưu vừa tạo.
 
 ## III. Màn hình Kho sách (UC04–UC07)
 
-![Hình 39. Màn hình Kho sách](images/manhinh_uc02_kho_sach.png)
+![Hình 40. Màn hình Kho sách](images/manhinh_uc02_kho_sach.png)
 
 Màn hình liệt kê sách đang sử dụng kèm mã ISBN, tổng số bản và số bản có sẵn. Ô tìm kiếm khớp theo mã, ISBN, tên, tác giả hoặc thể loại; thanh chia trang cho chọn 5/10/20/50 dòng. Nút "Tải danh sách (Excel)" tải toàn bộ danh mục về máy. Quản trị viên thấy thêm nút Lưu trữ trên mỗi dòng.
 
-![Hình 40. Hộp thoại thêm và sửa sách](images/manhinh_uc02_hop_thoai_sach.png)
+![Hình 41. Hộp thoại thêm và sửa sách](images/manhinh_uc02_hop_thoai_sach.png)
 
 Thêm và sửa dùng chung một hộp thoại. Mã trùng hoặc tổng số bản thấp hơn số đang cho mượn bị từ chối, lý do hiển thị ngay trong hộp thoại và dữ liệu đang nhập được giữ nguyên.
 
 ## IV. Màn hình Độc giả (UC08–UC11)
 
-![Hình 41. Màn hình Độc giả](images/manhinh_uc03_doc_gia.png)
+![Hình 42. Màn hình Độc giả](images/manhinh_uc03_doc_gia.png)
 
 Cùng bố cục với Kho sách: ô tìm kiếm theo mã, họ tên hoặc điện thoại, nút "Tải danh sách (Excel)" và nút Thêm độc giả. Nút Lưu trữ chỉ quản trị viên dùng được và bị chặn khi độc giả còn giữ sách.
 
 ## V. Màn hình Lập phiếu mượn (UC12)
 
-![Hình 42. Hộp thoại lập phiếu mượn nhiều cuốn](images/manhinh_uc04_lap_phieu_muon.png)
+![Hình 43. Hộp thoại lập phiếu mượn nhiều cuốn](images/manhinh_uc04_lap_phieu_muon.png)
 
 Thủ thư chọn độc giả, đánh dấu các cuốn được mượn trong lần này (bộ đếm "đã chọn k" cập nhật ngay, ô lọc giúp tìm nhanh trong danh sách dài) và nhập số ngày mượn. Danh sách chỉ gồm sách còn bản. Bấm Lập phiếu, hệ thống kiểm tra lại giới hạn rồi lập một phiếu cho tất cả các cuốn.
 
-![Hình 43. Danh sách phiếu đang mượn ngay sau khi lập phiếu](images/manhinh_uc05_phieu_dang_muon.png)
+![Hình 44. Danh sách phiếu đang mượn ngay sau khi lập phiếu](images/manhinh_uc05_phieu_dang_muon.png)
 
-Kết quả hiển thị ngay: dòng thông báo "Đã lập phiếu mượn #201 gồm 2 cuốn" và phiếu #201 đứng đầu danh sách với hai cuốn sách, hạn trả chung, hai nút Trả sách và Gia hạn.
+Kết quả hiển thị ngay: dòng thông báo "Đã lập phiếu mượn #201 gồm 2 cuốn" và phiếu #201 đứng đầu danh sách với hai cuốn sách, hạn trả chung và ba nút In phiếu, Trả sách, Gia hạn.
 
-## VI. Màn hình Trả sách (UC13, UC15)
+## VI. Phiếu mượn in (UC22)
 
-![Hình 44. Hộp thoại nhận trả sách](images/manhinh_uc05_hop_thoai_tra_sach.png)
+![Hình 45. Phiếu mượn khi in (xem trước bản in)](images/manhinh_uc22_phieu_in.png)
+
+Hộp thoại Lập phiếu mượn có ô "In phiếu ngay sau khi lập" chọn sẵn, nên ngay khi lập phiếu #201, trình duyệt mở hộp thoại in với phiếu trên. Phiếu gồm thông tin độc giả, ngày mượn, hạn trả in đậm, người lập, bảng hai cuốn sách và hai ô ký. Bất kỳ phiếu nào cũng in lại được bằng nút "In phiếu" trên danh sách phiếu; phiếu đã trả có ngày trả từng cuốn ở cột cuối.
+
+## VII. Màn hình Trả sách (UC13, UC15)
+
+![Hình 46. Hộp thoại nhận trả sách](images/manhinh_uc05_hop_thoai_tra_sach.png)
 
 Hộp thoại liệt kê các cuốn chưa trả của phiếu, mặc định chọn tất cả. Ở ví dụ, độc giả chỉ mang trả một cuốn nên thủ thư bỏ chọn cuốn còn lại.
 
-![Hình 45. Kết quả sau khi trả một phần phiếu](images/manhinh_uc05_ket_qua_tra_sach.png)
+![Hình 47. Kết quả sau khi trả một phần phiếu](images/manhinh_uc05_ket_qua_tra_sach.png)
 
 Dòng thông báo "Đã nhận trả 1 cuốn của phiếu #201, phiếu còn 1 cuốn chưa trả"; trên danh sách, cuốn đã trả chuyển màu nhạt kèm ngày trả, phiếu vẫn ở trạng thái Đang mượn cho tới khi trả đủ.
 
-![Hình 46. Lịch sử phiếu mượn và trả](images/manhinh_uc05_lich_su_phieu.png)
+![Hình 48. Lịch sử phiếu mượn và trả](images/manhinh_uc05_lich_su_phieu.png)
 
 Bộ lọc Tất cả phiếu giữ lại cả phiếu đã trả nên tra cứu được ai từng mượn cuốn nào và ngày trả từng cuốn. Trả sách không xóa phiếu mà chỉ bổ sung ngày trả và người nhận.
 
-## VII. Màn hình Gia hạn và phiếu quá hạn (UC14, UC15)
+## VIII. Màn hình Gia hạn và phiếu quá hạn (UC14, UC15)
 
-![Hình 47. Hộp thoại gia hạn phiếu](images/manhinh_uc06_hop_thoai_gia_han.png)
+![Hình 49. Hộp thoại gia hạn phiếu](images/manhinh_uc06_hop_thoai_gia_han.png)
 
 Phiếu còn trong hạn và chưa gia hạn mới có nút Gia hạn. Gia hạn thành công thì dòng thông báo ghi hạn trả mới, phiếu mang nhãn Đã gia hạn và nút Gia hạn biến mất.
 
-![Hình 48. Danh sách phiếu quá hạn](images/manhinh_uc06_phieu_qua_han.png)
+![Hình 50. Danh sách phiếu quá hạn](images/manhinh_uc06_phieu_qua_han.png)
 
 Bộ lọc quá hạn có địa chỉ riêng /loans/overdue nên mở thẳng được và giữ nguyên sau khi tải lại trang. Mỗi phiếu hiển thị số ngày trễ; các phiếu này không còn nút Gia hạn.
 
-## VIII. Màn hình Tài khoản (UC18–UC20)
+## IX. Màn hình Tài khoản (UC18–UC20)
 
-![Hình 49. Màn hình Tài khoản nhân viên](images/manhinh_uc07_tai_khoan.png)
+![Hình 51. Màn hình Tài khoản nhân viên](images/manhinh_uc07_tai_khoan.png)
 
 Chỉ quản trị viên thấy màn hình này. Bảng hiển thị tên đăng nhập, họ và tên, email và điện thoại, vai trò, trạng thái. Hệ thống chặn tự hạ quyền, tự ngừng và thao tác làm mất quản trị viên hoạt động cuối cùng. Thủ thư mở /users bị đưa về Tổng quan.
 
-![Hình 50. Hộp thoại sửa tài khoản nhân viên](images/manhinh_uc07_hop_thoai_tai_khoan.png)
+![Hình 52. Hộp thoại sửa tài khoản nhân viên](images/manhinh_uc07_hop_thoai_tai_khoan.png)
 
 Hộp thoại sửa cho đổi họ tên, email, điện thoại, vai trò và đặt lại mật khẩu (để trống nếu không đổi). Hộp thoại thêm tài khoản có thêm ô tên đăng nhập và bắt buộc nhập mật khẩu.
 
-## IX. Danh mục API
+## X. Danh mục API
 
-Bảng 37. Danh mục API
+Bảng 38. Danh mục API
 
 | Phương thức và đường dẫn | Chức năng | UC |
 | --- | --- | --- |
@@ -1302,7 +1351,7 @@ Bảng 37. Danh mục API
 | POST /api/books, /api/readers | Thêm sách, độc giả | UC04, UC08 |
 | PUT /api/books/{id}, /api/readers/{id} | Sửa sách, độc giả | UC05, UC09 |
 | DELETE /api/books/{id}, /api/readers/{id} | Lưu trữ sách, độc giả (chỉ quản trị) | UC07, UC11 |
-| GET /api/loans; GET /api/loans/{id} | Tra cứu phiếu (status, page, size); chi tiết một phiếu | UC15 |
+| GET /api/loans; GET /api/loans/{id} | Tra cứu phiếu (status, page, size); chi tiết một phiếu (dùng cho trả sách và in phiếu) | UC15, UC22 |
 | POST /api/loans | Lập phiếu {reader_id, book_ids[], days} | UC12 |
 | POST /api/loans/{id}/return | Nhận trả {item_ids[]} (bỏ trống = trả hết) | UC13 |
 | POST /api/loans/{id}/extend | Gia hạn {days} | UC14 |
@@ -1322,7 +1371,7 @@ Mỗi lần khởi động, ứng dụng tạo bảng còn thiếu, bổ sung c�
 
 CSDL cung cấp sẵn là bộ demo do seed.py sinh với hạt giống cố định: 4 tài khoản có đủ họ tên, email; 63 đầu sách; 60 độc giả; 200 phiếu với 328 cuốn trong 180 ngày, gồm phiếu một cuốn và nhiều cuốn, trả đủ, trả một phần, trả muộn, đang mượn, quá hạn và đã gia hạn; mọi quy tắc nghiệp vụ được tuân thủ khi sinh. Bộ mẫu nhỏ (8 đầu sách / 29 bản, 4 độc giả, 5 phiếu / 6 cuốn) chỉ dùng cho test tự động.
 
-Bảng 38. Tình trạng cài đặt các chức năng
+Bảng 39. Tình trạng cài đặt các chức năng
 
 | STT | Yêu cầu | Mức độ hoàn thành | Ghi chú |
 | --- | --- | --- | --- |
@@ -1337,12 +1386,13 @@ Bảng 38. Tình trạng cài đặt các chức năng
 | 9 | FR17 Tải danh sách về máy | 100% | Mở được bằng Excel |
 | 10 | FR18–FR20 Quản lý tài khoản | 100% | Có họ tên, email, điện thoại; luôn giữ ít nhất một quản trị viên |
 | 11 | FR21 Sao lưu | 100% | Giữ 10 bản mới nhất; phục hồi phải làm thủ công |
+| 12 | FR22 In phiếu mượn | 100% | In ngay khi lập hoặc in lại; lưu được thành PDF |
 
 ## II. Thử nghiệm
 
 ### 1. Tài khoản dùng để thử nghiệm
 
-Bảng 39. Tài khoản dùng để thử nghiệm
+Bảng 40. Tài khoản dùng để thử nghiệm
 
 | Vai trò | Tên đăng nhập | Họ tên (demo) | Mật khẩu mẫu |
 | --- | --- | --- | --- |
@@ -1354,7 +1404,7 @@ Bảng 39. Tài khoản dùng để thử nghiệm
 
 Tiền điều kiện chung: mỗi test có CSDL tạm được seed mới và phiên quản trị viên hợp lệ, trừ khi test chủ động thay đổi. Mã test trùng tên hàm trong tests/test_library.py.
 
-Bảng 40. Test case TC01–TC11
+Bảng 41. Test case TC01–TC11
 
 | Mã | Bước và dữ liệu | Kết quả mong đợi | Kết quả |
 | --- | --- | --- | --- |
@@ -1370,7 +1420,7 @@ Bảng 40. Test case TC01–TC11
 | TC10 | Lọc quá hạn trên dữ liệu mẫu | Chỉ phiếu 1, trễ 6 ngày, cuốn S001 | Đạt |
 | TC11 | Lưu trữ sách/độc giả còn sách chưa trả | 409, dữ liệu giữ nguyên | Đạt |
 
-Bảng 41. Test case TC12–TC22
+Bảng 42. Test case TC12–TC22
 
 | Mã | Bước và dữ liệu | Kết quả mong đợi | Kết quả |
 | --- | --- | --- | --- |
@@ -1388,7 +1438,7 @@ Bảng 41. Test case TC12–TC22
 
 ### 3. Test case chức năng bổ sung và giao diện
 
-Bảng 42. Test case bổ sung và giao diện
+Bảng 43. Test case bổ sung và giao diện
 
 | Mã | Bước và dữ liệu | Kết quả mong đợi | Kết quả |
 | --- | --- | --- | --- |
@@ -1410,7 +1460,7 @@ Bảng 42. Test case bổ sung và giao diện
 | TC37 | Sách có ISBN; trùng; rỗng; sai dạng; tìm theo ISBN | 201; 409; 201; 422; tìm ra đúng sách | Đạt |
 | TC38 | Chế độ Vercel | CSDL chép ra thư mục tạm, ghi được, không sao lưu | Đạt |
 | TC39 | Thiếu khóa bí mật trên serverless | Khóa suy từ deployment, giống nhau mọi instance | Đạt |
-| TC40 | Lập một phiếu 3 cuốn; trả 1 cuốn; trả lại cuốn đó; trả phần còn lại | Phiếu 3 dòng; còn 2; 409; phiếu chuyển Đã trả với ngày trả hôm nay | Đạt |
+| TC40 | Lập một phiếu 3 cuốn; đọc chi tiết; trả 1 cuốn; trả lại cuốn đó; trả phần còn lại | Phiếu 3 dòng, có điện thoại độc giả, họ tên người lập, tác giả để in; còn 2; 409; phiếu chuyển Đã trả với ngày trả hôm nay | Đạt |
 | TC41 | Phiếu trùng sách; phiếu rỗng; 6 cuốn; độc giả giữ 2 mượn thêm 4; mượn thêm 3; trả cuốn của phiếu khác | 422; 422; 422; 409; 201; 409 | Đạt |
 | TC42 | Lưu trữ sách rảnh; sách còn đang mượn | Thông báo "Đã lưu trữ…"; "…không thể lưu trữ" | Đạt |
 | UI01 | Đăng nhập admin trên trình duyệt | Tổng quan 4 ô số liệu, góc trái hiện họ tên | Đạt |
@@ -1422,12 +1472,13 @@ Bảng 42. Test case bổ sung và giao diện
 | UI07 | Đổi mật khẩu (nhập lại sai rồi đúng), đăng xuất, đăng nhập lại | Báo không khớp; vào được bằng mật khẩu mới | Đạt |
 | UI08 | Thủ thư mở /users | Về Tổng quan; không thấy menu Tài khoản, nút Sao lưu, nút Lưu trữ | Đạt |
 | UI09 | Tải lại trang khi đang ở Kho sách | Không nháy màn hình đăng nhập, giữ nguyên trang | Đạt |
+| UI10 | Lập phiếu với ô in phiếu được chọn; in lại phiếu 3 từ danh sách | Hộp thoại in được gọi; phiếu in có tiêu đề, độc giả, đúng 1 rồi 2 cuốn; khi in chỉ còn phiếu, giao diện bị ẩn | Đạt |
 
 Các ca UI chạy trên Chromium headless bằng Playwright với máy chủ thật và CSDL tạm; máy chưa cài Playwright thì tự bỏ qua, không ảnh hưởng phần API.
 
 ### 4. Kiểm thử biên, unit test và tích hợp
 
-Bảng 43. Dữ liệu biên và unit test
+Bảng 44. Dữ liệu biên và unit test
 
 | Nhóm | Giá trị / thao tác | Mong đợi | Kết quả |
 | --- | --- | --- | --- |
@@ -1443,13 +1494,13 @@ Bảng 43. Dữ liệu biên và unit test
 
 **Tích hợp giao dịch.** I01 tạo đầu sách đúng một bản và cho hai độc giả cùng lập phiếu từ hai luồng song song: một yêu cầu thành công, một bị từ chối và chỉ có đúng một dòng chi tiết được ghi. I02 lập phiếu gồm một cuốn còn bản và một cuốn hết bản: bị từ chối, số phiếu và số dòng chi tiết không đổi. Cả hai đạt.
 
-**Tổng hợp kết quả.** Bộ kiểm thử gồm 79 lần chạy (70 ở mức hàm, dịch vụ và API, 9 trên giao diện trình duyệt), tất cả đạt trên Python 3.14 ngày 05/10/2026. Kiểm tra tĩnh giao diện (Prettier, ESLint, TypeScript) chạy sạch.
+**Tổng hợp kết quả.** Bộ kiểm thử gồm 80 lần chạy (70 ở mức hàm, dịch vụ và API, 10 trên giao diện trình duyệt), tất cả đạt trên Python 3.14 ngày 05/10/2026. Kiểm tra tĩnh giao diện (Prettier, ESLint, TypeScript) chạy sạch.
 
 ### 5. Trình tự demo chức năng chính
 
 1. Thêm sách BV001 (1 bản) và BV002 (2 bản); tìm lại và sửa tên. Thử trùng mã để thấy thông báo lỗi.
 2. Thêm độc giả BV001; tìm lại và sửa số điện thoại.
-3. Lập một phiếu cho độc giả BV001 gồm cả BV001 và BV002; xem thông báo "gồm 2 cuốn" và số có sẵn của mỗi sách giảm một.
+3. Lập một phiếu cho độc giả BV001 gồm cả BV001 và BV002 (để chọn ô in phiếu); xem thông báo "gồm 2 cuốn", phiếu in mở ra (chọn Lưu PDF), số có sẵn của mỗi sách giảm một.
 4. Thử lưu trữ sách BV001 đang mượn, quan sát hệ thống chặn.
 5. Trả sách: bỏ chọn BV002, chỉ trả BV001; xem thông báo "phiếu còn 1 cuốn chưa trả". Trả nốt BV002, phiếu chuyển Đã trả.
 6. Lưu trữ sách BV001 sau khi trả; mở lịch sử phiếu để thấy phiếu vẫn còn.
@@ -1464,9 +1515,9 @@ Chi tiết lệnh cài, chạy, sao lưu và tạo dữ liệu demo có trong RE
 
 ## I. Kết quả đã thực hiện
 
-Sản phẩm thực hiện đầy đủ quản lý sách, quản lý độc giả, mượn và trả ở quy mô thư viện nhỏ theo đúng nghiệp vụ: mỗi lần mượn lập một phiếu gồm nhiều cuốn, trả được từng cuốn, gia hạn, theo dõi quá hạn; bổ sung quản lý tài khoản nhân viên có thông tin cơ bản, tải danh sách về máy, sao lưu, chia trang và bản demo trực tuyến. Yêu cầu được thu thập bằng lời người dùng, tách thành từng yêu cầu chức năng và ánh xạ một – một sang 21 use case; mỗi use case có đặc tả, các use case ghi dữ liệu có sơ đồ hoạt động với bước hiển thị kết quả; ERD vẽ theo ký pháp Chen rồi chuyển sang lược đồ quan hệ. Kiểm thử tự động xác minh luồng chuẩn, ngoại lệ, biên, tranh chấp bản sách cuối và các luồng giao diện trên trình duyệt thật.
+Sản phẩm thực hiện đầy đủ quản lý sách, quản lý độc giả, mượn và trả ở quy mô thư viện nhỏ theo đúng nghiệp vụ: mỗi lần mượn lập và in một phiếu gồm nhiều cuốn, trả được từng cuốn, gia hạn, theo dõi quá hạn; bổ sung quản lý tài khoản nhân viên có thông tin cơ bản, tải danh sách về máy, sao lưu, chia trang và bản demo trực tuyến. Yêu cầu được thu thập bằng lời người dùng, tách thành từng yêu cầu chức năng và ánh xạ một – một sang 22 use case; mỗi use case có đặc tả, các use case ghi dữ liệu có sơ đồ hoạt động với bước hiển thị kết quả; ERD vẽ theo ký pháp Chen rồi chuyển sang lược đồ quan hệ. Kiểm thử tự động xác minh luồng chuẩn, ngoại lệ, biên, tranh chấp bản sách cuối và các luồng giao diện trên trình duyệt thật.
 
-Bảng 44. Phân chia nội dung trình bày
+Bảng 45. Phân chia nội dung trình bày
 
 | Thành viên | Nội dung |
 | --- | --- |
@@ -1479,7 +1530,7 @@ Bảng trên là gợi ý phân chia buổi bảo vệ, không xác nhận khố
 
 ## II. Ưu khuyết điểm
 
-**Ưu điểm.** Mô hình dữ liệu phản ánh đúng chứng từ thực tế (phiếu mượn và chi tiết phiếu), số bản có sẵn luôn suy ra từ chi tiết chưa trả nên không lệch với lịch sử. Mọi thao tác hiển thị kết quả cụ thể cho người dùng. Bộ test xác minh quy tắc ở lớp hàm, dịch vụ và API với CSDL tạm; 9 ca Playwright điều khiển Chromium thật. Ảnh chụp trong báo cáo lấy từ ứng dụng chạy thật. Ứng dụng không phụ thuộc dịch vụ trả phí, không có bước build nên cài đặt và chấm điểm đơn giản.
+**Ưu điểm.** Mô hình dữ liệu phản ánh đúng chứng từ thực tế (phiếu mượn và chi tiết phiếu), số bản có sẵn luôn suy ra từ chi tiết chưa trả nên không lệch với lịch sử. Mọi thao tác hiển thị kết quả cụ thể cho người dùng. Bộ test xác minh quy tắc ở lớp hàm, dịch vụ và API với CSDL tạm; 10 ca Playwright điều khiển Chromium thật. Phiếu mượn in được ngay từ trình duyệt, không cần phần mềm in riêng. Ảnh chụp trong báo cáo lấy từ ứng dụng chạy thật. Ứng dụng không phụ thuộc dịch vụ trả phí, không có bước build nên cài đặt và chấm điểm đơn giản.
 
 **Khuyết điểm và giới hạn.** Chưa kiểm thử tải lớn, kiểm toán an toàn thông tin, phục hồi từ bản sao lưu bằng giao diện, nhiều trình duyệt (UI chỉ chạy Chromium) hoặc chạy liên tục 24/7. Hệ thống chưa quản lý riêng từng bản sách vật lý, chưa tính tiền phạt, chưa có cổng cho độc giả và chưa tự cấu hình HTTPS khi chạy tại máy. Hồ sơ đã lưu trữ chưa xem lại hoặc khôi phục được trên giao diện.
 

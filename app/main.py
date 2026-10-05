@@ -232,7 +232,7 @@ HAS_OPEN = 'EXISTS (SELECT 1 FROM loan_items i WHERE i.loan_id=l.id AND i.return
 # Điều kiện trạng thái phiếu tính ngay trong SQL theo ngày hiện tại (?), khớp với loan_status()
 LOAN_STATUS = {'all': '1=1', 'returned': f'NOT {HAS_OPEN}',
                'overdue': f'{HAS_OPEN} AND l.due_on < ?', 'open': f'{HAS_OPEN} AND l.due_on >= ?'}
-LOAN_SELECT = 'SELECT l.*,r.name,r.code AS reader_code,u.username AS staff'
+LOAN_SELECT = 'SELECT l.*,r.name,r.code AS reader_code,r.phone AS reader_phone,u.username AS staff,u.full_name AS staff_name'
 LOAN_SOURCE = 'FROM loans l JOIN readers r ON l.reader_id=r.id JOIN users u ON l.created_by=u.id'
 
 def attach_items(loans):
@@ -240,7 +240,7 @@ def attach_items(loans):
     if not loans:
         return loans
     ids = [l['id'] for l in loans]
-    items = query('SELECT i.*,b.title,b.code AS book_code FROM loan_items i JOIN books b ON b.id=i.book_id '
+    items = query('SELECT i.*,b.title,b.code AS book_code,b.author FROM loan_items i JOIN books b ON b.id=i.book_id '
                   f"WHERE i.loan_id IN ({','.join('?' for _ in ids)}) ORDER BY i.id", ids)
     by_loan = {i: [] for i in ids}
     for item in items:

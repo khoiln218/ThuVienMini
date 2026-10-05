@@ -1,0 +1,27 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Thủ thư|
+start
+if (Đang lập phiếu mới?) then (có)
+  :Để chọn "In phiếu ngay sau khi lập";
+  :Lập phiếu mượn (UC12);
+else (không)
+  :Tìm phiếu cần in (UC15);
+  :Bấm "In phiếu" trên dòng phiếu;
+endif
+|Hệ thống|
+:Đọc phiếu: độc giả, ngày mượn, hạn trả,\nngười lập và danh sách cuốn sách;
+if (Phiếu tồn tại?) then (không)
+  :Hiển thị "Không tìm thấy phiếu mượn";
+  stop
+endif
+:Dựng phiếu in: tiêu đề, thông tin phiếu,\nbảng sách, tổng số cuốn, chỗ ký;
+:Mở hộp thoại in của trình duyệt\n(chỉ in phiếu, ẩn giao diện);
+|Thủ thư|
+:Chọn máy in / lưu PDF, bấm In;
+:Đưa phiếu cho độc giả ký;
+stop
+@enduml

@@ -42,6 +42,8 @@ def server(tmp_path_factory):
 
 @pytest.fixture
 def signed_in(page, server):
+    # Thay hộp thoại in của trình duyệt bằng bộ đếm để test không bị chặn và kiểm tra được đã gọi in
+    page.add_init_script('window.__printed = 0; window.print = () => { window.__printed++; };')
     page.goto(server + '/')
     page.fill('input[name=username]', 'admin')
     page.fill('input[name=password]', 'Admin@123')
@@ -212,3 +214,33 @@ def test_UI09_reload_keeps_page_without_login_flash(signed_in, server):
     expect(page.locator('#app-view')).to_be_visible()
     expect(page.locator('#books')).to_be_visible()
     expect(page).to_have_url(server + '/books')
+
+
+def test_UI10_print_loan_slip(signed_in):
+    page = signed_in
+    # Lập phiếu với ô "In phiếu ngay sau khi lập" (mặc định bật) → tự gọi in
+    page.click('#quick-borrow')
+    page.select_option('#editor select[name=reader_id]', label='DG004 · Phạm Ngọc Mai')
+    page.fill('#book-filter', 'S005')
+    page.check('#editor input[name=book]:visible')
+    expect(page.locator('#editor input[name=print]')).to_be_checked()
+    page.click('#editor button[type=submit]')
+    expect(page.locator('#notification')).to_contain_text('gồm 1 cuốn')
+    page.wait_for_function('window.__printed === 1')
+    slip = page.locator('#print-area .slip')
+    expect(slip).to_contain_text('PHIẾU MƯỢN SÁCH')
+    expect(slip).to_contain_text('Phạm Ngọc Mai')
+    expect(slip.locator('tbody tr')).to_have_count(1)
+    expect(slip).to_contain_text('Nhập môn Công nghệ Phần mềm')
+    # Trên màn hình phiếu in bị ẩn; khi in thì chỉ còn phiếu
+    expect(page.locator('#print-area')).to_be_hidden()
+    page.emulate_media(media='print')
+    expect(page.locator('#print-area')).to_be_visible()
+    expect(page.locator('#app-view')).to_be_hidden()
+    page.emulate_media(media='screen')
+    # In lại phiếu nhiều cuốn từ danh sách: phiếu 3 gồm hai cuốn
+    page.click('nav button[data-page=loans]')
+    page.locator('#loan-rows tr', has_text='#3').locator('button[data-print]').click()
+    page.wait_for_function('window.__printed === 2')
+    expect(slip).to_contain_text('#3')
+    expect(slip.locator('tbody tr')).to_have_count(2)

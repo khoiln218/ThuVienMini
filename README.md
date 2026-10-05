@@ -44,7 +44,7 @@ Các gói khác trong `requirements.txt` (anyio, h11, httpcore, click, certifi, 
 | Thủ thư | thuthu2 | ThuThu@123 |
 | Thủ thư (đã ngừng, không đăng nhập được) | cu_nhan_vien | ThuThu@123 |
 
-Quản trị có toàn bộ quyền. Thủ thư được thêm, sửa, tìm sách/độc giả, lập phiếu mượn/trả sách/gia hạn, tải danh sách về máy và xem tổng quan; chỉ quản trị được lưu trữ sách/độc giả (nút **Lưu trữ**), quản lý tài khoản (trang **Tài khoản**) và sao lưu. Mọi người dùng tự đổi mật khẩu bằng nút **Mật khẩu** ở góc trái dưới. Tài khoản này dùng cho bài tập trên localhost, không phải tài khoản thật; hãy đổi mật khẩu ngay nếu dùng thật.
+Quản trị có toàn bộ quyền. Thủ thư được thêm, sửa, tìm sách/độc giả, lập và in phiếu mượn/trả sách/gia hạn, tải danh sách về máy và xem tổng quan; chỉ quản trị được lưu trữ sách/độc giả (nút **Lưu trữ**), quản lý tài khoản (trang **Tài khoản**) và sao lưu. Mọi người dùng tự đổi mật khẩu bằng nút **Mật khẩu** ở góc trái dưới. Tài khoản này dùng cho bài tập trên localhost, không phải tài khoản thật; hãy đổi mật khẩu ngay nếu dùng thật.
 
 ### Chạy bằng PowerShell
 
@@ -129,6 +129,7 @@ Quy ước:
 - Phân trang: thanh "N bản ghi · Trang x/y" dưới các bảng sách, độc giả, phiếu; chọn 5/10/20/50 dòng mỗi trang (mặc định 20, ghi nhớ trong trình duyệt). API nhận `page` (từ 1) và `size` (1–100); không truyền `page` thì trả toàn bộ danh sách (dùng cho hộp chọn khi lập phiếu và tải danh sách).
 - Ngày nghiệp vụ lấy theo ngày máy chạy server. Phiên đăng nhập là token ký HMAC có hạn 8 giờ, gắn dấu vết mật khẩu: đổi/đặt lại mật khẩu hoặc ngừng tài khoản làm các phiên khác của tài khoản đó hết hiệu lực. Khóa ký lấy từ biến môi trường `LIBRARY_SECRET`, nếu không có thì tự sinh và lưu ở `data/.secret`.
 - Tài khoản: tên đăng nhập 3–50 ký tự chữ/số/`._-`, họ tên bắt buộc, email và điện thoại không bắt buộc, mật khẩu tối thiểu 8 ký tự. Không thể tự hạ quyền/tự ngừng, và luôn phải còn ít nhất một quản trị viên hoạt động. Sai mật khẩu 5 lần trong 15 phút sẽ bị khóa tạm 15 phút cho cặp tài khoản–địa chỉ đó (đếm trong bộ nhớ, khởi động lại server sẽ xóa).
+- **In phiếu mượn**: nút **In phiếu** trên mỗi phiếu, hoặc ô "In phiếu ngay sau khi lập" (chọn sẵn) trong hộp thoại lập phiếu. Phiếu được dựng trong trang và in bằng hộp thoại in của trình duyệt (`@media print` chỉ hiện phiếu), chọn được "Lưu dưới dạng PDF".
 - Nút **Tải danh sách (Excel)** trên mỗi trang tải sách, độc giả hoặc phiếu (mỗi cuốn một dòng) dạng CSV UTF-8 có BOM, mở thẳng bằng Excel.
 
 ## Định tuyến
@@ -168,7 +169,7 @@ Quy ước:
 
 Test giao diện (`tests/test_ui.py`) dùng Playwright điều khiển Chromium thật trên một server uvicorn chạy trong thread với CSDL tạm. Cần cài thêm một lần (có Internet): `pip install -r requirements-dev.txt` rồi `python -m playwright install chromium`. Máy chưa cài Playwright thì các test này tự bỏ qua, phần API vẫn chạy.
 
-79 ca tự động đã đạt trong lần kiểm thử cung cấp (70 API/unit + 9 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
+80 ca tự động đã đạt trong lần kiểm thử cung cấp (70 API/unit + 10 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
 
 ## Cấu trúc
 

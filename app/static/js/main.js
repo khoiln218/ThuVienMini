@@ -7,7 +7,7 @@ import { navigate, routeFromPath } from './router.js';
 import { refresh, mount } from './pages/index.js';
 import { editBook } from './pages/books.js';
 import { editReader } from './pages/readers.js';
-import { newLoan, extendLoan, returnLoan } from './pages/loans.js';
+import { newLoan, extendLoan, returnLoan, printLoan } from './pages/loans.js';
 import { editUser, changePassword } from './pages/users.js';
 
 /** @typedef {import('./types.js').User} User */
@@ -130,6 +130,7 @@ document.addEventListener('click', async (e) => {
       notice(r.message + '.');
     }
     if (d.return) await returnLoan(Number(d.return));
+    if (d.print) await printLoan(Number(d.print));
   } catch (err) {
     report(err);
   } finally {

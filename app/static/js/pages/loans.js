@@ -47,6 +47,7 @@ export async function render() {
               <td>${l.due_on}${l.extensions ? html`<small>Đã gia hạn</small>` : ''}</td>
               <td>${badge(l)}</td>
               <td>
+                <button class="action" data-print="${l.id}">In phiếu</button>
                 ${
                   l.returned_on
                     ? html`<small>Trả xong: ${l.returned_on}</small>`
@@ -149,14 +150,23 @@ export async function newLoan() {
         </div>
       </fieldset>
       ${field('Số ngày mượn', 'days', 14, 'type="number" min="1" max="30" step="1" required')}
+      <label class="inline-check"><input type="checkbox" name="print" checked />In phiếu ngay sau khi lập</label>
       <p class="hint">
         Mỗi lần mượn lập một phiếu, tối đa 5 cuốn; mỗi độc giả giữ tối đa 5 cuốn cùng lúc. Hạn trả tính từ hôm nay.
       </p>
     `,
-    (data) => {
+    async (data) => {
       const bookIds = checked('book');
       if (!bookIds.length) throw new Error('Chọn ít nhất một cuốn sách');
-      return api('/loans', 'POST', { reader_id: Number(data.reader_id), book_ids: bookIds, days: Number(data.days) });
+      /** @type {{ id: number, message: string }} */
+      const result = await api('/loans', 'POST', {
+        reader_id: Number(data.reader_id),
+        book_ids: bookIds,
+        days: Number(data.days),
+      });
+      // In sau khi hộp thoại đã đóng (editor đóng ngay khi save xong) để bản in không lẫn hộp thoại
+      if (data.print) setTimeout(() => printLoan(result.id).catch((e) => notice(e.message, true)));
+      return result;
     },
     'Lập phiếu',
   );
@@ -176,4 +186,71 @@ export async function newLoan() {
   $('#editor-fields').onchange = () => {
     $('#picked').textContent = `(đã chọn ${checked('book').length})`;
   };
+}
+
+/** Ngày ISO (YYYY-MM-DD) → dd/mm/yyyy cho bản in. @param {string | null} iso */
+const vnDate = (iso) => (iso ? iso.split('-').reverse().join('/') : '');
+
+/**
+ * In phiếu mượn: dựng phiếu vào #print-area (chỉ hiện khi in) rồi mở hộp thoại in của trình duyệt.
+ * Dùng được cả cho phiếu đã trả một phần hoặc trả đủ (cột Ngày trả ghi ngày đã nhận lại).
+ * @param {number} id
+ */
+export async function printLoan(id) {
+  /** @type {Loan} */
+  const loan = await api(`/loans/${id}`);
+  $('#print-area').innerHTML = toHTML(html`
+    <article class="slip">
+      <header>
+        <div><b>THƯ VIỆN · NHÓM 1</b><small>Học viện Công nghệ Bưu chính Viễn thông</small></div>
+        <div class="slip-no">Số phiếu<b>#${loan.id}</b></div>
+      </header>
+      <h1>PHIẾU MƯỢN SÁCH</h1>
+      <dl>
+        <dt>Độc giả</dt>
+        <dd>${loan.name} (${loan.reader_code})</dd>
+        <dt>Điện thoại</dt>
+        <dd>${loan.reader_phone || '—'}</dd>
+        <dt>Ngày mượn</dt>
+        <dd>${vnDate(loan.borrowed_on)}</dd>
+        <dt>Hạn trả</dt>
+        <dd><b>${vnDate(loan.due_on)}</b>${loan.extensions ? ' (đã gia hạn)' : ''}</dd>
+        <dt>Người lập phiếu</dt>
+        <dd>${loan.staff_name || loan.staff}</dd>
+      </dl>
+      <table>
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>Mã sách</th>
+            <th>Tên sách</th>
+            <th>Tác giả</th>
+            <th>Ngày trả</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${loan.items.map(
+            (i, n) =>
+              html`<tr>
+                <td>${n + 1}</td>
+                <td>${i.book_code}</td>
+                <td>${i.title}</td>
+                <td>${i.author}</td>
+                <td>${vnDate(i.returned_on)}</td>
+              </tr>`,
+          )}
+        </tbody>
+      </table>
+      <p>
+        Tổng số: <b>${loan.items.length} cuốn</b>. Độc giả có trách nhiệm giữ gìn sách và trả đúng hạn; phiếu còn trong
+        hạn được gia hạn một lần tại quầy.
+      </p>
+      <div class="signs">
+        <div>Độc giả<small>(ký, ghi rõ họ tên)</small></div>
+        <div>Thủ thư<small>(ký, ghi rõ họ tên)</small></div>
+      </div>
+      <footer>In lúc ${new Date().toLocaleString('vi-VN')}</footer>
+    </article>
+  `);
+  window.print();
 }

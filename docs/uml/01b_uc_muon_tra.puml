@@ -9,6 +9,7 @@ rectangle "Mượn trả sách" {
   usecase "UC13 Trả sách" as UC13
   usecase "UC14 Gia hạn phiếu mượn" as UC14
   usecase "UC15 Tra cứu phiếu mượn" as UC15
+  usecase "UC22 In phiếu mượn" as UC22
 }
 rectangle "Báo cáo, thống kê" {
   usecase "UC16 Xem tổng quan thư viện" as UC16
@@ -18,8 +19,10 @@ T -- UC12
 T -- UC13
 T -- UC14
 T -- UC15
+T -- UC22
 T -- UC16
 T -- UC17
 UC13 ..> UC15 : <<include>>
 UC14 ..> UC15 : <<include>>
+UC22 .> UC12 : <<extend>>
 @enduml

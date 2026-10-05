@@ -11,6 +11,7 @@
  * @property {number} book_id
  * @property {string} title
  * @property {string} book_code
+ * @property {string} author
  * @property {string | null} returned_on
  * @property {number} overdue_days
  */
@@ -20,7 +21,9 @@
  * @property {number} id
  * @property {string} name
  * @property {string} reader_code
+ * @property {string} reader_phone
  * @property {string} staff
+ * @property {string} staff_name
  * @property {string} borrowed_on
  * @property {string} due_on
  * @property {string | null} returned_on  Ngày trả cuốn cuối cùng; null khi còn cuốn chưa trả

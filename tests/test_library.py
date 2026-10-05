@@ -92,7 +92,8 @@ def test_TC17_expired_session(client):
     stored=query('SELECT password_hash FROM users WHERE id=1')[0]['password_hash']
     client.cookies.set('session', make_token(1, stored, expires_at=0))
     assert client.get('/api/me').status_code==401
-    client.cookies.set('session', make_token(1, stored)[:-1]+'0')     # chữ ký sai
+    token=make_token(1, stored)
+    client.cookies.set('session', token[:-1]+('1' if token[-1]=='0' else '0'))     # chữ ký sai (luôn khác ký tự cuối)
     assert client.get('/api/me').status_code==401
     client.cookies.set('session', make_token(1, stored))
     assert client.get('/api/me').status_code==200
@@ -387,6 +388,8 @@ def test_TC40_one_slip_many_books(client):
     lid=r.json()['id']
     loan=client.get(f'/api/loans/{lid}').json()
     assert [i['book_id'] for i in loan['items']]==[5,7,8] and loan['status']=='open' and loan['pending']==3
+    # Đủ thông tin để in phiếu: điện thoại độc giả, họ tên người lập, tác giả từng cuốn
+    assert loan['reader_phone']=='0900000004' and loan['staff_name']=='Nguyễn Văn Quản' and loan['items'][0]['author']
     first=loan['items'][0]['id']
     r=client.post(f'/api/loans/{lid}/return',json={'item_ids':[first]}); assert r.status_code==200
     assert r.json()['remaining']==2

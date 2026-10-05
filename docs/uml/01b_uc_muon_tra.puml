@@ -5,24 +5,14 @@ skinparam packageStyle rectangle
 left to right direction
 actor "Thủ thư" as T
 rectangle "Mượn trả sách" {
-  usecase "UC12 Lập phiếu mượn" as UC12
-  usecase "UC13 Trả sách" as UC13
-  usecase "UC14 Gia hạn phiếu mượn" as UC14
-  usecase "UC15 Tra cứu phiếu mượn" as UC15
-  usecase "UC22 In phiếu mượn" as UC22
+  usecase "UC10 Lập phiếu mượn" as UC10
+  usecase "UC11 In phiếu mượn" as UC11
+  usecase "UC12 Trả sách" as UC12
+  usecase "UC13 Gia hạn phiếu mượn" as UC13
 }
-rectangle "Báo cáo, thống kê" {
-  usecase "UC16 Xem tổng quan thư viện" as UC16
-  usecase "UC17 Tải danh sách về máy" as UC17
-}
+T -- UC10
+T -- UC11
 T -- UC12
 T -- UC13
-T -- UC14
-T -- UC15
-T -- UC22
-T -- UC16
-T -- UC17
-UC13 ..> UC15 : <<include>>
-UC14 ..> UC15 : <<include>>
-UC22 .> UC12 : <<extend>>
+UC11 .> UC10 : <<extend>>
 @enduml

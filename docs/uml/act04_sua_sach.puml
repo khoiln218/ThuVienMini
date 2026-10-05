@@ -5,7 +5,7 @@ skinparam ActivityBackgroundColor #FFFFFF
 skinparam SwimlaneTitleFontStyle bold
 |Thủ thư|
 start
-:Tìm sách cần sửa (UC06);
+:Tìm sách cần sửa (UC04);
 :Bấm Sửa trên dòng sách;
 |Hệ thống|
 :Mở hộp thoại với thông tin hiện tại;

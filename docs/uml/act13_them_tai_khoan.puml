@@ -17,7 +17,7 @@ if (Tên đăng nhập đã có?) then (có)
   :Hiển thị "Mã đã tồn tại";
   stop
 endif
-:Băm mật khẩu, lưu tài khoản;
+:Lưu tài khoản (mật khẩu được bảo vệ);
 :Hiển thị "Đã tạo tài khoản" và dòng mới;
 |Quản trị viên|
 stop

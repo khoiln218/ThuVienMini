@@ -16,7 +16,7 @@ if (Mật khẩu hiện tại đúng và mật khẩu mới đủ 8 ký tự?) t
   :Hiển thị lý do từ chối;
   stop
 endif
-:Lưu mật khẩu mới (đã băm);
+:Lưu mật khẩu mới;
 :Đăng xuất các phiên khác của tài khoản;
 :Hiển thị "Đã đổi mật khẩu";
 |Người dùng|

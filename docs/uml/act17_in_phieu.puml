@@ -7,9 +7,9 @@ skinparam SwimlaneTitleFontStyle bold
 start
 if (Đang lập phiếu mới?) then (có)
   :Để chọn "In phiếu ngay sau khi lập";
-  :Lập phiếu mượn (UC12);
+  :Lập phiếu mượn (UC10);
 else (không)
-  :Tìm phiếu cần in (UC15);
+  :Tìm phiếu cần in trong danh sách phiếu;
   :Bấm "In phiếu" trên dòng phiếu;
 endif
 |Hệ thống|

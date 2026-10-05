@@ -7,17 +7,13 @@ actor "Thủ thư" as T
 actor "Quản trị viên" as A
 T <|- A
 rectangle "Hệ thống quản lý thư viện" {
-  usecase "Quản lý tài khoản cá nhân" as G1
-  usecase "Quản lý sách" as G2
-  usecase "Quản lý độc giả" as G3
-  usecase "Mượn trả sách" as G4
-  usecase "Báo cáo, thống kê" as G5
-  usecase "Quản trị hệ thống" as G6
+  usecase "UC01 Đăng nhập" as UC01
+  usecase "Quản lý sách" as G1
+  usecase "Quản lý độc giả" as G2
+  usecase "Mượn trả sách" as G3
 }
+T -- UC01
 T -- G1
 T -- G2
 T -- G3
-T -- G4
-T -- G5
-A -- G6
 @enduml

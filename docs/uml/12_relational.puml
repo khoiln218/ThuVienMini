@@ -4,53 +4,53 @@ skinparam shadowing false
 skinparam linetype ortho
 hide circle
 entity "users\n(Người dùng)" as users {
- * id : INTEGER <<PK>>
+ * id : số <<mã số>>
  --
- * username : TEXT <<UNIQUE>>
- * password_hash : TEXT
- * full_name : TEXT
- email : TEXT
- phone : TEXT
- * role : TEXT
- * active : INTEGER
+ * username : chuỗi <<không trùng>>
+ * password_hash : chuỗi
+ * full_name : chuỗi
+ email : chuỗi
+ phone : chuỗi
+ * role : chuỗi
+ * active : có/không
 }
 entity "readers\n(Độc giả)" as readers {
- * id : INTEGER <<PK>>
+ * id : số <<mã số>>
  --
- * code : TEXT <<UNIQUE>>
- * name : TEXT
- phone : TEXT
- * active : INTEGER
+ * code : chuỗi <<không trùng>>
+ * name : chuỗi
+ phone : chuỗi
+ * active : có/không
 }
 entity "books\n(Sách)" as books {
- * id : INTEGER <<PK>>
+ * id : số <<mã số>>
  --
- * code : TEXT <<UNIQUE>>
- barcode : TEXT <<UNIQUE khi có>>
- * title : TEXT
- * author : TEXT
- * category : TEXT
- * total : INTEGER
- * active : INTEGER
+ * code : chuỗi <<không trùng>>
+ barcode : chuỗi <<không trùng nếu có>>
+ * title : chuỗi
+ * author : chuỗi
+ * category : chuỗi
+ * total : số
+ * active : có/không
 }
 entity "loans\n(Phiếu mượn)" as loans {
- * id : INTEGER <<PK>>
+ * id : số <<mã số>>
  --
- * reader_id : INTEGER <<FK>>
- * created_by : INTEGER <<FK>>
- * borrowed_on : TEXT
- * due_on : TEXT
- * extensions : INTEGER
+ * reader_id : số <<tham chiếu>>
+ * created_by : số <<tham chiếu>>
+ * borrowed_on : ngày
+ * due_on : ngày
+ * extensions : số
 }
 entity "loan_items\n(Chi tiết phiếu mượn)" as items {
- * id : INTEGER <<PK>>
+ * id : số <<mã số>>
  --
- * loan_id : INTEGER <<FK>>
- * book_id : INTEGER <<FK>>
- returned_on : TEXT
- returned_by : INTEGER <<FK>>
+ * loan_id : số <<tham chiếu>>
+ * book_id : số <<tham chiếu>>
+ returned_on : ngày
+ returned_by : số <<tham chiếu>>
  ..
- UNIQUE(loan_id, book_id)
+ mỗi sách một lần trên phiếu
 }
 readers ||--o{ loans : mượn
 users ||--o{ loans : lập

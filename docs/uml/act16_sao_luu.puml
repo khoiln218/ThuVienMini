@@ -1,0 +1,15 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Quản trị viên|
+start
+:Mở Tổng quan, bấm "Sao lưu dữ liệu";
+|Hệ thống|
+:Chép toàn bộ dữ liệu sang tệp sao lưu\nđặt tên theo ngày giờ;
+:Xóa bớt bản cũ, giữ 10 bản mới nhất;
+:Hiển thị "Đã sao lưu · tên tệp";
+|Quản trị viên|
+stop
+@enduml

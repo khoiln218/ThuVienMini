@@ -1,0 +1,25 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Thủ thư|
+start
+:Mở Độc giả, bấm "+ Thêm độc giả";
+:Nhập mã độc giả, họ tên, điện thoại (không bắt buộc);
+:Bấm Lưu thông tin;
+|Hệ thống|
+:Kiểm tra mã 1–30 ký tự, họ tên 1–100 ký tự,\nđiện thoại chỉ gồm chữ số và + ( ) -;
+if (Hợp lệ?) then (không)
+  :Hiển thị lỗi tại hộp thoại;
+  stop
+endif
+if (Mã độc giả đã tồn tại?) then (có)
+  :Hiển thị "Mã đã tồn tại";
+  stop
+endif
+:Lưu độc giả mới;
+:Hiển thị "Đã lưu" và độc giả mới trong danh sách;
+|Thủ thư|
+stop
+@enduml

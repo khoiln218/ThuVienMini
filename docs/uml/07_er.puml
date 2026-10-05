@@ -1,53 +1,60 @@
-@startuml
+@startchen
 skinparam defaultFontName Arial
 skinparam shadowing false
-entity books {
- *id : INTEGER <<PK>>
- --
- code : TEXT <<UQ>>
- barcode : TEXT <<UQ khi khác rỗng>>
- title : TEXT
- author : TEXT
- category : TEXT
- total : INTEGER
- active : INTEGER
+
+entity "NGƯỜI DÙNG" as ND {
+  MaNguoiDung <<key>>
+  TenDangNhap
+  MatKhau
+  HoTen
+  Email
+  DienThoai
+  VaiTro
+  TrangThai
 }
-entity readers {
- *id : INTEGER <<PK>>
- --
- code : TEXT <<UQ>>
- name : TEXT
- phone : TEXT
- active : INTEGER
+entity "ĐỘC GIẢ" as DG {
+  MaDocGia <<key>>
+  HoTen
+  DienThoai
+  TrangThai
 }
-entity loans {
- *id : INTEGER <<PK>>
- --
- book_id : INTEGER <<FK>>
- reader_id : INTEGER <<FK>>
- created_by : INTEGER <<FK>>
- returned_by : INTEGER <<FK nullable>>
- borrowed_on : TEXT
- due_on : TEXT
- returned_on : TEXT nullable
- extensions : INTEGER 0..1
+entity "SÁCH" as S {
+  MaSach <<key>>
+  MaISBN
+  TenSach
+  TacGia
+  TheLoai
+  TongSoBan
+  TrangThai
+  SoBanCoSan <<derived>>
 }
-entity users {
- *id : INTEGER <<PK>>
- --
- username : TEXT <<UQ>>
- password_hash : TEXT
- role : TEXT
- active : INTEGER
+entity "PHIẾU MƯỢN" as PM {
+  SoPhieu <<key>>
+  NgayMuon
+  HanTra
+  DaGiaHan
 }
-books ||--o{ loans
-readers ||--o{ loans
-users ||--o{ loans : created_by
-users |o--o{ loans : returned_by
-note bottom of users
- Phiên đăng nhập là token ký HMAC
- trong cookie, không lưu bảng.
- Bảng sessions cũ chỉ giữ để
- tương thích CSDL trước.
-end note
-@enduml
+entity "CHI TIẾT PHIẾU MƯỢN" as CT <<weak>> {
+  NgayTra
+}
+relationship "MƯỢN" as MUON {
+}
+relationship "LẬP" as LAP {
+}
+relationship "CÓ" as CO <<identifying>> {
+}
+relationship "LÀ BẢN CỦA" as THUOC {
+}
+relationship "NHẬN TRẢ" as NHANTRA {
+}
+DG -1- MUON
+MUON =N= PM
+ND -1- LAP
+LAP =N= PM
+PM =1= CO
+CO =N= CT
+CT =N= THUOC
+THUOC -1- S
+ND -1- NHANTRA
+NHANTRA -N- CT
+@endchen

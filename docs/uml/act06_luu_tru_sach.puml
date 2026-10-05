@@ -1,0 +1,24 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Quản trị viên|
+start
+:Bấm "Lưu trữ" trên dòng sách;
+|Hệ thống|
+:Hỏi xác nhận lưu trữ;
+|Quản trị viên|
+if (Đồng ý?) then (không)
+  stop
+endif
+|Hệ thống|
+if (Sách còn bản đang cho mượn?) then (có)
+  :Hiển thị "Còn sách chưa trả, không thể lưu trữ";
+  stop
+endif
+:Đánh dấu sách đã lưu trữ\n(giữ nguyên lịch sử phiếu mượn);
+:Hiển thị "Đã lưu trữ", sách rời danh sách đang dùng;
+|Quản trị viên|
+stop
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Quản trị viên|
+start
+:Bấm Sửa trên dòng tài khoản;
+:Sửa họ tên, email, điện thoại, vai trò;
+:Nhập mật khẩu mới nếu cần đặt lại;
+:Bấm Lưu thông tin;
+|Hệ thống|
+if (Dữ liệu hợp lệ?) then (không)
+  :Hiển thị lỗi tại hộp thoại;
+  stop
+endif
+if (Tự hạ quyền chính mình hoặc\nhạ quyền quản trị viên cuối cùng?) then (có)
+  :Hiển thị lý do từ chối;
+  stop
+endif
+:Cập nhật tài khoản;
+if (Có đặt lại mật khẩu?) then (có)
+  :Đăng xuất mọi phiên của tài khoản đó;
+endif
+:Hiển thị "Đã cập nhật tài khoản";
+|Quản trị viên|
+stop
+@enduml

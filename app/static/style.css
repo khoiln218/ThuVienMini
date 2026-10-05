@@ -707,3 +707,53 @@ nav button.active .icon {
   font-family: 'SF Mono', Menlo, Consolas, monospace;
   letter-spacing: 0.5px;
 }
+/* Danh sách ô đánh dấu trong hộp thoại (chọn sách khi lập phiếu, chọn cuốn khi nhận trả). */
+.checklist {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px 4px;
+  margin: 0 0 16px;
+}
+.checklist legend {
+  font-weight: 600;
+  padding: 0 4px;
+}
+.checklist input[type='search'] {
+  margin-bottom: 8px;
+}
+.checklist-scroll {
+  max-height: 240px;
+  overflow-y: auto;
+}
+.checklist label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin-bottom: 8px;
+  font-weight: 400;
+  cursor: pointer;
+}
+.checklist label[hidden] {
+  display: none;
+}
+.checklist label input {
+  width: auto;
+  min-height: 0;
+  margin: 0;
+}
+.checklist label small {
+  flex-basis: 100%;
+  padding-left: 24px;
+}
+/* Các cuốn trong một phiếu mượn; cuốn đã trả gạch mờ. */
+.loan-books {
+  margin: 0;
+  padding-left: 16px;
+}
+.loan-books li + li {
+  margin-top: 6px;
+}
+.loan-books li.returned {
+  color: var(--muted);
+}

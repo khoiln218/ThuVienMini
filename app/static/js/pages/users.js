@@ -22,6 +22,8 @@ export async function render() {
           (u) => html`
             <tr>
               <td><b>${u.username}</b>${u.id === me ? html`<small>Bạn</small>` : ''}</td>
+              <td>${u.full_name || '—'}</td>
+              <td>${u.email || '—'}<small>${u.phone}</small></td>
               <td>${ROLE_LABEL[u.role]}</td>
               <td><span class="badge ${u.active ? 'done' : 'late'}">${u.active ? 'Hoạt động' : 'Đã ngừng'}</span></td>
               <td>
@@ -41,7 +43,7 @@ export async function render() {
             </tr>
           `,
         )
-      : empty(4),
+      : empty(6),
   );
 }
 
@@ -66,6 +68,9 @@ export function editUser(id) {
     id ? `Chỉnh sửa tài khoản ${u?.username ?? ''}` : 'Thêm tài khoản',
     html`
       ${id ? '' : field('Tên đăng nhập', 'username', '', 'required minlength="3" maxlength="50" pattern="[A-Za-z0-9._-]+" autocomplete="off"')}
+      ${field('Họ và tên', 'full_name', u?.full_name, 'required maxlength="100"')}
+      ${field('Email (không bắt buộc)', 'email', u?.email, 'type="email" maxlength="100"')}
+      ${field('Điện thoại (không bắt buộc)', 'phone', u?.phone, 'maxlength="20" inputmode="tel"')}
       ${roleSelect(u?.role)}
       ${field(
         id ? 'Mật khẩu mới (để trống nếu không đổi)' : 'Mật khẩu',
@@ -77,8 +82,8 @@ export function editUser(id) {
     `,
     (data) => {
       if (!id) return api('/users', 'POST', data);
-      /** @type {{ role: string, password?: string }} */
-      const body = { role: data.role };
+      /** @type {{ role: string, full_name: string, email: string, phone: string, password?: string }} */
+      const body = { role: data.role, full_name: data.full_name, email: data.email, phone: data.phone };
       if (data.password) body.password = data.password;
       return api(`/users/${id}`, 'PUT', body);
     },

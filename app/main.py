@@ -11,7 +11,7 @@ from fastapi import FastAPI, Depends, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from .db import backup, initialize, query, transaction
-from .models import Login, Book, Reader, Borrow, Extend, UserCreate, UserUpdate, PasswordChange
+from .models import Login, Book, Reader, Borrow, Return, Extend, UserCreate, UserUpdate, PasswordChange
 from .security import hash_password, verify_password, make_token, parse_token, password_fingerprint, SESSION_SECONDS, LoginGuard
 from .services import LoanService, overdue_days
 
@@ -50,7 +50,7 @@ async def integrity_error(request, exc):
 def current_user(request: Request):
     # Phiên là token ký HMAC trong cookie, không lưu server: mọi instance (kể cả serverless) đều tự kiểm tra được.
     parsed = parse_token(request.cookies.get('session', ''))
-    rows = parsed and query('SELECT id,username,role,password_hash FROM users WHERE id=? AND active=1', (parsed[0],))
+    rows = parsed and query('SELECT id,username,full_name,role,password_hash FROM users WHERE id=? AND active=1', (parsed[0],))
     if not rows or password_fingerprint(rows[0]['password_hash']) != parsed[1]:
         raise HTTPException(401, 'Vui lòng đăng nhập')
     del rows[0]['password_hash']
@@ -96,7 +96,7 @@ def login(data: Login, response: Response, request: Request):
         raise HTTPException(401, 'Tên đăng nhập hoặc mật khẩu không đúng')
     login_guard.succeed(key)
     set_session_cookie(response, rows[0]['id'], rows[0]['password_hash'])
-    return {'username': rows[0]['username'], 'role': rows[0]['role']}
+    return {'username': rows[0]['username'], 'full_name': rows[0]['full_name'], 'role': rows[0]['role']}
 
 def set_session_cookie(response: Response, user_id, password_hash):
     response.set_cookie('session', make_token(user_id, password_hash), httponly=True, samesite='strict', max_age=SESSION_SECONDS)
@@ -124,18 +124,18 @@ def change_password(data: PasswordChange, response: Response, user=Depends(curre
 
 @app.get('/api/users')
 def users(user=Depends(admin)):
-    return query('SELECT id,username,role,active FROM users ORDER BY id')
+    return query('SELECT id,username,full_name,email,phone,role,active FROM users ORDER BY id')
 
 @app.post('/api/users', status_code=201)
 def add_user(data: UserCreate, user=Depends(admin)):
     with transaction() as db:
-        cur = db.execute('INSERT INTO users(username,password_hash,role) VALUES(?,?,?)', (data.username, hash_password(data.password), data.role))
+        cur = db.execute('INSERT INTO users(username,password_hash,role,full_name,email,phone) VALUES(?,?,?,?,?,?)',
+            (data.username, hash_password(data.password), data.role, data.full_name, data.email, data.phone))
     return {'id': cur.lastrowid, 'message': 'Đã tạo tài khoản'}
 
 @app.put('/api/users/{record_id}')
 def edit_user(record_id: int, data: UserUpdate, user=Depends(admin)):
-    changes = {}
-    if data.role is not None: changes['role'] = data.role
+    changes = {k: v for k, v in data.model_dump(include={'full_name', 'email', 'phone', 'role'}).items() if v is not None}
     if data.active is not None: changes['active'] = int(data.active)
     if data.password is not None: changes['password_hash'] = hash_password(data.password)
     if not changes:
@@ -169,7 +169,7 @@ SIZE = Query(default=20, ge=1, le=100)
 
 @app.get('/api/books')
 def books(q: str = '', page: int | None = PAGE, size: int = SIZE, user=Depends(current_user)):
-    return paginated('SELECT b.*, b.total-(SELECT COUNT(*) FROM loans l WHERE l.book_id=b.id AND l.returned_on IS NULL) AS available',
+    return paginated('SELECT b.*, b.total-(SELECT COUNT(*) FROM loan_items i WHERE i.book_id=b.id AND i.returned_on IS NULL) AS available',
         "FROM books b WHERE b.active=1 AND instr(casefold(b.code||' '||b.barcode||' '||b.title||' '||b.author||' '||b.category), ?)>0",
         'ORDER BY b.id DESC', (q.strip().casefold(),), page, size)
 
@@ -185,7 +185,7 @@ def save_record(table, data, record_id=None):
             if not db.execute(f'SELECT id FROM {table} WHERE id=? AND active=1', (record_id,)).fetchone():
                 raise HTTPException(404, 'Không tìm thấy bản ghi')
             if table == 'books':
-                used = db.execute('SELECT COUNT(*) FROM loans WHERE book_id=? AND returned_on IS NULL', (record_id,)).fetchone()[0]
+                used = db.execute('SELECT COUNT(*) FROM loan_items WHERE book_id=? AND returned_on IS NULL', (record_id,)).fetchone()[0]
                 if values['total'] < used:
                     raise HTTPException(409, 'Tổng số bản không được nhỏ hơn số đang mượn')
             db.execute(f"UPDATE {table} SET {','.join(k+'=?' for k in values)} WHERE id=?", (*values.values(), record_id))
@@ -210,50 +210,95 @@ def add_reader(data: Reader, user=Depends(current_user)):
 def edit_reader(record_id: int, data: Reader, user=Depends(current_user)):
     return save_record('readers', data, record_id)
 
+# Sách/độc giả còn đang giữ sách chưa trả thì không được lưu trữ
+STILL_BORROWED = {'books': 'SELECT 1 FROM loan_items WHERE book_id=? AND returned_on IS NULL',
+                  'readers': 'SELECT 1 FROM loan_items i JOIN loans l ON l.id=i.loan_id WHERE l.reader_id=? AND i.returned_on IS NULL'}
+
 @app.delete('/api/{resource}/{record_id}')
-def deactivate(resource: str, record_id: int, user=Depends(admin)):
-    if resource not in ('books', 'readers'):
+def archive(resource: str, record_id: int, user=Depends(admin)):
+    """Lưu trữ sách/độc giả: ẩn khỏi danh sách đang dùng (active=0), không xóa dòng nên lịch sử phiếu vẫn còn."""
+    if resource not in STILL_BORROWED:
         raise HTTPException(404, 'Không có tài nguyên')
-    column = 'book_id' if resource == 'books' else 'reader_id'
     with transaction() as db:
         if not db.execute(f'SELECT id FROM {resource} WHERE id=? AND active=1', (record_id,)).fetchone():
             raise HTTPException(404, 'Không tìm thấy bản ghi')
-        if db.execute(f'SELECT 1 FROM loans WHERE {column}=? AND returned_on IS NULL', (record_id,)).fetchone():
-            raise HTTPException(409, 'Còn phiếu chưa trả, không thể ngừng hoạt động')
+        if db.execute(STILL_BORROWED[resource], (record_id,)).fetchone():
+            raise HTTPException(409, 'Còn sách chưa trả, không thể lưu trữ')
         db.execute(f'UPDATE {resource} SET active=0 WHERE id=?', (record_id,))
-    return {'message': 'Đã ngừng hoạt động, lịch sử vẫn được giữ'}
+    return {'message': 'Đã lưu trữ, lịch sử mượn trả vẫn được giữ'}
 
-# Điều kiện trạng thái phiếu tính ngay trong SQL theo ngày hiện tại (?), khớp với overdue_days()
-LOAN_STATUS = {'all': '1=1', 'returned': 'l.returned_on IS NOT NULL',
-               'overdue': 'l.returned_on IS NULL AND l.due_on < ?', 'open': 'l.returned_on IS NULL AND l.due_on >= ?'}
+# Phiếu còn sách chưa trả nếu có dòng chi tiết chưa có ngày trả
+HAS_OPEN = 'EXISTS (SELECT 1 FROM loan_items i WHERE i.loan_id=l.id AND i.returned_on IS NULL)'
+# Điều kiện trạng thái phiếu tính ngay trong SQL theo ngày hiện tại (?), khớp với loan_status()
+LOAN_STATUS = {'all': '1=1', 'returned': f'NOT {HAS_OPEN}',
+               'overdue': f'{HAS_OPEN} AND l.due_on < ?', 'open': f'{HAS_OPEN} AND l.due_on >= ?'}
+LOAN_SELECT = 'SELECT l.*,r.name,r.code AS reader_code,u.username AS staff'
+LOAN_SOURCE = 'FROM loans l JOIN readers r ON l.reader_id=r.id JOIN users u ON l.created_by=u.id'
+
+def attach_items(loans):
+    """Gắn danh sách sách (loan_items) vào từng phiếu và suy ra trạng thái phiếu."""
+    if not loans:
+        return loans
+    ids = [l['id'] for l in loans]
+    items = query('SELECT i.*,b.title,b.code AS book_code FROM loan_items i JOIN books b ON b.id=i.book_id '
+                  f"WHERE i.loan_id IN ({','.join('?' for _ in ids)}) ORDER BY i.id", ids)
+    by_loan = {i: [] for i in ids}
+    for item in items:
+        by_loan[item['loan_id']].append(item)
+    for loan in loans:
+        loan['items'] = by_loan[loan['id']]
+        pending = [i for i in loan['items'] if not i['returned_on']]
+        loan['pending'] = len(pending)
+        # Phiếu trả đủ: ngày trả là ngày nhận cuốn cuối cùng, số ngày trễ dừng ở đó
+        loan['returned_on'] = None if pending else max(i['returned_on'] for i in loan['items'])
+        loan['overdue_days'] = overdue_days(loan['due_on'], loan['returned_on'])
+        loan['status'] = 'returned' if loan['returned_on'] else ('overdue' if loan['overdue_days'] else 'open')
+        for item in loan['items']:
+            item['overdue_days'] = overdue_days(loan['due_on'], item['returned_on'])
+    return loans
 
 @app.get('/api/loans')
 def loans(status: str = 'all', page: int | None = PAGE, size: int = SIZE, user=Depends(current_user)):
     if status not in LOAN_STATUS:
         raise HTTPException(422, 'Trạng thái không hợp lệ')
     params = (date.today().isoformat(),) if '?' in LOAN_STATUS[status] else ()
-    result = paginated('SELECT l.*,b.title,b.code AS book_code,r.name,r.code AS reader_code,u.username AS staff',
-        f'FROM loans l JOIN books b ON l.book_id=b.id JOIN readers r ON l.reader_id=r.id JOIN users u ON l.created_by=u.id WHERE {LOAN_STATUS[status]}',
-        'ORDER BY l.id DESC', params, page, size)
-    for row in (result['items'] if page else result):
-        row['overdue_days'] = overdue_days(row['due_on'], row['returned_on'])
-        row['status'] = 'returned' if row['returned_on'] else ('overdue' if row['overdue_days'] else 'open')
+    result = paginated(LOAN_SELECT, f'{LOAN_SOURCE} WHERE {LOAN_STATUS[status]}', 'ORDER BY l.id DESC', params, page, size)
+    attach_items(result['items'] if page else result)
     return result
+
+@app.get('/api/loans/{loan_id}')
+def loan_detail(loan_id: int, user=Depends(current_user)):
+    rows = attach_items(query(f'{LOAN_SELECT} {LOAN_SOURCE} WHERE l.id=?', (loan_id,)))
+    if not rows:
+        raise HTTPException(404, 'Không tìm thấy phiếu mượn')
+    return rows[0]
 
 @app.post('/api/loans', status_code=201)
 def borrow(data: Borrow, user=Depends(current_user)):
     return LoanService.borrow(data, user['id'])
 
 @app.post('/api/loans/{loan_id}/return')
-def return_book(loan_id: int, user=Depends(current_user)):
-    return LoanService.return_book(loan_id, user['id'])
+def return_books(loan_id: int, data: Return | None = None, user=Depends(current_user)):
+    return LoanService.return_books(loan_id, data.item_ids if data else None, user['id'])
 
 @app.post('/api/loans/{loan_id}/extend')
 def extend_loan(loan_id: int, data: Extend, user=Depends(current_user)):
     return LoanService.extend(loan_id, data.days)
 
+STATUS_LABEL = {'open': 'Đang mượn', 'overdue': 'Quá hạn', 'returned': 'Đã trả'}
+
+def loan_rows(page=None, size=20, user=None):
+    """Danh sách phiếu trải phẳng thành từng cuốn sách, để mở bằng Excel."""
+    rows = []
+    for loan in loans(page=None, size=size, user=user):
+        for item in loan['items']:
+            rows.append({**loan, 'book_code': item['book_code'], 'title': item['title'], 'returned_on': item['returned_on'],
+                         'overdue_days': item['overdue_days'], 'status': STATUS_LABEL['returned' if item['returned_on'] else loan['status']],
+                         'extensions': 'Có' if loan['extensions'] else ''})
+    return rows
+
 EXPORTS = {
-    'books': (['Mã sách', 'Mã vạch', 'Tên sách', 'Tác giả', 'Thể loại', 'Tổng bản', 'Có sẵn'], ('code', 'barcode', 'title', 'author', 'category', 'total', 'available')),
+    'books': (['Mã sách', 'ISBN', 'Tên sách', 'Tác giả', 'Thể loại', 'Tổng bản', 'Có sẵn'], ('code', 'barcode', 'title', 'author', 'category', 'total', 'available')),
     'readers': (['Mã độc giả', 'Họ tên', 'Điện thoại'], ('code', 'name', 'phone')),
     'loans': (['Phiếu', 'Mã sách', 'Tên sách', 'Mã độc giả', 'Độc giả', 'Ngày mượn', 'Hạn trả', 'Ngày trả', 'Quá hạn (ngày)', 'Trạng thái', 'Gia hạn', 'Thủ thư'],
               ('id', 'book_code', 'title', 'reader_code', 'name', 'borrowed_on', 'due_on', 'returned_on', 'overdue_days', 'status', 'extensions', 'staff')),
@@ -261,11 +306,12 @@ EXPORTS = {
 
 @app.get('/api/export/{resource}.csv')
 def export_csv(resource: str, user=Depends(current_user)):
+    """Tải danh sách về máy dạng bảng tính (CSV mở được bằng Excel)."""
     if resource not in EXPORTS:
         raise HTTPException(404, 'Không có tài nguyên')
     header, keys = EXPORTS[resource]
     # Gọi trực tiếp (không qua FastAPI) nên phải truyền page/size tường minh; page=None → toàn bộ
-    rows = {'books': books, 'readers': readers, 'loans': loans}[resource](page=None, size=20, user=user)
+    rows = {'books': books, 'readers': readers, 'loans': loan_rows}[resource](page=None, size=20, user=user)
     buffer = io.StringIO()
     writer = csv.writer(buffer)
     writer.writerow(header)
@@ -285,9 +331,11 @@ def make_backup(user=Depends(admin)):
 def stats(user=Depends(current_user)):
     today = date.today().isoformat()
     inventory = query('SELECT COUNT(*) AS titles, COALESCE(SUM(total),0) AS copies FROM books WHERE active=1')[0]
-    borrowing = query('SELECT COUNT(*) AS n FROM loans l JOIN books b ON b.id=l.book_id WHERE l.returned_on IS NULL AND b.active=1')[0]['n']
-    counts = query('SELECT SUM(returned_on IS NULL) AS borrowing, SUM(returned_on IS NULL AND due_on<?) AS overdue, SUM(returned_on IS NOT NULL) AS returned FROM loans', (today,))[0]
+    borrowing = query('SELECT COUNT(*) AS n FROM loan_items i JOIN books b ON b.id=i.book_id WHERE i.returned_on IS NULL AND b.active=1')[0]['n']
+    # borrowing: số bản sách đang ở tay độc giả; overdue/returned: số phiếu
+    counts = query(f"SELECT (SELECT COUNT(*) FROM loan_items WHERE returned_on IS NULL) AS borrowing, SUM({LOAN_STATUS['overdue']}) AS overdue, "
+                   f"SUM({LOAN_STATUS['returned']}) AS returned FROM loans l", (today,))[0]
     return {'titles': inventory['titles'], 'copies': inventory['copies'],
         'available': inventory['copies'] - borrowing, 'readers': query('SELECT COUNT(*) AS n FROM readers WHERE active=1')[0]['n'],
         'borrowing': counts['borrowing'] or 0, 'overdue': counts['overdue'] or 0, 'returned': counts['returned'] or 0,
-        'top_books': query('SELECT b.title,COUNT(*) AS count FROM loans l JOIN books b ON l.book_id=b.id GROUP BY b.id ORDER BY count DESC,b.id LIMIT 5')}
+        'top_books': query('SELECT b.title,COUNT(*) AS count FROM loan_items i JOIN books b ON i.book_id=b.id GROUP BY b.id ORDER BY count DESC,b.id LIMIT 5')}

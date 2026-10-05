@@ -1,19 +1,24 @@
 @startuml
 skinparam defaultFontName Arial
 skinparam shadowing false
-participant "app.js" as P0
+participant "pages/loans.js" as P0
 participant "main.py" as P1
 participant "LoanService" as P2
 participant "SQLite" as P3
-P0 -> P1: POST /api/loans + cookie + header
-P1 -> P3: current_user(): đọc phiên còn hạn
-P3 --> P1: Thông tin người dùng
+P0 -> P1: POST /api/loans {reader_id, book_ids[], days}
+P1 -> P1: current_user(); kiểm tra DTO Borrow (1–5 sách)
 P1 -> P2: borrow(Borrow, user.id)
-P2 -> P3: BEGIN IMMEDIATE; kiểm tra sách, độc giả
-P3 --> P2: Tồn kho và số đang mượn
-P2 -> P3: [Hợp lệ] INSERT loans; COMMIT
-P3 --> P2: lastrowid
-P2 --> P1: id, message (hoặc HTTPException)
-P1 --> P0: 201 JSON; lỗi 401 / 404 / 409 / 422
-
+P2 -> P3: BEGIN IMMEDIATE; SELECT readers, books
+P2 -> P3: COUNT loan_items chưa trả của độc giả và từng sách
+P3 --> P2: Số đang giữ, số đang cho mượn
+alt Đủ điều kiện
+  P2 -> P3: INSERT loans; INSERT loan_items × k; COMMIT
+  P2 --> P1: {id, message}
+  P1 --> P0: 201 JSON
+else Vi phạm quy tắc
+  P2 -> P3: ROLLBACK
+  P2 --> P1: HTTPException 404 / 409
+  P1 --> P0: Lỗi JSON (detail)
+end
+P0 -> P0: Hiển thị message, tải lại danh sách
 @enduml

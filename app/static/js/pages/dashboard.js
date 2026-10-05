@@ -16,7 +16,7 @@ export async function render() {
   const tiles = [
     ['Đầu sách', stats.titles, `${stats.copies} bản trong kho`],
     ['Bản có sẵn', stats.available, `${stats.readers} độc giả hoạt động`],
-    ['Đang mượn', stats.borrowing, `${stats.returned} phiếu đã trả`],
+    ['Bản đang mượn', stats.borrowing, `${stats.returned} phiếu đã trả`],
     ['Phiếu quá hạn', stats.overdue, 'Cần theo dõi hoàn trả'],
   ];
   $('#stats').innerHTML = toHTML(
@@ -33,7 +33,15 @@ export async function render() {
         overdue.slice(0, 6).map(
           (l) => html`
             <div class="list-item">
-              <div><b>${l.title}</b><small>${l.name} · Phiếu #${l.id} · Hạn ${l.due_on}</small></div>
+              <div>
+                <b
+                  >${l.items
+                    .filter((i) => !i.returned_on)
+                    .map((i) => i.title)
+                    .join(', ')}</b
+                >
+                <small>${l.name} · Phiếu #${l.id} · Hạn ${l.due_on}</small>
+              </div>
               <div class="list-stack">${badge(l)}<button class="action" data-return="${l.id}">Trả sách</button></div>
             </div>
           `,

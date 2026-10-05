@@ -1,0 +1,32 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Thủ thư|
+start
+:Bấm "Gia hạn" trên phiếu đang mượn trong hạn;
+:Nhập số ngày gia hạn (mặc định 7);
+:Bấm Gia hạn;
+|Hệ thống|
+if (Số ngày 1–30?) then (không)
+  :Hiển thị lỗi tại hộp thoại;
+  stop
+endif
+if (Phiếu còn sách chưa trả?) then (không)
+  :Hiển thị "Phiếu này đã trả hết sách";
+  stop
+elseif (Phiếu đã quá hạn?) then (có)
+  :Hiển thị "Phiếu đã quá hạn, cần trả sách";
+  stop
+elseif (Phiếu đã gia hạn?) then (có)
+  :Hiển thị "Mỗi phiếu chỉ được gia hạn một lần";
+  stop
+else (đủ điều kiện)
+endif
+:Hạn trả mới = hạn trả cũ + số ngày;
+:Đánh dấu phiếu đã gia hạn;
+:Hiển thị "Đã gia hạn phiếu #n đến ngày ...";
+|Thủ thư|
+stop
+@enduml

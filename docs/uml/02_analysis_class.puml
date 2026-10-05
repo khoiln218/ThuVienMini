@@ -1,33 +1,48 @@
 @startuml
 skinparam defaultFontName Arial
 skinparam shadowing false
+hide circle
+hide methods
 class Sach {
  maSach
+ maISBN
  tenSach
  tacGia
  theLoai
  tongSoBan
- hoatDong
+ dangSuDung
+ /soBanCoSan
 }
 class DocGia {
  maDocGia
  hoTen
  dienThoai
- hoatDong
+ dangSuDung
 }
 class PhieuMuon {
+ soPhieu
  ngayMuon
  hanTra
- ngayTra
+ daGiaHan
+ /trangThai
  /soNgayQuaHan
+}
+class ChiTietPhieuMuon {
+ ngayTra
+ /daTra
 }
 class NguoiDung {
  tenDangNhap
  matKhauBam
+ hoTen
+ email
+ dienThoai
  vaiTro
+ dangHoatDong
 }
-Sach "1" -- "0..*" PhieuMuon
-DocGia "1" -- "0..*" PhieuMuon
-NguoiDung "1" -- "0..*" PhieuMuon : lập
-NguoiDung "0..1" -- "0..*" PhieuMuon : nhận trả
+DocGia "1" -- "0..*" PhieuMuon : mượn >
+PhieuMuon "1" *-- "1..5" ChiTietPhieuMuon : gồm >
+ChiTietPhieuMuon "0..*" -- "1" Sach : là bản của >
+NguoiDung "1" -- "0..*" PhieuMuon : lập >
+NguoiDung "0..1" -- "0..*" ChiTietPhieuMuon : nhận trả >
 @enduml

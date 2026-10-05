@@ -52,7 +52,7 @@ def signed_in(page, server):
 
 def test_UI01_login_and_dashboard(signed_in):
     page = signed_in
-    expect(page.locator('#user-label')).to_contain_text('admin')
+    expect(page.locator('#user-label')).to_contain_text('Nguyễn Văn Quản')
     expect(page.locator('#stats .stat')).to_have_count(4)
     expect(page.locator('#overdue-list .list-item')).to_have_count(1)
     expect(page).to_have_title('Tổng quan thư viện · Thư viện')
@@ -115,7 +115,7 @@ def test_UI05_add_edit_book_escapes_html(signed_in):
     cell = page.locator('#book-rows tr', has_text='UI-XSS').locator('td.text-wrap b')
     expect(cell).to_have_text('<img src=x onerror=alert(1)>')
     assert page.locator('#book-rows img').count() == 0
-    # Tìm theo mã vạch (như máy quét gõ vào ô tìm kiếm rồi Enter)
+    # Tìm theo ISBN
     page.fill('#book-search input', '8930000009999')
     page.press('#book-search input', 'Enter')
     expect(page.locator('#book-rows tr')).to_have_count(1)
@@ -132,18 +132,34 @@ def test_UI05_add_edit_book_escapes_html(signed_in):
 
 def test_UI06_borrow_and_return(signed_in):
     page = signed_in
+    # Một phiếu gồm hai cuốn
     page.click('#quick-borrow')
     page.select_option('#editor select[name=reader_id]', label='DG004 · Phạm Ngọc Mai')
-    page.select_option('#editor select[name=book_id]', index=0)
+    page.fill('#book-filter', 'S007')
+    expect(page.locator('#editor .checklist-scroll label:visible')).to_have_count(1)
+    page.check('#editor input[name=book]:visible')
+    page.fill('#book-filter', 'S008')
+    page.check('#editor input[name=book]:visible')
+    expect(page.locator('#picked')).to_have_text('(đã chọn 2)')
     page.click('#editor button[type=submit]')
-    expect(page.locator('#notification')).to_contain_text('Đã lưu')
+    expect(page.locator('#notification')).to_contain_text('gồm 2 cuốn')
     page.click('nav button[data-page=loans]')
     page.select_option('#loan-status', 'open')
     row = page.locator('#loan-rows tr').first
     expect(row).to_contain_text('Đang mượn')
-    page.once('dialog', lambda d: d.accept())
+    expect(row.locator('.loan-books li')).to_have_count(2)
+    # Trả một cuốn trước, phiếu vẫn mở
     row.locator('button[data-return]').click()
-    expect(page.locator('#notification')).to_contain_text('Đã ghi nhận trả sách')
+    expect(page.locator('#editor input[name=item]')).to_have_count(2)
+    page.locator('#editor input[name=item]').first.uncheck()
+    page.click('#editor button[type=submit]')
+    expect(page.locator('#notification')).to_contain_text('còn 1 cuốn chưa trả')
+    expect(row.locator('.loan-books li.returned')).to_have_count(1)
+    # Trả cuốn còn lại
+    row.locator('button[data-return]').click()
+    expect(page.locator('#editor input[name=item]')).to_have_count(1)
+    page.click('#editor button[type=submit]')
+    expect(page.locator('#notification')).to_contain_text('phiếu đã trả đủ')
 
 
 def test_UI07_change_password_and_relogin(signed_in, server):

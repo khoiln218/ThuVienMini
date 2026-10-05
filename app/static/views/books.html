@@ -1,12 +1,13 @@
 <!-- Khung HTML của trang "books". Được pages/index.js tải và gắn vào #pages khi khởi động; pages/books.js điền dữ liệu bằng render(). -->
 <div class="toolbar">
   <form id="book-search" class="search">
-    <input name="q" aria-label="Tìm sách" placeholder="Tìm theo mã, mã vạch, tên sách, tác giả, thể loại…" /><button>
+    <input name="q" aria-label="Tìm sách" placeholder="Tìm theo mã, ISBN, tên sách, tác giả, thể loại…" /><button>
       Tìm kiếm
     </button>
   </form>
   <span class="toolbar-actions"
-    ><a class="button" href="/api/export/books.csv" download>Xuất CSV</a
+    ><a class="button" href="/api/export/books.csv" download title="Tải toàn bộ danh sách về máy, mở bằng Excel"
+      >Tải danh sách (Excel)</a
     ><button class="primary" id="add-book">+ Thêm sách</button></span
   >
 </div>
@@ -14,7 +15,7 @@
   <table>
     <thead>
       <tr>
-        <th>Mã sách / Mã vạch</th>
+        <th>Mã sách / ISBN</th>
         <th>Tên sách / Tác giả</th>
         <th>Thể loại</th>
         <th>Tổng bản</th>

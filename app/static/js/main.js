@@ -7,7 +7,7 @@ import { navigate, routeFromPath } from './router.js';
 import { refresh, mount } from './pages/index.js';
 import { editBook } from './pages/books.js';
 import { editReader } from './pages/readers.js';
-import { newLoan, extendLoan } from './pages/loans.js';
+import { newLoan, extendLoan, returnLoan } from './pages/loans.js';
 import { editUser, changePassword } from './pages/users.js';
 
 /** @typedef {import('./types.js').User} User */
@@ -22,7 +22,8 @@ async function enter() {
   state.user = user;
   $('#login-view').hidden = true;
   $('#app-view').hidden = false;
-  $('#user-label').textContent = `${user.username} · ${user.role === 'admin' ? 'Quản trị viên' : 'Thủ thư'}`;
+  $('#user-label').textContent =
+    `${user.full_name || user.username} · ${user.role === 'admin' ? 'Quản trị viên' : 'Thủ thư'}`;
   // Phần tử chỉ dành cho quản trị (menu Tài khoản, nút Sao lưu...) đánh dấu bằng data-admin
   document.querySelectorAll('[data-admin]').forEach((el) => {
     /** @type {HTMLElement} */ (el).hidden = !isAdmin();
@@ -123,17 +124,12 @@ document.addEventListener('click', async (e) => {
       await refresh();
       notice('Đã cập nhật tài khoản.');
     }
-    if (d.remove && confirm('Ngừng hoạt động bản ghi này? Lịch sử mượn trả vẫn được giữ.')) {
-      await api(`/${d.remove}`, 'DELETE');
+    if (d.remove && confirm('Lưu trữ bản ghi này? Bản ghi sẽ ẩn khỏi danh sách, lịch sử mượn trả vẫn được giữ.')) {
+      const r = await api(`/${d.remove}`, 'DELETE');
       await refresh();
-      notice('Đã ngừng hoạt động bản ghi.');
+      notice(r.message + '.');
     }
-    if (d.return && confirm(`Xác nhận đã nhận lại sách của phiếu #${d.return}?`)) {
-      button.disabled = true;
-      const r = await api(`/loans/${d.return}/return`, 'POST');
-      await refresh();
-      notice(r.message + (r.overdue_days ? ` · Quá hạn ${r.overdue_days} ngày.` : '.'));
-    }
+    if (d.return) await returnLoan(Number(d.return));
   } catch (err) {
     report(err);
   } finally {

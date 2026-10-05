@@ -1,0 +1,24 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Quản trị viên|
+start
+:Mở Tài khoản, bấm "+ Thêm tài khoản";
+:Nhập tên đăng nhập, họ tên, email, điện thoại,\nvai trò và mật khẩu;
+:Bấm Lưu thông tin;
+|Hệ thống|
+if (Tên đăng nhập 3–50 ký tự, có họ tên,\nemail đúng dạng, mật khẩu ≥ 8 ký tự?) then (không)
+  :Hiển thị lỗi tại hộp thoại;
+  stop
+endif
+if (Tên đăng nhập đã có?) then (có)
+  :Hiển thị "Mã đã tồn tại";
+  stop
+endif
+:Băm mật khẩu, lưu tài khoản;
+:Hiển thị "Đã tạo tài khoản" và dòng mới;
+|Quản trị viên|
+stop
+@enduml

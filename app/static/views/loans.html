@@ -9,7 +9,8 @@
       <option value="returned">Đã trả</option>
     </select></label
   ><span class="toolbar-actions"
-    ><a class="button" href="/api/export/loans.csv" download>Xuất CSV</a
+    ><a class="button" href="/api/export/loans.csv" download title="Tải toàn bộ danh sách về máy, mở bằng Excel"
+      >Tải danh sách (Excel)</a
     ><button class="primary" id="add-loan">+ Lập phiếu mượn</button></span
   >
 </div>
@@ -17,7 +18,8 @@
   <table>
     <thead>
       <tr>
-        <th>Phiếu / Sách</th>
+        <th>Phiếu</th>
+        <th>Sách trong phiếu</th>
         <th>Độc giả</th>
         <th>Ngày mượn</th>
         <th>Hạn trả</th>
@@ -30,6 +32,6 @@
 </div>
 <div class="pager" id="loans-pager" hidden></div>
 <p class="muted">
-  Mỗi phiếu tương ứng một bản sách. Ngày đến hạn vẫn được tính là trong hạn. Phiếu trong hạn được gia hạn một lần, tối
-  đa 30 ngày.
+  Mỗi lần mượn lập một phiếu gồm một hoặc nhiều cuốn, hạn trả chung cho cả phiếu. Độc giả có thể trả từng cuốn. Ngày đến
+  hạn vẫn được tính là trong hạn. Phiếu trong hạn được gia hạn một lần, tối đa 30 ngày.
 </p>

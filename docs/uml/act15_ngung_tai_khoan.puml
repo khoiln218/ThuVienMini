@@ -1,0 +1,27 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Quản trị viên|
+start
+:Bấm "Ngừng" hoặc "Kích hoạt" trên dòng tài khoản;
+|Hệ thống|
+:Hỏi xác nhận;
+|Quản trị viên|
+if (Đồng ý?) then (không)
+  stop
+endif
+|Hệ thống|
+if (Ngừng chính mình hoặc\nquản trị viên hoạt động cuối cùng?) then (có)
+  :Hiển thị lý do từ chối;
+  stop
+endif
+:Cập nhật trạng thái tài khoản;
+if (Là thao tác Ngừng?) then (có)
+  :Đăng xuất ngay mọi phiên của tài khoản;
+endif
+:Hiển thị "Đã cập nhật tài khoản" và trạng thái mới;
+|Quản trị viên|
+stop
+@enduml

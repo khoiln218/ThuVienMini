@@ -9,15 +9,16 @@ class Main <<module>> {
  +users / add_user / edit_user
  +books / readers (q, page, size)
  +save_record(table, data, record_id): dict
- +deactivate(resource, record_id)
- +loans (status, page, size)
- +borrow / return_book / extend_loan
+ +archive(resource, record_id)
+ +loans (status, page, size) / loan_detail(id)
+ +attach_items(loans): list
+ +borrow / return_books / extend_loan
  +export_csv(resource) / make_backup()
  +stats(): dict
 }
 class LoanService {
  {static} +borrow(data: Borrow, user_id: int): dict
- {static} +return_book(loan_id: int, user_id: int): dict
+ {static} +return_books(loan_id: int, item_ids: list, user_id: int): dict
  {static} +extend(loan_id: int, days: int): dict
 }
 class Security <<module>> {
@@ -51,9 +52,12 @@ class Reader {
  phone: str[0..20]
 }
 class Borrow {
- book_id: int > 0
  reader_id: int > 0
+ book_ids: list[int > 0] (1..5)
  days: int[1..30]
+}
+class Return {
+ item_ids: list[int > 0] | None
 }
 class Extend {
  days: int[1..30]
@@ -62,6 +66,7 @@ class "Login / PasswordChange\nUserCreate / UserUpdate" as Auth
 Input <|-- Book
 Input <|-- Reader
 Input <|-- Borrow
+Input <|-- Return
 Input <|-- Extend
 Input <|-- Auth
 Main ..> LoanService

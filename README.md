@@ -44,7 +44,7 @@ Các gói khác trong `requirements.txt` (anyio, h11, httpcore, click, certifi, 
 | Thủ thư | thuthu2 | ThuThu@123 |
 | Thủ thư (đã ngừng, không đăng nhập được) | cu_nhan_vien | ThuThu@123 |
 
-Quản trị có toàn bộ quyền. Thủ thư được thêm, sửa, tìm sách/độc giả, mượn/trả/gia hạn, xuất CSV và xem thống kê; chỉ quản trị được xóa mềm (nút **Ngừng**), quản lý tài khoản (trang **Tài khoản**) và sao lưu. Mọi người dùng tự đổi mật khẩu bằng nút **Mật khẩu** ở góc trái dưới. Tài khoản này dùng cho bài tập trên localhost, không phải tài khoản thật; hãy đổi mật khẩu ngay nếu dùng thật.
+Quản trị có toàn bộ quyền. Thủ thư được thêm, sửa, tìm sách/độc giả, lập phiếu mượn/trả sách/gia hạn, tải danh sách về máy và xem tổng quan; chỉ quản trị được lưu trữ sách/độc giả (nút **Lưu trữ**), quản lý tài khoản (trang **Tài khoản**) và sao lưu. Mọi người dùng tự đổi mật khẩu bằng nút **Mật khẩu** ở góc trái dưới. Tài khoản này dùng cho bài tập trên localhost, không phải tài khoản thật; hãy đổi mật khẩu ngay nếu dùng thật.
 
 ### Chạy bằng PowerShell
 
@@ -116,19 +116,20 @@ Quy ước:
 ## Dữ liệu và quy tắc
 
 - CSDL `data/library.db` được cung cấp sẵn. `seed.py` chỉ tạo mẫu khi chưa có người dùng, không xóa dữ liệu đang có.
-- `data/library.db` cung cấp sẵn là bộ dữ liệu demo sinh bởi `seed.py` (xem mục Dữ liệu demo): 4 tài khoản, 63 đầu sách (khoảng 80% có mã vạch EAN-13 hư cấu tiền tố 893), 60 độc giả, ~260 phiếu trong 180 ngày với đủ trạng thái. Ngày quá hạn thay đổi theo ngày máy chủ.
-- Bộ mẫu nhỏ (2 tài khoản, 8 đầu sách / 29 bản, 4 độc giả, 5 phiếu, 1 phiếu quá hạn) là hàm `seed()` trong `seed.py`, chỉ dùng cho test tự động.
-- Một phiếu tương ứng một bản sách, không quản lý mã vạch từng bản vật lý. Mỗi đầu sách có thể ghi một **mã vạch/ISBN** (tối đa 20 ký tự chữ số, chữ cái, gạch nối; không bắt buộc; duy nhất khi có nhập). Ô tìm kiếm sách tìm cả theo mã vạch, nên máy quét gõ mã rồi Enter là ra đúng đầu sách. Một độc giả được giữ tối đa 5 bản, có thể mượn nhiều bản cùng đầu sách.
-- Hạn mượn 1–30 ngày, mặc định 14. Ngày hạn trả vẫn trong hạn. Quá hạn = số ngày dương từ hạn trả đến ngày hiện tại, hoặc đến ngày trả nếu đã trả.
+- `data/library.db` cung cấp sẵn là bộ dữ liệu demo sinh bởi `seed.py` (xem mục Dữ liệu demo): 4 tài khoản (có họ tên, email), 63 đầu sách (khoảng 80% có ISBN hư cấu tiền tố 893), 60 độc giả, 200 phiếu / 328 cuốn trong 180 ngày với đủ trạng thái. Ngày quá hạn thay đổi theo ngày máy chủ.
+- Bộ mẫu nhỏ (2 tài khoản, 8 đầu sách / 29 bản, 4 độc giả, 5 phiếu / 6 cuốn, 1 phiếu quá hạn) là hàm `seed()` trong `seed.py`, chỉ dùng cho test tự động.
+- **Mỗi lần mượn lập một phiếu** (`loans`) gồm 1–5 cuốn, mỗi cuốn là một dòng chi tiết (`loan_items`, mỗi đầu sách một lần trên phiếu). Hạn trả và gia hạn tính chung cho cả phiếu; trả sách ghi theo từng cuốn nên độc giả trả được một phần. Một độc giả giữ tối đa 5 cuốn chưa trả tính trên mọi phiếu.
+- Mỗi đầu sách có thể ghi một **mã ISBN** (tối đa 20 ký tự chữ số, chữ cái, gạch nối; không bắt buộc; duy nhất khi có nhập); ô tìm kiếm sách tìm cả theo ISBN. Chưa quản lý riêng từng bản vật lý.
+- Hạn mượn 1–30 ngày, mặc định 14. Ngày hạn trả vẫn trong hạn. Quá hạn = số ngày dương từ hạn trả đến ngày hiện tại, hoặc đến ngày trả cuốn cuối cùng nếu phiếu đã trả đủ.
 - Cho phép độc giả đang có phiếu quá hạn tiếp tục mượn nếu còn dưới 5 bản. Bản demo chưa áp dụng phạt tiền/đặt trước.
 - Gia hạn: phiếu còn trong hạn được gia hạn đúng một lần, thêm 1–30 ngày tính từ hạn trả hiện tại. Phiếu quá hạn phải trả sách trước.
-- Số có sẵn = tổng bản − số phiếu chưa trả. Không lưu tồn có sẵn riêng nên không có hai nguồn số liệu.
-- Không giảm tổng bản xuống dưới số đang mượn. Chặn xóa mềm sách/độc giả khi còn phiếu chưa trả. Lịch sử luôn được giữ.
-- Mã sách và độc giả là duy nhất trong cả bản ghi hoạt động và đã xóa mềm, có phân biệt chữ hoa/thường. Tìm kiếm không phân biệt hoa/thường Unicode nhưng có phân biệt dấu tiếng Việt; lọc và phân trang thực hiện ngay trong SQL (`LIMIT/OFFSET`).
-- Phân trang: thanh "N bản ghi · Trang x/y" dưới các bảng sách, độc giả, phiếu; chọn 5/10/20/50 dòng mỗi trang (mặc định 20, ghi nhớ trong trình duyệt). API nhận `page` (từ 1) và `size` (1–100); không truyền `page` thì trả toàn bộ danh sách (dùng cho hộp chọn khi lập phiếu và xuất CSV).
+- Số có sẵn = tổng bản − số dòng chi tiết chưa trả. Không lưu tồn có sẵn riêng nên không có hai nguồn số liệu.
+- Không giảm tổng bản xuống dưới số đang mượn. Chặn lưu trữ sách/độc giả khi còn cuốn chưa trả. Lịch sử luôn được giữ.
+- Mã sách và độc giả là duy nhất trong cả bản ghi đang dùng và đã lưu trữ, có phân biệt chữ hoa/thường. Tìm kiếm không phân biệt hoa/thường Unicode nhưng có phân biệt dấu tiếng Việt; lọc và phân trang thực hiện ngay trong SQL (`LIMIT/OFFSET`).
+- Phân trang: thanh "N bản ghi · Trang x/y" dưới các bảng sách, độc giả, phiếu; chọn 5/10/20/50 dòng mỗi trang (mặc định 20, ghi nhớ trong trình duyệt). API nhận `page` (từ 1) và `size` (1–100); không truyền `page` thì trả toàn bộ danh sách (dùng cho hộp chọn khi lập phiếu và tải danh sách).
 - Ngày nghiệp vụ lấy theo ngày máy chạy server. Phiên đăng nhập là token ký HMAC có hạn 8 giờ, gắn dấu vết mật khẩu: đổi/đặt lại mật khẩu hoặc ngừng tài khoản làm các phiên khác của tài khoản đó hết hiệu lực. Khóa ký lấy từ biến môi trường `LIBRARY_SECRET`, nếu không có thì tự sinh và lưu ở `data/.secret`.
-- Tài khoản: tên đăng nhập 3–50 ký tự chữ/số/`._-`, mật khẩu tối thiểu 8 ký tự. Không thể tự hạ quyền/tự ngừng, và luôn phải còn ít nhất một quản trị viên hoạt động. Sai mật khẩu 5 lần trong 15 phút sẽ bị khóa tạm 15 phút cho cặp tài khoản–địa chỉ đó (đếm trong bộ nhớ, khởi động lại server sẽ xóa).
-- Xuất CSV (UTF-8 có BOM, mở được bằng Excel) cho sách, độc giả và toàn bộ phiếu từ nút **Xuất CSV** trên mỗi trang.
+- Tài khoản: tên đăng nhập 3–50 ký tự chữ/số/`._-`, họ tên bắt buộc, email và điện thoại không bắt buộc, mật khẩu tối thiểu 8 ký tự. Không thể tự hạ quyền/tự ngừng, và luôn phải còn ít nhất một quản trị viên hoạt động. Sai mật khẩu 5 lần trong 15 phút sẽ bị khóa tạm 15 phút cho cặp tài khoản–địa chỉ đó (đếm trong bộ nhớ, khởi động lại server sẽ xóa).
+- Nút **Tải danh sách (Excel)** trên mỗi trang tải sách, độc giả hoặc phiếu (mỗi cuốn một dòng) dạng CSV UTF-8 có BOM, mở thẳng bằng Excel.
 
 ## Định tuyến
 
@@ -149,13 +150,13 @@ Quy ước:
 | `POST /api/login`, `POST /api/logout`, `GET /api/me` | — / đã đăng nhập | Phiên làm việc |
 | `POST /api/password` | đã đăng nhập | Đổi mật khẩu của chính mình |
 | `GET/POST /api/users`, `PUT /api/users/{id}` | admin | Quản lý tài khoản |
-| `GET/POST /api/books`, `PUT /api/books/{id}` | đã đăng nhập | Sách (có `barcode`); `GET` nhận `q` (mã, mã vạch, tên, tác giả, thể loại), `page`, `size` |
+| `GET/POST /api/books`, `PUT /api/books/{id}` | đã đăng nhập | Sách (`barcode` = ISBN); `GET` nhận `q` (mã, ISBN, tên, tác giả, thể loại), `page`, `size` |
 | `GET/POST /api/readers`, `PUT /api/readers/{id}` | đã đăng nhập | Độc giả; `GET` nhận `q`, `page`, `size` |
-| `DELETE /api/{books\|readers}/{id}` | admin | Ngừng hoạt động (xóa mềm) |
-| `GET/POST /api/loans` | đã đăng nhập | Phiếu; `GET` nhận `status`, `page`, `size` |
-| `POST /api/loans/{id}/return`, `POST /api/loans/{id}/extend` | đã đăng nhập | Trả sách, gia hạn |
+| `DELETE /api/{books\|readers}/{id}` | admin | Lưu trữ (ẩn khỏi danh sách, giữ lịch sử) |
+| `GET/POST /api/loans`, `GET /api/loans/{id}` | đã đăng nhập | Phiếu kèm `items`; `GET` nhận `status`, `page`, `size`; `POST` nhận `{reader_id, book_ids[], days}` |
+| `POST /api/loans/{id}/return`, `POST /api/loans/{id}/extend` | đã đăng nhập | Trả sách (`{item_ids[]}`, bỏ trống = trả hết), gia hạn |
 | `GET /api/stats` | đã đăng nhập | Thống kê |
-| `GET /api/export/{books\|readers\|loans}.csv` | đã đăng nhập | Xuất CSV |
+| `GET /api/export/{books\|readers\|loans}.csv` | đã đăng nhập | Tải danh sách về máy |
 | `POST /api/backup` | admin | Sao lưu CSDL |
 | `GET /docs`, `GET /openapi.json` | — | Tài liệu API tự sinh của FastAPI |
 
@@ -167,7 +168,7 @@ Quy ước:
 
 Test giao diện (`tests/test_ui.py`) dùng Playwright điều khiển Chromium thật trên một server uvicorn chạy trong thread với CSDL tạm. Cần cài thêm một lần (có Internet): `pip install -r requirements-dev.txt` rồi `python -m playwright install chromium`. Máy chưa cài Playwright thì các test này tự bỏ qua, phần API vẫn chạy.
 
-75 ca tự động đã đạt trong lần kiểm thử cung cấp (66 API/unit + 9 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
+79 ca tự động đã đạt trong lần kiểm thử cung cấp (70 API/unit + 9 giao diện Playwright). `docs/test-results.xml` là kết quả pytest thật; `docs/ket_qua_kiem_thu.csv` là bảng từng ca. Test dùng database tạm riêng, không đụng dữ liệu demo. Chi tiết ca kiểm thử và giới hạn kiểm chứng nằm trong báo cáo. Hai cảnh báo deprecation từ thư viện kiểm thử được giữ trong log, không phải ca thất bại.
 
 ## Cấu trúc
 
@@ -201,7 +202,7 @@ Muốn dùng một file CSDL khác (ví dụ thử nghiệm mà không đụng b
 
 ## Dữ liệu demo
 
-`data/library.db` trong bản nộp là bộ demo do `seed.py` sinh: 63 đầu sách (80% có mã vạch EAN-13 hư cấu), 60 độc giả, ~260 phiếu trong 180 ngày với đủ trạng thái (đúng hạn, trả muộn, đang mượn, quá hạn, đã gia hạn), có sách/độc giả/tài khoản đã ngừng; mọi quy tắc nghiệp vụ được tuân thủ khi sinh. Dữ liệu hư cấu, sinh bằng hạt giống cố định (kể cả salt mật khẩu) nên sinh lại ở đâu cũng giống hệt nhau.
+`data/library.db` trong bản nộp là bộ demo do `seed.py` sinh: 63 đầu sách (80% có ISBN hư cấu), 60 độc giả, 200 phiếu / 328 cuốn trong 180 ngày với đủ trạng thái (phiếu nhiều cuốn, trả một phần, đúng hạn, trả muộn, đang mượn, quá hạn, đã gia hạn), có sách/độc giả/tài khoản đã ngừng; mọi quy tắc nghiệp vụ được tuân thủ khi sinh. Dữ liệu hư cấu, sinh bằng hạt giống cố định (kể cả salt mật khẩu) nên sinh lại ở đâu cũng giống hệt nhau.
 
 ```bash
 python seed.py            # có dữ liệu rồi thì giữ nguyên
@@ -235,7 +236,7 @@ Dù chạy ở đâu cũng phải đổi mật khẩu demo ngay sau khi triển 
 
 ## Phạm vi triển khai
 
-Bản nộp phù hợp thư viện nhỏ và trình diễn tại máy. Đã có quản lý tài khoản, đổi mật khẩu, gia hạn, xuất CSV, phân trang, sao lưu tự động và chống dò mật khẩu cơ bản. Chưa đo tải lớn, chưa có phục hồi dữ liệu bằng giao diện, quản lý bản sách theo barcode, phạt tiền/đặt trước hoặc cấu hình HTTPS. Không tự công khai máy chủ lên Internet; nếu dùng trong mạng LAN cần đặt reverse proxy HTTPS phía trước. Bản Vercel chỉ là demo không lưu dữ liệu (xem mục Triển khai). Khi triển khai thật cần bổ sung các phần này và đổi tài khoản demo.
+Bản nộp phù hợp thư viện nhỏ và trình diễn tại máy. Đã có quản lý tài khoản, đổi mật khẩu, gia hạn, tải danh sách về máy, phân trang, sao lưu tự động và chống dò mật khẩu cơ bản. Chưa đo tải lớn, chưa có phục hồi dữ liệu bằng giao diện, quản lý từng bản sách vật lý, phạt tiền/đặt trước hoặc cấu hình HTTPS. Không tự công khai máy chủ lên Internet; nếu dùng trong mạng LAN cần đặt reverse proxy HTTPS phía trước. Bản Vercel chỉ là demo không lưu dữ liệu (xem mục Triển khai). Khi triển khai thật cần bổ sung các phần này và đổi tài khoản demo.
 
 ## Tài liệu căn cứ
 

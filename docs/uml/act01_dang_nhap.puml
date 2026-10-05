@@ -1,0 +1,27 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Người dùng|
+start
+:Mở trang đăng nhập;
+repeat
+  :Nhập tên đăng nhập và mật khẩu;
+  :Bấm Đăng nhập;
+  |Hệ thống|
+  if (Tài khoản đang bị khóa tạm do sai nhiều lần?) then (có)
+    :Hiển thị "Sai quá nhiều lần, thử lại sau 15 phút";
+    stop
+  endif
+  :Tìm tài khoản đang hoạt động, so khớp mật khẩu;
+  if (Đúng?) then (không)
+    :Ghi nhận một lần sai;
+    :Hiển thị "Tên đăng nhập hoặc mật khẩu không đúng";
+  endif
+repeat while (Đăng nhập thành công?) is (chưa) not (rồi)
+:Tạo phiên làm việc 8 giờ;
+:Hiển thị trang Tổng quan và menu theo vai trò;
+|Người dùng|
+stop
+@enduml

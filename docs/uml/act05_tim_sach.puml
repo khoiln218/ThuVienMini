@@ -1,0 +1,20 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Thủ thư|
+start
+:Nhập từ khóa (mã, tên, tác giả, thể loại);
+:Bấm Tìm kiếm hoặc Enter;
+|Hệ thống|
+:Lọc sách đang sử dụng có chứa từ khóa\n(không phân biệt chữ hoa, thường);
+:Chia trang theo số dòng đã chọn;
+if (Có kết quả?) then (có)
+  :Hiển thị danh sách kèm số bản có sẵn;
+else (không)
+  :Hiển thị "Không tìm thấy sách";
+endif
+|Thủ thư|
+stop
+@enduml

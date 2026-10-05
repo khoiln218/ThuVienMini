@@ -1,0 +1,33 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Thủ thư|
+start
+:Nhận sách từ độc giả;
+:Tìm phiếu (UC15), bấm "Trả sách";
+|Hệ thống|
+:Hiển thị các cuốn chưa trả của phiếu\n(mặc định chọn tất cả) và số ngày quá hạn;
+|Thủ thư|
+:Bỏ chọn cuốn độc giả chưa mang trả;
+:Bấm "Xác nhận đã nhận sách";
+|Hệ thống|
+if (Có chọn ít nhất một cuốn?) then (không)
+  :Hiển thị "Chọn ít nhất một cuốn sách";
+  stop
+endif
+if (Các cuốn được chọn đều thuộc phiếu và chưa trả?) then (không)
+  :Hiển thị "Có cuốn đã trả hoặc không thuộc phiếu này";
+  stop
+endif
+:Ghi ngày trả và người nhận cho từng cuốn;
+if (Phiếu còn cuốn chưa trả?) then (có)
+  :Hiển thị "Đã nhận trả k cuốn, phiếu còn m cuốn chưa trả";
+else (không)
+  :Hiển thị "Đã nhận trả k cuốn, phiếu đã trả đủ";
+endif
+:Cập nhật trạng thái phiếu và số bản có sẵn;
+|Thủ thư|
+stop
+@enduml

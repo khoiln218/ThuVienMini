@@ -26,7 +26,7 @@ export async function render() {
               <td>${r.phone || '—'}</td>
               <td>
                 <button class="action" data-edit-reader="${r.id}">Sửa</button>
-                ${isAdmin() ? html`<button class="action danger" data-remove="readers/${r.id}">Ngừng</button>` : ''}
+                ${isAdmin() ? html`<button class="action danger" data-remove="readers/${r.id}">Lưu trữ</button>` : ''}
               </td>
             </tr>
           `,

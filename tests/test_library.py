@@ -38,7 +38,7 @@ def test_TC05_reader_crud(client,reader):
 
 def test_TC06_borrow_return_inventory(client):
     before=next(b for b in client.get('/api/books').json() if b['id']==8)['available']
-    r=client.post('/api/loans',json={'book_id':8,'reader_id':4,'days':14}); assert r.status_code==201
+    r=client.post('/api/loans',json={'book_ids':[8],'reader_id':4,'days':14}); assert r.status_code==201
     lid=r.json()['id']
     assert next(b for b in client.get('/api/books').json() if b['id']==8)['available']==before-1
     assert client.post(f'/api/loans/{lid}/return').status_code==200
@@ -46,19 +46,19 @@ def test_TC06_borrow_return_inventory(client):
 
 def test_TC07_out_of_stock(client,book):
     book['total']=0; bid=client.post('/api/books',json=book).json()['id']
-    assert client.post('/api/loans',json={'book_id':bid,'reader_id':4,'days':14}).status_code==409
+    assert client.post('/api/loans',json={'book_ids':[bid],'reader_id':4,'days':14}).status_code==409
 
 def test_TC08_return_twice(client):
     assert client.post('/api/loans/1/return').status_code==200
     assert client.post('/api/loans/1/return').status_code==409
 
 def test_TC09_nonexistent(client):
-    assert client.post('/api/loans',json={'book_id':9999,'reader_id':4}).status_code==404
+    assert client.post('/api/loans',json={'book_ids':[9999],'reader_id':4}).status_code==404
     assert client.post('/api/loans/9999/return').status_code==404
 
 def test_TC10_overdue_filter(client):
     rows=client.get('/api/loans?status=overdue').json()
-    assert len(rows)==1 and rows[0]['id']==1 and rows[0]['overdue_days']==6
+    assert len(rows)==1 and rows[0]['id']==1 and rows[0]['overdue_days']==6 and rows[0]['items'][0]['book_id']==1
     assert client.get('/api/stats').json()['overdue']==1
 
 def test_TC11_no_deactivate_open_loan(client):
@@ -77,7 +77,7 @@ def test_TC13_total_below_borrowed(client):
 
 def test_TC14_inactive_reader(client):
     assert client.delete('/api/readers/4').status_code==200
-    assert client.post('/api/loans',json={'book_id':8,'reader_id':4}).status_code==404
+    assert client.post('/api/loans',json={'book_ids':[8],'reader_id':4}).status_code==404
 
 def test_TC15_sql_search_literal(client):
     assert client.get('/api/books',params={'q':"' OR 1=1 --"}).json()==[]
@@ -103,7 +103,7 @@ def test_TC18_duplicate_reader(client,reader):
 
 @pytest.mark.parametrize('days,expected',[(0,422),(1,201),(2,201),(29,201),(30,201),(31,422)])
 def test_B01_loan_days(client,days,expected):
-    assert client.post('/api/loans',json={'book_id':8,'reader_id':4,'days':days}).status_code==expected
+    assert client.post('/api/loans',json={'book_ids':[8],'reader_id':4,'days':days}).status_code==expected
 
 @pytest.mark.parametrize('total,expected',[(-1,422),(0,201),(1,201),(998,201),(999,201),(1000,422)])
 def test_B02_book_quantity(client,book,total,expected):
@@ -116,8 +116,8 @@ def test_B03_title_length(client,book,length,expected):
     assert client.post('/api/books',json=book).status_code==expected
 
 def test_B04_reader_limit(client):
-    for _ in range(5): assert client.post('/api/loans',json={'book_id':5,'reader_id':4}).status_code==201
-    assert client.post('/api/loans',json={'book_id':5,'reader_id':4}).status_code==409
+    for _ in range(5): assert client.post('/api/loans',json={'book_ids':[5],'reader_id':4}).status_code==201
+    assert client.post('/api/loans',json={'book_ids':[5],'reader_id':4}).status_code==409
 
 def test_B05_whitespace_title(client,book):
     book['title']='   '
@@ -145,19 +145,19 @@ def test_I01_concurrent_last_copy(client,book):
     book['total']=1;bid=client.post('/api/books',json=book).json()['id']
     def borrow(reader):
         try:
-            LoanService.borrow(Borrow(book_id=bid,reader_id=reader,days=14),1)
+            LoanService.borrow(Borrow(book_ids=[bid],reader_id=reader,days=14),1)
             return 201
         except HTTPException as e: return e.status_code
     with ThreadPoolExecutor(max_workers=2) as pool:
         results=list(pool.map(borrow,[1,2]))
     assert sorted(results)==[201,409]
-    assert query('SELECT COUNT(*) AS n FROM loans WHERE book_id=?',(bid,))[0]['n']==1
+    assert query('SELECT COUNT(*) AS n FROM loan_items WHERE book_id=?',(bid,))[0]['n']==1
 
 def test_I02_failed_borrow_no_write(client,book):
     book['total']=0;bid=client.post('/api/books',json=book).json()['id']
-    before=len(query('SELECT * FROM loans'))
-    assert client.post('/api/loans',json={'book_id':bid,'reader_id':4}).status_code==409
-    assert len(query('SELECT * FROM loans'))==before
+    before=(len(query('SELECT * FROM loans')),len(query('SELECT * FROM loan_items')))
+    assert client.post('/api/loans',json={'book_ids':[8,bid],'reader_id':4}).status_code==409   # một cuốn hết → không lập phiếu nào
+    assert (len(query('SELECT * FROM loans')),len(query('SELECT * FROM loan_items')))==before
 
 def test_TC19_static_page(client):
     assert client.get('/').status_code==200
@@ -166,14 +166,14 @@ def test_TC19_static_page(client):
 
 def test_TC20_statistics(client):
     s=client.get('/api/stats').json()
-    assert (s['titles'],s['copies'],s['available'],s['readers'],s['borrowing'],s['overdue'],s['returned'])==(8,29,26,4,3,1,2)
+    assert (s['titles'],s['copies'],s['available'],s['readers'],s['borrowing'],s['overdue'],s['returned'])==(8,29,25,4,4,1,2)
 
 def test_TC21_missing_update(client,book):
     assert client.put('/api/books/999',json=book).status_code==404
 
 def test_TC22_inactive_book(client):
     assert client.delete('/api/books/8').status_code==200
-    assert client.post('/api/loans',json={'book_id':8,'reader_id':4}).status_code==404
+    assert client.post('/api/loans',json={'book_ids':[8],'reader_id':4}).status_code==404
 
 def test_TC23_loan_filter_options_valid_html(client):
     # Bộ lọc phiếu nằm trong khung HTML của trang loans (app/static/views/loans.html)
@@ -190,10 +190,16 @@ def test_TC24_login_lockout(client):
 
 def test_TC25_user_management(client):
     assert client.get('/api/users').status_code==200
-    r=client.post('/api/users',json={'username':'nv01','password':'NhanVien@1','role':'librarian'}); assert r.status_code==201
+    nv={'username':'nv01','password':'NhanVien@1','role':'librarian','full_name':'Nhân Viên Một','email':'nv01@thuvien.local','phone':'0901 234 567'}
+    r=client.post('/api/users',json=nv); assert r.status_code==201
     uid=r.json()['id']
-    assert client.post('/api/users',json={'username':'nv01','password':'NhanVien@1','role':'librarian'}).status_code==409
-    assert client.post('/api/users',json={'username':'nv02','password':'short','role':'librarian'}).status_code==422
+    assert next(u for u in client.get('/api/users').json() if u['id']==uid)['email']=='nv01@thuvien.local'
+    assert client.post('/api/users',json=nv).status_code==409
+    assert client.post('/api/users',json={**nv,'username':'nv02','password':'short'}).status_code==422
+    assert client.post('/api/users',json={**nv,'username':'nv02','full_name':''}).status_code==422
+    assert client.post('/api/users',json={**nv,'username':'nv02','email':'khong-phai-email'}).status_code==422
+    assert client.put(f'/api/users/{uid}',json={'full_name':'Tên Mới','phone':''}).status_code==200
+    assert next(u for u in client.get('/api/users').json() if u['id']==uid)['full_name']=='Tên Mới'
     assert client.put(f'/api/users/{uid}',json={'role':'admin'}).status_code==200
     assert client.put(f'/api/users/{uid}',json={'active':False}).status_code==200
     assert client.post('/api/login',json={'username':'nv01','password':'NhanVien@1'}).status_code==401
@@ -203,7 +209,7 @@ def test_TC25_user_management(client):
 def test_TC26_user_management_admin_only(client):
     client.post('/api/login',json={'username':'thuthu','password':'ThuThu@123'})
     assert client.get('/api/users').status_code==403
-    assert client.post('/api/users',json={'username':'nv03','password':'NhanVien@1','role':'admin'}).status_code==403
+    assert client.post('/api/users',json={'username':'nv03','password':'NhanVien@1','role':'admin','full_name':'X'}).status_code==403
     assert client.post('/api/backup').status_code==403
 
 def test_TC27_change_password_invalidates_other_sessions(client):
@@ -229,7 +235,7 @@ def test_TC29_export_csv(client):
     r=client.get('/api/export/loans.csv'); assert r.status_code==200
     assert r.headers['content-type'].startswith('text/csv') and 'attachment' in r.headers['content-disposition']
     lines=r.text.lstrip('﻿').splitlines()
-    assert lines[0].startswith('Phiếu,Mã sách') and len(lines)==6
+    assert lines[0].startswith('Phiếu,Mã sách') and len(lines)==7      # một dòng cho mỗi cuốn: 6 cuốn trong 5 phiếu
     assert len(client.get('/api/export/books.csv').text.splitlines())==9
     assert client.get('/api/export/nope.csv').status_code==404
 
@@ -249,6 +255,31 @@ def test_TC31_migration_adds_columns(tmp_path,monkeypatch):
     monkeypatch.setenv('LIBRARY_DB',str(old)); initialize()
     assert query('SELECT active FROM users')[0]['active']==1
     assert 'extensions' in [c['name'] for c in query('PRAGMA table_info(loans)')]
+    assert query('SELECT full_name FROM users')[0]['full_name']==''
+
+def test_TC31b_migration_loans_to_items(tmp_path,monkeypatch):
+    # CSDL bản trước: mỗi dòng loans là một bản sách → chuyển thành phiếu + chi tiết, giữ nguyên mã phiếu và lịch sử
+    import sqlite3
+    from app.db import initialize
+    old=tmp_path/'v1.db'
+    sqlite3.connect(old).executescript("""
+        CREATE TABLE users(id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, role TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1);
+        CREATE TABLE books(id INTEGER PRIMARY KEY, code TEXT NOT NULL UNIQUE, title TEXT NOT NULL, author TEXT NOT NULL, category TEXT NOT NULL, total INTEGER NOT NULL, active INTEGER NOT NULL DEFAULT 1);
+        CREATE TABLE readers(id INTEGER PRIMARY KEY, code TEXT NOT NULL UNIQUE, name TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '', active INTEGER NOT NULL DEFAULT 1);
+        CREATE TABLE loans(id INTEGER PRIMARY KEY, book_id INTEGER NOT NULL REFERENCES books(id), reader_id INTEGER NOT NULL REFERENCES readers(id), created_by INTEGER NOT NULL REFERENCES users(id),
+            borrowed_on TEXT NOT NULL, due_on TEXT NOT NULL, returned_on TEXT, returned_by INTEGER REFERENCES users(id), extensions INTEGER NOT NULL DEFAULT 0);
+        CREATE INDEX ix_loans_book ON loans(book_id,returned_on);
+        INSERT INTO users VALUES(1,'a','x$y','admin',1); INSERT INTO books VALUES(1,'S1','t','a','c',2,1); INSERT INTO readers VALUES(1,'D1','n','',1);
+        INSERT INTO loans VALUES(7,1,1,1,'2026-01-01','2026-01-15','2026-01-10',1,0),(9,1,1,1,'2026-02-01','2026-02-15',NULL,NULL,1);
+    """)
+    monkeypatch.setenv('LIBRARY_DB',str(old)); initialize(); initialize()      # chạy lại lần hai không đổi gì
+    assert [r['id'] for r in query('SELECT id FROM loans ORDER BY id')]==[7,9]
+    assert query('SELECT extensions FROM loans WHERE id=9')[0]['extensions']==1
+    items=query('SELECT loan_id,book_id,returned_on FROM loan_items ORDER BY loan_id')
+    assert items==[{'loan_id':7,'book_id':1,'returned_on':'2026-01-10'},{'loan_id':9,'book_id':1,'returned_on':None}]
+    assert 'book_id' not in [c['name'] for c in query('PRAGMA table_info(loans)')]
+    assert query("SELECT COUNT(*) AS n FROM sqlite_master WHERE name='loans_v1'")[0]['n']==0
+    assert query('PRAGMA foreign_key_check')==[]
 
 def test_TC32_pagination(client):
     for i in range(25): assert client.post('/api/readers',json={'code':f'P{i:03}','name':f'Độc giả phân trang {i}','phone':''}).status_code==201
@@ -290,11 +321,12 @@ def test_TC36_seed_demo(tmp_path, monkeypatch):
     first=query('SELECT password_hash FROM users WHERE username="admin"')[0]['password_hash']
     assert seed_module.main(['--db',str(db),'--force'])==0
     assert query('SELECT password_hash FROM users WHERE username="admin"')[0]['password_hash']==first   # demo xác định cả salt
-    counts={t:query(f'SELECT COUNT(*) AS n FROM {t}')[0]['n'] for t in ('users','books','readers','loans')}
-    assert counts['books']>=60 and counts['readers']==60 and counts['loans']>200
-    assert query('SELECT COUNT(*) AS n FROM loans WHERE returned_on IS NULL AND due_on<date("now")')[0]['n']>0
-    assert query('SELECT MAX(c) AS m FROM (SELECT COUNT(*) c FROM loans WHERE returned_on IS NULL GROUP BY reader_id)')[0]['m']<=5
-    assert query('SELECT COUNT(*) AS n FROM books b WHERE (SELECT COUNT(*) FROM loans l WHERE l.book_id=b.id AND l.returned_on IS NULL)>b.total')[0]['n']==0
+    counts={t:query(f'SELECT COUNT(*) AS n FROM {t}')[0]['n'] for t in ('users','books','readers','loans','loan_items')}
+    assert counts['books']>=60 and counts['readers']==60 and counts['loans']>150 and counts['loan_items']>counts['loans']
+    assert query('SELECT COUNT(*) AS n FROM loan_items i JOIN loans l ON l.id=i.loan_id WHERE i.returned_on IS NULL AND l.due_on<date("now")')[0]['n']>0
+    assert query('SELECT MAX(c) AS m FROM (SELECT COUNT(*) c FROM loan_items i JOIN loans l ON l.id=i.loan_id WHERE i.returned_on IS NULL GROUP BY l.reader_id)')[0]['m']<=5
+    assert query('SELECT COUNT(*) AS n FROM books b WHERE (SELECT COUNT(*) FROM loan_items i WHERE i.book_id=b.id AND i.returned_on IS NULL)>b.total')[0]['n']==0
+    assert query('SELECT full_name FROM users WHERE username="admin"')[0]['full_name']
     login_guard.reset()
     with TestClient(app,headers={'X-Library-Request':'1'}) as c:
         assert c.post('/api/login',json={'username':'admin','password':'Admin@123'}).status_code==200
@@ -314,7 +346,7 @@ def test_TC37_barcode(client,book):
     assert client.post('/api/books',json={**book,'code':'NEW4','barcode':'1'*21}).status_code==422
     assert client.get('/api/books?q=S001').json()[0]['barcode']=='8930000000019'
     header=client.get('/api/export/books.csv').text.lstrip('﻿').splitlines()[0]
-    assert 'Mã vạch' in header
+    assert 'ISBN' in header
 
 def test_TC38_vercel_mode(tmp_path, monkeypatch):
     # Trên Vercel (VERCEL=1, không có LIBRARY_DB) app phải tự chép CSDL mẫu ra thư mục ghi được và không sao lưu
@@ -347,3 +379,35 @@ def test_TC39_secret_fallback_on_serverless(tmp_path, monkeypatch):
     assert a==b and len(a)==32
     monkeypatch.setenv('LIBRARY_SECRET', 'khoa-ro-rang'); monkeypatch.setattr(security, '_secret', None)
     assert security.get_secret()==b'khoa-ro-rang'
+
+
+def test_TC40_one_slip_many_books(client):
+    # Mỗi lần mượn lập một phiếu gồm nhiều cuốn; hạn trả chung; trả từng cuốn hoặc trả hết
+    r=client.post('/api/loans',json={'reader_id':4,'book_ids':[5,7,8],'days':14}); assert r.status_code==201
+    lid=r.json()['id']
+    loan=client.get(f'/api/loans/{lid}').json()
+    assert [i['book_id'] for i in loan['items']]==[5,7,8] and loan['status']=='open' and loan['pending']==3
+    first=loan['items'][0]['id']
+    r=client.post(f'/api/loans/{lid}/return',json={'item_ids':[first]}); assert r.status_code==200
+    assert r.json()['remaining']==2
+    assert client.post(f'/api/loans/{lid}/return',json={'item_ids':[first]}).status_code==409     # cuốn đã trả
+    assert client.get(f'/api/loans/{lid}').json()['status']=='open'
+    assert client.post(f'/api/loans/{lid}/return').json()['remaining']==0                          # trả hết phần còn lại
+    loan=client.get(f'/api/loans/{lid}').json()
+    assert loan['status']=='returned' and loan['returned_on']==date.today().isoformat()
+    assert client.post(f'/api/loans/{lid}/return').status_code==409
+    assert client.get('/api/loans/999').status_code==404
+
+def test_TC41_slip_rules(client):
+    assert client.post('/api/loans',json={'reader_id':4,'book_ids':[5,5]}).status_code==422          # trùng sách trong phiếu
+    assert client.post('/api/loans',json={'reader_id':4,'book_ids':[]}).status_code==422             # phiếu rỗng
+    assert client.post('/api/loans',json={'reader_id':4,'book_ids':[1,2,3,4,5,6]}).status_code==422  # quá 5 cuốn một phiếu
+    assert client.post('/api/loans',json={'reader_id':3,'book_ids':[1,2,4,5]}).status_code==409      # đang giữ 2 + 4 > 5
+    assert client.post('/api/loans',json={'reader_id':3,'book_ids':[1,2,4]}).status_code==201       # 2 + 3 = 5
+    other=client.post('/api/loans',json={'reader_id':4,'book_ids':[7]}).json()['id']
+    item=client.get(f'/api/loans/{other}').json()['items'][0]['id']
+    assert client.post('/api/loans/3/return',json={'item_ids':[item]}).status_code==409               # cuốn của phiếu khác
+
+def test_TC42_archive_wording(client):
+    r=client.delete('/api/books/8'); assert r.status_code==200 and 'lưu trữ' in r.json()['message']
+    assert 'lưu trữ' in client.delete('/api/books/1').json()['detail']

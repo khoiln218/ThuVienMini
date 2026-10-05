@@ -1,0 +1,31 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Thủ thư|
+start
+:Tìm sách cần sửa (UC06);
+:Bấm Sửa trên dòng sách;
+|Hệ thống|
+:Mở hộp thoại với thông tin hiện tại;
+|Thủ thư|
+:Thay đổi thông tin, bấm Lưu thông tin;
+|Hệ thống|
+if (Sách còn đang sử dụng?) then (không)
+  :Hiển thị "Không tìm thấy bản ghi";
+  stop
+endif
+if (Dữ liệu hợp lệ và mã không trùng?) then (không)
+  :Hiển thị lỗi, giữ hộp thoại;
+  stop
+endif
+if (Tổng số bản mới < số bản đang cho mượn?) then (có)
+  :Hiển thị "Tổng số bản không được nhỏ hơn số đang mượn";
+  stop
+endif
+:Cập nhật sách;
+:Hiển thị "Đã lưu" và dòng sách đã cập nhật;
+|Thủ thư|
+stop
+@enduml

@@ -1,0 +1,24 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Người dùng|
+start
+:Bấm "Mật khẩu" ở góc trái dưới;
+:Nhập mật khẩu hiện tại, mật khẩu mới, nhập lại;
+|Hệ thống|
+if (Mật khẩu mới và nhập lại khớp nhau?) then (không)
+  :Hiển thị "Mật khẩu nhập lại không khớp";
+  stop
+endif
+if (Mật khẩu hiện tại đúng và mật khẩu mới đủ 8 ký tự?) then (không)
+  :Hiển thị lý do từ chối;
+  stop
+endif
+:Lưu mật khẩu mới (đã băm);
+:Đăng xuất các phiên khác của tài khoản;
+:Hiển thị "Đã đổi mật khẩu";
+|Người dùng|
+stop
+@enduml

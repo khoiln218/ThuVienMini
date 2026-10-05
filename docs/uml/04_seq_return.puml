@@ -1,17 +1,22 @@
 @startuml
 skinparam defaultFontName Arial
 skinparam shadowing false
-participant "Thủ thư" as P0
+actor "Thủ thư" as P0
 participant "Giao diện" as P1
 participant "Xử lý trả" as P2
 participant "Dữ liệu" as P3
-P0 -> P1: 1. Chọn phiếu và xác nhận
-P1 -> P2: 2. Yêu cầu trả
-P2 -> P3: 3. Đọc phiếu mượn
-P3 --> P2: 4. Phiếu và trạng thái
-P2 -> P3: 5. [Chưa trả] Ghi ngày trả
-P3 --> P2: 6. Đã lưu
-P2 --> P1: 7. Kết quả và số ngày quá hạn
-P1 --> P0: 8. Hiển thị trạng thái mới
-
+P0 -> P1: 1. Bấm Trả sách tại phiếu
+P1 -> P3: 2. Đọc phiếu và các cuốn chưa trả
+P3 --> P1: 3. Danh sách cuốn chưa trả
+P1 --> P0: 4. Hộp thoại chọn cuốn đã nhận lại
+P0 -> P1: 5. Chọn cuốn, xác nhận
+P1 -> P2: 6. Yêu cầu nhận trả các cuốn đã chọn
+P2 -> P3: 7. Kiểm tra các cuốn còn chưa trả
+alt Hợp lệ
+  P2 -> P3: 8. Ghi ngày trả, người nhận cho từng cuốn
+  P2 --> P1: 9. Kết quả: số cuốn đã nhận, số cuốn còn lại, số ngày trễ
+else Cuốn đã trả hoặc không thuộc phiếu
+  P2 --> P1: 9'. Thông báo từ chối
+end
+P1 --> P0: 10. Hiển thị kết quả và trạng thái phiếu
 @enduml

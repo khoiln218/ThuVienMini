@@ -1,0 +1,40 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Thủ thư|
+start
+:Bấm "+ Lập phiếu mượn";
+|Hệ thống|
+:Nạp độc giả đang sử dụng và sách còn bản;
+|Thủ thư|
+:Chọn độc giả;
+:Đánh dấu các cuốn sách độc giả mượn (1–5 cuốn);
+:Nhập số ngày mượn (mặc định 14);
+:Bấm Lập phiếu;
+|Hệ thống|
+if (Đã chọn ít nhất một cuốn, không trùng,\nsố ngày 1–30?) then (không)
+  :Hiển thị lỗi tại hộp thoại;
+  stop
+endif
+:Đọc lại độc giả, từng cuốn sách\nvà số cuốn độc giả đang giữ;
+if (Độc giả và sách còn sử dụng?) then (không)
+  :Hiển thị "Độc giả / sách không tồn tại hoặc đã lưu trữ";
+  stop
+endif
+if (Số đang giữ + số cuốn chọn ≤ 5?) then (không)
+  :Hiển thị "Độc giả đang giữ n cuốn, chỉ được mượn thêm m cuốn";
+  stop
+endif
+if (Mọi cuốn đều còn bản có sẵn?) then (không)
+  :Hiển thị "Sách ... đã hết bản";
+  stop
+endif
+:Lập một phiếu mượn, hạn trả = hôm nay + số ngày;
+:Ghi một dòng chi tiết cho mỗi cuốn;
+:Hiển thị "Đã lập phiếu mượn #n gồm k cuốn";
+:Cập nhật danh sách phiếu và số bản có sẵn;
+|Thủ thư|
+stop
+@enduml

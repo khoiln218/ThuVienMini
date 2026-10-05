@@ -33,22 +33,46 @@ def transaction():
 # Cột bổ sung sau bản đầu; CREATE TABLE IF NOT EXISTS không thêm cột vào DB cũ nên phải ALTER.
 MIGRATIONS = [
     ('users', 'active', 'INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1))'),
-    ('loans', 'extensions', 'INTEGER NOT NULL DEFAULT 0 CHECK(extensions BETWEEN 0 AND 1)'),
+    ('users', 'full_name', "TEXT NOT NULL DEFAULT ''"),
+    ('users', 'email', "TEXT NOT NULL DEFAULT ''"),
+    ('users', 'phone', "TEXT NOT NULL DEFAULT ''"),
     ('books', 'barcode', "TEXT NOT NULL DEFAULT ''"),
 ]
-# Chỉ mục trên cột bổ sung: phải tạo sau ALTER nên không đặt trong schema.sql
+# Chỉ mục trên cột bổ sung và trên loans/loan_items: phải tạo sau ALTER/chuyển đổi nên không đặt trong schema.sql
 POST_MIGRATION_SQL = [
     # Mã vạch duy nhất khi có nhập (chuỗi rỗng = chưa có, được phép trùng)
     "CREATE UNIQUE INDEX IF NOT EXISTS ux_books_barcode ON books(barcode) WHERE barcode<>''",
+    'CREATE INDEX IF NOT EXISTS ix_loans_reader ON loans(reader_id)',
+    'CREATE INDEX IF NOT EXISTS ix_loans_due ON loans(due_on)',
+    'CREATE INDEX IF NOT EXISTS ix_loan_items_book ON loan_items(book_id,returned_on)',
+    'CREATE INDEX IF NOT EXISTS ix_loan_items_loan ON loan_items(loan_id,returned_on)',
 ]
 
+def columns(db, table):
+    return [row['name'] for row in db.execute(f'PRAGMA table_info({table})')]
+
 def initialize():
+    db = connect()
+    try:
+        # Bản cũ: mỗi dòng loans là một bản sách (có book_id, returned_on). Đổi tên để schema.sql tạo bảng loans mới
+        # (phiếu) và loan_items (chi tiết); dữ liệu được chép sang trong giao dịch bên dưới.
+        if 'book_id' in columns(db, 'loans'):
+            db.execute('ALTER TABLE loans RENAME TO loans_v1')
+            db.commit()
+    finally:
+        db.close()
     with transaction() as db:
         db.executescript((ROOT / 'schema.sql').read_text(encoding='utf-8'))
         for table, column, definition in MIGRATIONS:
-            columns = [row['name'] for row in db.execute(f'PRAGMA table_info({table})')]
-            if column not in columns:
+            if column not in columns(db, table):
                 db.execute(f'ALTER TABLE {table} ADD COLUMN {column} {definition}')
+        if columns(db, 'loans_v1'):
+            extensions = 'extensions' if 'extensions' in columns(db, 'loans_v1') else '0'
+            db.execute('INSERT INTO loans(id,reader_id,created_by,borrowed_on,due_on,extensions) '
+                       f'SELECT id,reader_id,created_by,borrowed_on,due_on,{extensions} FROM loans_v1')
+            db.execute('INSERT INTO loan_items(loan_id,book_id,returned_on,returned_by) '
+                       'SELECT id,book_id,returned_on,returned_by FROM loans_v1 ORDER BY id')
+            db.execute('DROP TABLE loans_v1')
         for sql in POST_MIGRATION_SQL:
             db.execute(sql)
 

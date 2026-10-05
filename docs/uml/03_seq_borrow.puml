@@ -1,17 +1,20 @@
 @startuml
 skinparam defaultFontName Arial
 skinparam shadowing false
-participant "Thủ thư" as P0
+actor "Thủ thư" as P0
 participant "Giao diện" as P1
 participant "Xử lý mượn" as P2
 participant "Dữ liệu" as P3
-P0 -> P1: 1. Chọn sách, độc giả, số ngày
-P1 -> P2: 2. Yêu cầu mượn
-P2 -> P3: 3. Kiểm tra độc giả và sách
-P3 --> P2: 4. Số đang mượn, số bản có sẵn
-P2 -> P3: 5. [Hợp lệ] Lưu phiếu
-P3 --> P2: 6. Mã phiếu
-P2 --> P1: 7. Kết quả hoặc lỗi nghiệp vụ
-P1 --> P0: 8. Hiển thị và cập nhật danh sách
-
+P0 -> P1: 1. Chọn độc giả, các cuốn sách, số ngày
+P1 -> P2: 2. Yêu cầu lập phiếu
+P2 -> P3: 3. Đọc độc giả và từng cuốn sách
+P3 --> P2: 4. Số cuốn độc giả đang giữ, số bản có sẵn
+alt Đủ điều kiện
+  P2 -> P3: 5. Lưu phiếu mượn và chi tiết từng cuốn
+  P3 --> P2: 6. Số phiếu
+  P2 --> P1: 7. Kết quả "Đã lập phiếu #n gồm k cuốn"
+else Không đủ điều kiện
+  P2 --> P1: 7'. Lý do từ chối, không lưu gì
+end
+P1 --> P0: 8. Hiển thị kết quả, cập nhật danh sách
 @enduml

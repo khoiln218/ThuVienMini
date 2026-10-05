@@ -103,26 +103,30 @@ export const field = (label, name, value = '', extra = '') =>
   html`<label>${label}<input name="${name}" value="${value}" ${raw(extra)} /></label>`;
 
 /**
- * Mở hộp thoại chỉnh sửa. Khi lưu thành công: đóng hộp thoại và phát sự kiện `data-changed` để trang tự tải lại.
+ * Mở hộp thoại chỉnh sửa. `submitLabel` đổi chữ trên nút xác nhận (mặc định "Lưu thông tin"). Khi lưu thành công: đóng hộp thoại và phát sự kiện `data-changed` để trang tự tải lại.
  * @param {string} title
  * @param {Fragment} fields
  * @param {(data: Record<string, string>) => Promise<unknown>} save
+ * @param {string} [submitLabel]
  */
-export function editor(title, fields, save) {
+export function editor(title, fields, save, submitLabel = 'Lưu thông tin') {
   const dialog = /** @type {HTMLDialogElement} */ ($('#editor'));
   const form = /** @type {HTMLFormElement} */ ($('#editor-form'));
   $('#editor-title').textContent = title;
   $('#editor-fields').innerHTML = String(fields);
   $('#editor-error').textContent = '';
+  $('#editor-submit').textContent = submitLabel;
   form.onsubmit = async (event) => {
     event.preventDefault();
     const button = /** @type {HTMLButtonElement} */ (event.submitter);
     button.disabled = true;
     try {
-      await save(/** @type {Record<string, string>} */ (Object.fromEntries(new FormData(form))));
+      const result = await save(/** @type {Record<string, string>} */ (Object.fromEntries(new FormData(form))));
       dialog.close();
       document.dispatchEvent(new CustomEvent('data-changed'));
-      notice('Đã lưu thay đổi.');
+      // Hiển thị kết quả server trả về (ví dụ "Đã lập phiếu mượn #12 gồm 2 cuốn"), không có thì thông báo chung
+      const message = /** @type {{ message?: unknown } | undefined} */ (result)?.message;
+      notice(typeof message === 'string' ? message + '.' : 'Đã lưu thay đổi.');
     } catch (e) {
       $('#editor-error').textContent = /** @type {Error} */ (e).message;
     } finally {

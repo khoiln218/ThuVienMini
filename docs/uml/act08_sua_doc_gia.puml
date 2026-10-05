@@ -1,0 +1,26 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Thủ thư|
+start
+:Tìm độc giả (UC10), bấm Sửa;
+|Hệ thống|
+:Mở hộp thoại với thông tin hiện tại;
+|Thủ thư|
+:Sửa họ tên, điện thoại hoặc mã, bấm Lưu;
+|Hệ thống|
+if (Độc giả còn đang sử dụng?) then (không)
+  :Hiển thị "Không tìm thấy bản ghi";
+  stop
+endif
+if (Dữ liệu hợp lệ và mã không trùng?) then (không)
+  :Hiển thị lỗi, giữ hộp thoại;
+  stop
+endif
+:Cập nhật độc giả\n(phiếu cũ vẫn gắn đúng độc giả);
+:Hiển thị "Đã lưu" và dòng đã cập nhật;
+|Thủ thư|
+stop
+@enduml

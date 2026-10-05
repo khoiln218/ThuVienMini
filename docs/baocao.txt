@@ -1,0 +1,30 @@
+tách đối tượng sử dụng khỏi phạm vi
+bỏ độc giả
+
+
+cơ sở lý thuyết: trình bày nghiệp vụ
+
+phân tích yêu cầu:
+mỗi lần mượn lập 1 phiếu
+
+lấy yêu cầu, viết lại
+ngôn ngữ tự nhiên
+
+tách yêu cầu riêng
+
+bỏ use case mã vạch
+
+thay xóa mềm -> lưu trữ
+thay xuất CSV bằng từ ngữ thân thiện
+
+tách use case, không gộp các bước CRUD
+
+bổ sung activity
+hiển thị kết quả
+
+Viết lại ERD đúng chuẩn
+bảng user: thêm thông tin cơ bản
+
+nộp:
+29-09-2026(done)
+06-10-2026

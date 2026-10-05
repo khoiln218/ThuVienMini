@@ -1,18 +1,22 @@
 @startuml
 skinparam defaultFontName Arial
 skinparam shadowing false
-participant "app.js" as P0
+participant "pages/loans.js" as P0
 participant "main.py" as P1
 participant "LoanService" as P2
 participant "SQLite" as P3
-P0 -> P1: POST return + cookie + header
-P1 -> P3: current_user(): xác thực phiên
-P3 --> P1: Người dùng hợp lệ
-P1 -> P2: return_book(id, user.id)
-P2 -> P3: BEGIN IMMEDIATE; SELECT loans
-P3 --> P2: Phiếu mượn
-P2 -> P3: [Chưa trả] UPDATE; COMMIT
-P2 --> P1: message, overdue_days
-P1 --> P0: 200 JSON; hoặc lỗi 404 / 409
-
+P0 -> P1: GET /api/loans/{id}
+P1 --> P0: Phiếu kèm items[]
+P0 -> P1: POST /api/loans/{id}/return {item_ids[]}
+P1 -> P2: return_books(id, item_ids, user.id)
+P2 -> P3: BEGIN IMMEDIATE; SELECT loans, loan_items chưa trả
+alt Các cuốn chọn đều chưa trả
+  P2 -> P3: UPDATE loan_items SET returned_on, returned_by; COMMIT
+  P2 --> P1: {message, returned, remaining, overdue_days}
+  P1 --> P0: 200 JSON
+else Phiếu không có / cuốn đã trả
+  P2 -> P3: ROLLBACK
+  P1 --> P0: 404 / 409
+end
+P0 -> P0: Hiển thị message, tải lại danh sách
 @enduml

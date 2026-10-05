@@ -28,7 +28,7 @@ export async function render() {
               <td><span class="badge ${b.available ? '' : 'late'}">${b.available}</span></td>
               <td>
                 <button class="action" data-edit-book="${b.id}">Sửa</button>
-                ${isAdmin() ? html`<button class="action danger" data-remove="books/${b.id}">Ngừng</button>` : ''}
+                ${isAdmin() ? html`<button class="action danger" data-remove="books/${b.id}">Lưu trữ</button>` : ''}
               </td>
             </tr>
           `,
@@ -47,7 +47,7 @@ export function editBook(id) {
     id ? 'Chỉnh sửa sách' : 'Thêm sách mới',
     html`
       ${field('Mã sách', 'code', b?.code, 'required maxlength="30"')}
-      ${field('Mã vạch / ISBN (không bắt buộc)', 'barcode', b?.barcode, 'maxlength="20" pattern="[0-9A-Za-z-]*" inputmode="numeric" placeholder="Quét hoặc nhập, ví dụ 8935236412345"')}
+      ${field('Mã ISBN (không bắt buộc)', 'barcode', b?.barcode, 'maxlength="20" pattern="[0-9A-Za-z-]*" placeholder="Ví dụ 8935236412345"')}
       ${field('Tên sách', 'title', b?.title, 'required maxlength="200"')}
       ${field('Tác giả', 'author', b?.author, 'required maxlength="100"')}
       ${field('Thể loại', 'category', b?.category, 'required maxlength="60"')}

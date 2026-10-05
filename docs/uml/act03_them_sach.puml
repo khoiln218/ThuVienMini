@@ -1,0 +1,26 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam SwimlaneTitleFontStyle bold
+|Thủ thư|
+start
+:Mở Kho sách, bấm "+ Thêm sách";
+:Nhập mã sách, tên, tác giả, thể loại, tổng số bản;
+:Bấm Lưu thông tin;
+|Hệ thống|
+:Kiểm tra trường bắt buộc, độ dài, số bản 0–999;
+if (Hợp lệ?) then (không)
+  :Hiển thị lỗi tại hộp thoại, giữ dữ liệu đã nhập;
+  stop
+endif
+if (Mã sách đã tồn tại?) then (có)
+  :Hiển thị "Mã đã tồn tại";
+  stop
+endif
+:Lưu sách mới;
+:Đóng hộp thoại, tải lại Kho sách;
+:Hiển thị "Đã lưu" và sách mới trong danh sách;
+|Thủ thư|
+stop
+@enduml
